@@ -1,33 +1,207 @@
 ---
 // SPECS §4.7: el botón de WhatsApp otra vez. Las redes van en el pie (Pie.astro).
-// Layout "CTA" de la marca: fondo oscuro, glow desde otra esquina que la portada,
-// titular arriba y botón abajo.
+// Layout "CTA" de la marca: fondo oscuro, glow desde otra esquina que la portada, titular
+// arriba y botón abajo. Al lado, el chat con el mensaje real que abre el botón (sale de
+// config.ts, así no se desfasan) y la respuesta, que llega con el scroll: primero tu mensaje,
+// después "escribiendo..." y la respuesta. Sin movimiento, el chat se ve completo.
+import { Image } from 'astro:assets';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
+import Burbuja from '../mocks/Burbuja.astro';
+import avatar from '../../assets/identidad/avatar-claro.png';
+import { WHATSAPP_MENSAJE } from '../../config';
 ---
 
-<section class="seccion seccion--oscura con-glow" aria-labelledby="cierre-titulo">
+<section class="seccion seccion--oscura con-glow cierre" aria-labelledby="cierre-titulo">
 	<Glow tono="azul" esquina="abajo-izq" />
 	<Glow tono="cian" esquina="abajo-izq" />
 
-	<div class="contenedor cierre">
-		<h2 id="cierre-titulo" class="t-titular">Empezá por la auditoría gratis</h2>
-		<p class="t-cuerpo">
-			Son 30 a 45&nbsp;minutos para encontrar el proceso que más tiempo te hace perder. No tenés que
-			preparar nada.
-		</p>
-		<BotonWhatsApp />
+	<div class="contenedor cierre__grilla">
+		<div class="cierre__texto">
+			<h2 id="cierre-titulo" class="t-hook">Empezá por la <span class="texto-gradiente">auditoría gratis</span></h2>
+			<p class="t-cuerpo">
+				Son 30 a 45&nbsp;minutos para encontrar el proceso que más tiempo te hace perder. No tenés que
+				preparar nada.
+			</p>
+			<BotonWhatsApp />
+		</div>
+
+		<div
+			class="cierre__chat"
+			role="img"
+			aria-label={`El mensaje que se manda con el botón: "${WHATSAPP_MENSAJE}", y la respuesta de Accelerate.ai, que propone un día para la charla.`}
+		>
+			<div class="chat__cabecera">
+				<Image src={avatar} alt="" width={40} height={40} class="chat__avatar" />
+				<span>Accelerate.ai<small>en línea</small></span>
+			</div>
+			<div class="chat__mensajes">
+				<Burbuja de="enviada" hora="Ahora" class="cierre__mio">{WHATSAPP_MENSAJE}</Burbuja>
+				<div class="chat__turno">
+					<span class="escribiendo"><i></i><i></i><i></i></span>
+					<Burbuja de="recibida" hora="Ahora" sangra class="cierre__respuesta">
+						¡Hola! Buenísimo. ¿Qué día te queda cómodo para charlar media hora?
+					</Burbuja>
+				</div>
+			</div>
+		</div>
 	</div>
 </section>
 
 <style>
-	.cierre {
+	.cierre__grilla {
+		display: grid;
+		gap: var(--space-6);
+	}
+
+	.cierre__texto {
 		display: grid;
 		justify-items: start;
+		align-content: center;
 		gap: var(--space-3);
 	}
 
-	.cierre p {
+	.cierre__texto h2 {
+		max-width: 12ch;
+	}
+
+	.cierre__texto p {
 		max-width: 44ch;
+	}
+
+	/* El chat: la card oscura de la marca, un tono arriba del fondo de la sección. */
+	.cierre__chat {
+		width: 100%;
+		max-width: 440px;
+		justify-self: center;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-card-lg);
+		background: var(--surface-card-dark);
+		box-shadow: 0 24px 60px rgba(2, 6, 18, 0.45);
+		color: var(--text-body-light);
+		view-timeline: --chat block;
+	}
+
+	.chat__cabecera {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 14px var(--space-2);
+		border-bottom: 1px solid var(--border-dark);
+		color: var(--text-heading-light);
+		font-size: 0.9375rem;
+		font-weight: var(--fw-semibold);
+	}
+
+	.chat__cabecera small {
+		display: block;
+		color: var(--cyan-300);
+		font-size: 0.75rem;
+		font-weight: var(--fw-regular);
+	}
+
+	.chat__avatar {
+		width: 40px;
+		height: 40px;
+		border-radius: var(--radius-pill);
+		border: 1px solid var(--border-dark);
+	}
+
+	.chat__mensajes {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-3) var(--space-2) var(--space-4);
+	}
+
+	/* "Escribiendo..." y la respuesta ocupan el mismo lugar: uno se va cuando llega la otra. */
+	.chat__turno {
+		display: grid;
+		justify-items: start;
+	}
+
+	.chat__turno > :global(*) {
+		grid-area: 1 / 1;
+	}
+
+	.escribiendo {
+		display: none;
+	}
+
+	/* En el celular la respuesta sale menos del borde: así no toca el costado de la pantalla. */
+	@media (max-width: 479px) {
+		.cierre__chat :global(.burbuja--sangra) {
+			margin-left: -12px;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.cierre {
+			padding-block: var(--space-8);
+		}
+
+		.cierre__grilla {
+			grid-template-columns: 7fr 5fr;
+			align-items: center;
+		}
+
+		.cierre__chat {
+			justify-self: end;
+		}
+	}
+
+	@keyframes escribiendo {
+		0%, 100% { opacity: 0; }
+		15%, 85% { opacity: 1; }
+	}
+
+	@keyframes punto {
+		0%, 100% { opacity: 0.35; }
+		50% { opacity: 1; }
+	}
+
+	@keyframes burbuja-llega {
+		from { opacity: 0; transform: translateY(16px) scale(0.96); }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.cierre__chat :global(.cierre__mio) {
+				transform-origin: right bottom;
+				animation: burbuja-llega linear both;
+				animation-timeline: --chat;
+				animation-range: entry 60% cover 30%;
+			}
+
+			.escribiendo {
+				display: inline-flex;
+				gap: 4px;
+				align-self: center;
+				padding: 12px 14px;
+				border-radius: 18px 18px 18px 6px;
+				background: var(--navy-800);
+				animation: escribiendo linear both;
+				animation-timeline: --chat;
+				animation-range: cover 30% cover 45%;
+			}
+
+			.escribiendo i {
+				width: 6px;
+				height: 6px;
+				border-radius: 50%;
+				background: var(--text-body-light);
+				animation: punto 0.6s ease-in-out infinite;
+			}
+
+			.escribiendo i:nth-child(2) { animation-delay: 0.15s; }
+			.escribiendo i:nth-child(3) { animation-delay: 0.3s; }
+
+			.cierre__chat :global(.cierre__respuesta) {
+				transform-origin: left bottom;
+				animation: burbuja-llega linear both;
+				animation-timeline: --chat;
+				animation-range: cover 44% cover 52%;
+			}
+		}
 	}
 </style>

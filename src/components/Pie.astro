@@ -1,16 +1,17 @@
 ---
 // El pie, fuera de <main> para que siga siendo el landmark del pie. Mismo fondo oscuro
-// que la sección de cierre, así se leen como un solo bloque.
+// que la sección de cierre, así se leen como un solo bloque. El imagotipo va grande: la marca
+// lo pide desde 280 px de ancho (debajo de eso se usa el logotipo).
 import { Image } from 'astro:assets';
-import logotipo from '../assets/identidad/logotipo-claro.png';
+import imagotipo from '../assets/identidad/imagotipo-claro.png';
 ---
 
 <footer class="seccion--oscura">
 	<div class="contenedor">
 		<div class="pie">
-			<Image src={logotipo} alt="Accelerate.ai" width={128} class="pie__logo" />
+			<Image src={imagotipo} alt="Accelerate.ai" width={720} class="pie__logo" />
 			{/* TODO: links a las redes. Faltan las URL (REVISION-TEXTOS.md). */}
-			<p class="t-meta">© 2026 Accelerate.ai</p>
+			<p class="t-meta">© 2026 Accelerate.ai. Sistemas a medida para pymes.</p>
 		</div>
 	</div>
 </footer>
@@ -19,16 +20,22 @@ import logotipo from '../assets/identidad/logotipo-claro.png';
 	.pie {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: center;
+		align-items: end;
 		justify-content: space-between;
-		gap: var(--space-2);
-		padding-block: var(--space-4);
+		gap: var(--space-3);
+		padding-block: var(--space-5) var(--space-4);
 		border-top: 1px solid var(--border-dark);
 		color: var(--text-muted-light);
 	}
 
 	.pie__logo {
-		width: 128px;
+		width: 280px;
 		height: auto;
+	}
+
+	@media (min-width: 768px) {
+		.pie__logo {
+			width: 360px;
+		}
 	}
 </style>
