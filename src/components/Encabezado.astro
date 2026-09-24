@@ -86,10 +86,6 @@ const links = [
 		transition: color 0.2s, background-color 0.2s;
 	}
 
-	.encabezado__nav a:hover {
-		color: var(--brand-primary-deep);
-		background: var(--blue-50);
-	}
 
 	.encabezado__cta {
 		display: inline-flex;
@@ -108,10 +104,22 @@ const links = [
 		transition: background-color 0.2s;
 	}
 
-	.encabezado__cta:hover,
 	.encabezado__cta:active {
 		background: var(--blue-800);
 		color: var(--white);
+	}
+
+	/* Hover solo con mouse: en el celular queda pegado después de tocar. */
+	@media (hover: hover) and (pointer: fine) {
+		.encabezado__nav a:hover {
+			color: var(--brand-primary-deep);
+			background: var(--blue-50);
+		}
+
+		.encabezado__cta:hover {
+			background: var(--blue-800);
+			color: var(--white);
+		}
 	}
 
 	.encabezado__cta :global(svg) {

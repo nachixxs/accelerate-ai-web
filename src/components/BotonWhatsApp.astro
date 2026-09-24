@@ -37,11 +37,18 @@ import { WHATSAPP_URL } from '../config';
 		flex: none;
 	}
 
-	/* :active reemplaza el resaltado gris de Android, que es un rectángulo encima de la píldora. */
-	.boton:hover,
+	/* :active reemplaza el resaltado gris de Android, que es un rectángulo encima de la píldora.
+	   El hover, solo con mouse: en el celular queda pegado al volver de WhatsApp. */
 	.boton:active {
 		background: var(--brand-primary-deep);
 		color: var(--white);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.boton:hover {
+			background: var(--brand-primary-deep);
+			color: var(--white);
+		}
 	}
 
 	.boton:focus-visible {

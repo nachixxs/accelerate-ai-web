@@ -316,30 +316,31 @@ const dolores = [
 
 		/* La card aparece primero y los dolores se acomodan uno detrás de otro. */
 		.lista {
-			transition: background-color 0.45s var(--curva-salida), border-color 0.45s, box-shadow 0.45s;
+			transition: background-color 0.3s var(--curva-salida), border-color 0.3s, box-shadow 0.3s;
 		}
 
 		.dolor {
-			transition: translate 0.55s var(--curva-salida), rotate 0.55s var(--curva-salida), border-color 0.3s;
-			transition-delay: calc(var(--i) * 60ms);
+			transition: translate 0.35s var(--curva-salida), rotate 0.35s var(--curva-salida), border-color 0.3s;
+			transition-delay: calc(var(--i) * 40ms);
 		}
 
 		.dolor__frase,
 		.dolor__detalle,
 		.dolor__iconos {
-			transition: color 0.3s calc(var(--i) * 60ms);
+			transition: color 0.3s calc(var(--i) * 40ms);
 		}
 
 		/* El texto que se va se desenfoca y sube; el que llega baja a su lugar. El blur tapa el
-		   instante en que las dos frases se cruzan. */
+		   instante en que las dos frases se cruzan. La salida es más rápida que la llegada, y todo
+		   el cambio termina en menos de medio segundo: el interruptor se toca varias veces. */
 		.lista :global(:is(.hoy, .sistema)) {
 			transform: translateY(8px);
 			filter: blur(4px);
 			transition:
-				opacity 0.25s ease,
-				transform 0.4s var(--curva-salida),
-				filter 0.25s ease,
-				visibility 0s 0.25s;
+				opacity 0.15s ease,
+				transform 0.2s var(--curva-salida),
+				filter 0.15s ease,
+				visibility 0s 0.15s;
 		}
 
 		.resolvemos:has(.interruptor__sistema:checked) .lista :global(.sistema),
@@ -347,9 +348,9 @@ const dolores = [
 			transform: none;
 			filter: none;
 			transition:
-				opacity 0.35s ease calc(80ms + var(--i) * 60ms),
-				transform 0.5s var(--curva-salida) calc(80ms + var(--i) * 60ms),
-				filter 0.35s ease calc(80ms + var(--i) * 60ms),
+				opacity 0.2s ease calc(60ms + var(--i) * 40ms),
+				transform 0.3s var(--curva-salida) calc(60ms + var(--i) * 40ms),
+				filter 0.2s ease calc(60ms + var(--i) * 40ms),
 				visibility 0s;
 		}
 

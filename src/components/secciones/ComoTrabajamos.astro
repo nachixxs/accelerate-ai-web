@@ -232,7 +232,6 @@ import Flag from '@lucide/astro/icons/flag';
 		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
 		text-align: center;
-		transform-origin: left;
 	}
 
 	.visual-semanas__tramo:nth-of-type(2) {
@@ -347,8 +346,9 @@ import Flag from '@lucide/astro/icons/flag';
 		from { opacity: 0; transform: translateY(16px) scale(0.98); }
 	}
 
+	/* Recorte de izquierda a derecha y no scaleX: así "Semana" no se aplasta mientras avanza. */
 	@keyframes tramo-avanza {
-		from { transform: scaleX(0.2); opacity: 0; }
+		from { clip-path: inset(0 100% 0 0); }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {

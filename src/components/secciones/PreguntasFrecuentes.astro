@@ -96,9 +96,15 @@ const preguntas = [
 		display: none;
 	}
 
-	summary:hover,
 	.pregunta[open] summary {
 		color: var(--brand-primary-deep);
+	}
+
+	/* Solo con mouse: en el celular el hover queda pegado después de tocar. */
+	@media (hover: hover) and (pointer: fine) {
+		summary:hover {
+			color: var(--brand-primary-deep);
+		}
 	}
 
 	/* La flecha va en un círculo: se lee como el control de la fila y marca el estado abierto. */
@@ -145,41 +151,50 @@ const preguntas = [
 		}
 	}
 
+	/* Los cambios de color no mueven nada: quedan también con movimiento reducido. */
+	summary {
+		transition: color 0.2s;
+	}
+
+	.pregunta__flecha {
+		transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
-		summary {
-			transition: color 0.2s;
-		}
-
-		.pregunta__flecha {
-			transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-		}
-
+		/* Todo lo que se mueve al cerrar dura 0.2 s; al abrir, 0.3 s. */
 		.pregunta__flecha :global(svg) {
-			transition: transform 0.3s var(--curva-salida);
+			transition: transform 0.2s var(--curva-salida);
 		}
 
-		/* El alto se abre de 0 a auto; al cerrar, content-visibility espera a que termine. */
+		.pregunta[open] .pregunta__flecha :global(svg) {
+			transition-duration: 0.3s;
+		}
+
+		/* El alto se abre de 0 a auto; al cerrar, content-visibility espera a que termine.
+		   Cerrar (0.2 s) es más rápido que abrir (0.3 s): es sacar algo del medio. */
 		.pregunta::details-content {
 			block-size: 0;
 			overflow: clip;
 			transition:
-				block-size 0.35s var(--curva-salida),
-				content-visibility 0.35s allow-discrete;
+				block-size 0.2s var(--curva-salida),
+				content-visibility 0.2s allow-discrete;
 		}
 
 		.pregunta[open]::details-content {
 			block-size: auto;
+			transition-duration: 0.3s;
 		}
 
 		.pregunta p {
 			opacity: 0;
 			transform: translateY(-6px);
-			transition: opacity 0.2s, transform 0.35s var(--curva-salida);
+			transition: opacity 0.2s, transform 0.2s var(--curva-salida);
 		}
 
 		.pregunta[open] p {
 			opacity: 1;
 			transform: none;
+			transition-duration: 0.2s, 0.3s;
 			transition-delay: 60ms;
 		}
 	}

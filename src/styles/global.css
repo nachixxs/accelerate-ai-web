@@ -94,8 +94,8 @@ html { scroll-padding-top: 96px; }
 
 	/* Entrada al cargar, en cascada: --orden marca el turno de cada elemento. */
 	.entrada {
-		animation: entrar-subiendo 0.8s var(--curva-salida) both;
-		animation-delay: calc(var(--orden, 0) * 120ms);
+		animation: entrar-subiendo 0.6s var(--curva-salida) both;
+		animation-delay: calc(var(--orden, 0) * 80ms);
 	}
 
 	/* Aparición con el scroll, atada a la posición del elemento en pantalla y sin JavaScript.

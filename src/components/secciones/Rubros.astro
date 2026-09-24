@@ -133,9 +133,11 @@ const rubros = [
 		flex: none;
 	}
 
-	.rubros__pausa:hover {
-		border-color: var(--brand-primary-deep);
-		color: var(--brand-primary-deep);
+	@media (hover: hover) and (pointer: fine) {
+		.rubros__pausa:hover {
+			border-color: var(--brand-primary-deep);
+			color: var(--brand-primary-deep);
+		}
 	}
 
 	.rubros__pausa input {
