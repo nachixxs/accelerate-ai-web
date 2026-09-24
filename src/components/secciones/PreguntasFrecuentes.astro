@@ -1,0 +1,104 @@
+---
+// SPECS §4.6: las objeciones típicas. <details> abre y cierra sin JavaScript.
+import ChevronDown from '@lucide/astro/icons/chevron-down';
+
+const preguntas = [
+	{
+		pregunta: '¿Y si algo falla?',
+		respuesta:
+			'Nos escribís por WhatsApp y lo arreglamos nosotros. Para eso es el soporte mensual: no te quedás solo con el sistema.',
+	},
+	{
+		pregunta: '¿Tengo que cambiar mi número de WhatsApp?',
+		respuesta:
+			'No hace falta. Si usás WhatsApp Business, el sistema puede atender en tu mismo número y vos seguís viendo y contestando los chats desde tu celular.',
+	},
+	{
+		pregunta: '¿Cuánto tarda?',
+		respuesta:
+			'Entre 1 y 3 semanas desde que aprobás la propuesta, según lo que haya que armar. Si el sistema usa WhatsApp, Meta pide verificar tu negocio, un trámite que suma unos días hábiles.',
+	},
+	{
+		pregunta: '¿Sirve para mi rubro?',
+		respuesta:
+			'Si en tu negocio hay tareas que se repiten todos los días, probablemente sí. La auditoría sirve justamente para averiguarlo, y es gratis.',
+	},
+];
+---
+
+<section class="seccion" aria-labelledby="preguntas-titulo">
+	<div class="contenedor preguntas">
+		<h2 id="preguntas-titulo" class="t-titular">Preguntas frecuentes</h2>
+
+		<div class="preguntas__lista">
+			{
+				preguntas.map(({ pregunta, respuesta }) => (
+					<details class="pregunta">
+						<summary class="t-label">
+							{pregunta}
+							<ChevronDown size={24} class="pregunta__flecha" />
+						</summary>
+						<p class="t-cuerpo">{respuesta}</p>
+					</details>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.preguntas {
+		display: grid;
+		gap: var(--space-4);
+		max-width: 880px;
+	}
+
+	.pregunta {
+		border-bottom: 1px solid var(--border-light);
+	}
+
+	.pregunta:first-child {
+		border-top: 1px solid var(--border-light);
+	}
+
+	summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		min-height: 64px;
+		padding-block: var(--space-2);
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-semibold);
+		cursor: pointer;
+		list-style: none;
+	}
+
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	summary:hover {
+		color: var(--brand-primary-deep);
+	}
+
+	.pregunta__flecha {
+		flex: none;
+		color: var(--brand-primary-deep);
+	}
+
+	.pregunta[open] .pregunta__flecha {
+		transform: rotate(180deg);
+	}
+
+	.pregunta p {
+		padding-bottom: var(--space-3);
+	}
+
+	/* Único movimiento de la sección: la flecha gira al abrir, como confirmación. */
+	@media (prefers-reduced-motion: no-preference) {
+		.pregunta__flecha {
+			transition: transform 0.2s;
+		}
+	}
+</style>

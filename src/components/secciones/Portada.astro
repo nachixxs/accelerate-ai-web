@@ -1,0 +1,63 @@
+---
+// SPECS §4.1: qué hacen y para quién en una línea, con el botón visible sin scroll.
+// Layout "Hook" de la marca: fondo oscuro, glow azul + cian desde una esquina,
+// titular en el tercio inferior.
+import { Image } from 'astro:assets';
+import logotipo from '../../assets/identidad/logotipo-claro.png';
+import BotonWhatsApp from '../BotonWhatsApp.astro';
+import Glow from '../Glow.astro';
+---
+
+<header class="portada seccion--oscura con-glow">
+	<Glow tono="azul" esquina="arriba-der" />
+	<Glow tono="cian" esquina="arriba-der" />
+
+	<div class="contenedor portada__interior">
+		<Image src={logotipo} alt="Accelerate.ai" width={160} class="portada__logo" loading="eager" />
+
+		<div class="portada__contenido">
+			<p class="t-eyebrow">Automatización para pymes</p>
+			<h1 class="t-hook">Tu equipo deja de <span class="texto-gradiente">copiar y pegar</span></h1>
+			<p class="t-cuerpo portada__bajada">
+				Armamos sistemas a medida para negocios de cualquier rubro. Empezamos con una auditoría gratis
+				para encontrar dónde perdés más tiempo.
+			</p>
+			<BotonWhatsApp />
+		</div>
+	</div>
+</header>
+
+<style>
+	.portada__interior {
+		display: flex;
+		flex-direction: column;
+		min-height: 100svh;
+		padding-block: var(--space-3) var(--space-6);
+	}
+
+	.portada__logo {
+		width: 160px;
+		height: auto;
+	}
+
+	/* margin-top: auto empuja el contenido al tercio inferior, como el hook de la marca. */
+	.portada__contenido {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-3);
+		margin-top: auto;
+		max-width: 880px;
+	}
+
+	.portada__bajada {
+		max-width: 44ch;
+	}
+
+	@media (min-width: 768px) {
+		.portada__interior {
+			min-height: min(100svh, 880px);
+			padding-block: var(--space-4) var(--space-8);
+		}
+	}
+</style>

@@ -3,8 +3,9 @@
 ## Dónde estamos
 
 2026-09-23. Proyecto de Astro creado (plantilla mínima, Astro 7, TypeScript estricto) y
-primer commit en `main`. `npm run build` compila. Tokens, logos y fuente ya integrados; la
-página todavía no tiene contenido. Sin repo en GitHub.
+commits en `main`. `npm run build` compila. Las 7 secciones están armadas con un borrador de
+textos que falta revisar (`REVISION-TEXTOS.md`). Todavía no se miró en un navegador. Sin repo
+en GitHub.
 
 ## Próximo paso: la base
 
@@ -19,8 +20,10 @@ página todavía no tiene contenido. Sin repo en GitHub.
 4. ~~Escala tipográfica responsive~~. En `src/styles/tokens/typography.css`, con `clamp()` de
    360 a 1280 px: hook 40→72 (`h1`), titular 28→48 (`h2`), label 20→26 (`h3`), cuerpo 17→20
    (lh 1.5, 65ch), eyebrow 13→14, meta 14→15. Sin "gigante" hasta que haya cifras con fuente.
-5. Esqueleto con las 7 secciones de `SPECS.md` §4 como componentes `.astro` y el botón de
-   WhatsApp funcionando.
+5. ~~Las 7 secciones y el botón de WhatsApp~~. Una sección por componente en
+   `src/components/secciones/`; el link de WhatsApp en `src/config.ts`. Íconos con
+   `@lucide/astro` (SVG en el HTML, sin CDN ni JS). Borrador de textos escrito por Claude; las
+   dudas para Colo, en `REVISION-TEXTOS.md`. Build sin JavaScript, contraste WCAG AA calculado.
 6. Playwright como dependencia de desarrollo, para capturas en 360 px y en escritorio.
 
 ## Decisiones tomadas (2026-09-23)
@@ -60,4 +63,4 @@ Instaladas globales: `design-taste-frontend` e `image-to-code` (de `leonxlnx/tas
 | 3 | Dominio | La URL propia |
 | 4 | Repo público o privado | Si es privado, GitHub Pages pide plan pago |
 | 5 | Los SVG del logo, si existen | Nada; los PNG alcanzan para la web |
-| 6 | Revisión de textos por Colo | El cierre |
+| 6 | Revisión de textos por Colo: las dudas están en `REVISION-TEXTOS.md` | El cierre |

@@ -1,0 +1,83 @@
+---
+// SPECS §4.2: 2-3 dolores concretos, contados como los cuenta el dueño.
+import MessagesSquare from '@lucide/astro/icons/messages-square';
+import NotebookPen from '@lucide/astro/icons/notebook-pen';
+import Calculator from '@lucide/astro/icons/calculator';
+
+const dolores = [
+	{
+		icono: MessagesSquare,
+		frase: 'Me paso el día contestando lo mismo.',
+		detalle: 'Horarios, precios, si hay stock. Mientras tanto, lo que de verdad importa espera.',
+	},
+	{
+		icono: NotebookPen,
+		frase: 'Los pedidos quedan anotados en tres lados.',
+		detalle: 'Un cuaderno, un chat y una planilla. En algún pase, siempre se pierde uno.',
+	},
+	{
+		icono: Calculator,
+		frase: 'Cerrar la caja me lleva una hora.',
+		detalle: 'Y cuando no cierra, nadie sabe dónde está la diferencia.',
+	},
+];
+---
+
+<section class="seccion" aria-labelledby="resolvemos-titulo">
+	<div class="contenedor resolvemos">
+		<h2 id="resolvemos-titulo" class="t-titular">¿Te suena alguna de estas?</h2>
+
+		<ul class="resolvemos__lista">
+			{
+				dolores.map(({ icono: Icono, frase, detalle }) => (
+					<li class="dolor">
+						<Icono size={32} stroke-width={1.75} class="dolor__icono" />
+						<div>
+							<p class="t-label dolor__frase">“{frase}”</p>
+							<p class="dolor__detalle">{detalle}</p>
+						</div>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</section>
+
+<style>
+	.resolvemos {
+		display: grid;
+		gap: var(--space-5);
+	}
+
+	.dolor {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: var(--space-2);
+		padding-block: var(--space-3);
+	}
+
+	.dolor + .dolor {
+		border-top: 1px solid var(--border-light);
+	}
+
+	.dolor__icono {
+		color: var(--brand-primary-deep);
+		margin-top: 2px;
+	}
+
+	.dolor__frase {
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-semibold);
+	}
+
+	.dolor__detalle {
+		margin-top: var(--space-1);
+	}
+
+	@media (min-width: 1024px) {
+		.resolvemos {
+			grid-template-columns: 5fr 7fr;
+			align-items: start;
+		}
+	}
+</style>

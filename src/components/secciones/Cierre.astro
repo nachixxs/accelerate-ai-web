@@ -1,0 +1,59 @@
+---
+// SPECS §4.7: el botón de WhatsApp otra vez, más las redes.
+// Layout "CTA" de la marca: fondo oscuro, glow desde otra esquina que la portada,
+// titular arriba y botón abajo.
+import { Image } from 'astro:assets';
+import logotipo from '../../assets/identidad/logotipo-claro.png';
+import BotonWhatsApp from '../BotonWhatsApp.astro';
+import Glow from '../Glow.astro';
+---
+
+<div class="seccion--oscura con-glow">
+	<Glow tono="azul" esquina="abajo-izq" />
+	<Glow tono="cian" esquina="abajo-izq" />
+
+	<section class="seccion" aria-labelledby="cierre-titulo">
+		<div class="contenedor cierre">
+			<h2 id="cierre-titulo" class="t-titular">Empezá por la auditoría gratis</h2>
+			<p class="t-cuerpo">
+				Son 30 a 45 minutos para encontrar el proceso que más tiempo te hace perder. No tenés que
+				preparar nada.
+			</p>
+			<BotonWhatsApp />
+		</div>
+	</section>
+
+	<footer class="contenedor pie">
+		<Image src={logotipo} alt="Accelerate.ai" width={128} class="pie__logo" />
+		{/* TODO: links a las redes. Faltan las URL (REVISION-TEXTOS.md). */}
+		<p class="t-meta">© 2026 Accelerate.ai</p>
+	</footer>
+</div>
+
+<style>
+	.cierre {
+		display: grid;
+		justify-items: start;
+		gap: var(--space-3);
+	}
+
+	.cierre p {
+		max-width: 44ch;
+	}
+
+	.pie {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		padding-block: var(--space-4);
+		border-top: 1px solid var(--border-dark);
+		color: var(--text-muted-light);
+	}
+
+	.pie__logo {
+		width: 128px;
+		height: auto;
+	}
+</style>

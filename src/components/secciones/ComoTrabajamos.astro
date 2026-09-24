@@ -1,0 +1,134 @@
+---
+// SPECS §4.4 y el proceso de venta: auditoría gratis → propuesta con dos números →
+// construcción de 1 a 3 semanas con demo a mitad de camino → soporte mensual.
+// Es un <ol>: el orden ya lo dice la lista, sin rótulos de "Paso 1".
+import Search from '@lucide/astro/icons/search';
+import FileText from '@lucide/astro/icons/file-text';
+import Hammer from '@lucide/astro/icons/hammer';
+import LifeBuoy from '@lucide/astro/icons/life-buoy';
+
+const pasos = [
+	{
+		icono: Search,
+		titulo: 'Auditoría gratis',
+		detalle: 'Una charla de 30 a 45 minutos sobre cómo se mueve tu negocio. Salimos con un problema concreto para resolver.',
+	},
+	{
+		icono: FileText,
+		titulo: 'Propuesta con dos números',
+		detalle: 'Lo que cuesta armarlo y lo que cuesta por mes, con la fecha de entrega.',
+	},
+	{
+		icono: Hammer,
+		titulo: 'Construcción en 1 a 3 semanas',
+		detalle: 'A mitad de camino te mostramos cómo va, para ajustar antes de terminar.',
+	},
+	{
+		icono: LifeBuoy,
+		titulo: 'Soporte todos los meses',
+		detalle: 'Arreglamos lo que falle y mejoramos el sistema a medida que tu negocio cambia.',
+	},
+];
+---
+
+<section class="seccion" aria-labelledby="proceso-titulo">
+	<div class="contenedor">
+		<p class="t-eyebrow">Cómo trabajamos</p>
+		<h2 id="proceso-titulo" class="t-titular proceso__titulo">Primero entendemos tu negocio, después construimos</h2>
+
+		<ol class="proceso">
+			{
+				pasos.map(({ icono: Icono, titulo, detalle }) => (
+					<li class="paso">
+						<span class="paso__marca">
+							<Icono size={24} stroke-width={1.75} />
+						</span>
+						<div class="paso__texto">
+							<h3 class="t-label">{titulo}</h3>
+							<p>{detalle}</p>
+						</div>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</section>
+
+<style>
+	.proceso__titulo {
+		margin-top: var(--space-2);
+		max-width: 16ch;
+	}
+
+	.proceso {
+		display: grid;
+		margin-top: var(--space-6);
+	}
+
+	/* Celular: línea de tiempo vertical. La línea sale de cada marca hacia la siguiente. */
+	.paso {
+		position: relative;
+		display: grid;
+		grid-template-columns: 48px 1fr;
+		gap: var(--space-3);
+		padding-bottom: var(--space-5);
+	}
+
+	.paso:not(:last-child)::before {
+		content: '';
+		position: absolute;
+		top: 48px;
+		bottom: 0;
+		left: 23px;
+		width: 2px;
+		background: var(--border-light);
+	}
+
+	.paso__marca {
+		display: grid;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		border-radius: var(--radius-pill);
+		background: var(--white);
+		border: 1px solid var(--border-light);
+		color: var(--brand-primary-deep);
+	}
+
+	.paso__texto {
+		display: grid;
+		gap: var(--space-1);
+		padding-top: var(--space-1);
+	}
+
+	.paso__texto h3 {
+		font-weight: var(--fw-semibold);
+	}
+
+	/* Escritorio: la misma línea, horizontal, con los cuatro pasos en fila. */
+	@media (min-width: 1024px) {
+		.proceso {
+			grid-template-columns: repeat(4, 1fr);
+			gap: var(--space-4);
+		}
+
+		.paso {
+			grid-template-columns: 1fr;
+			gap: var(--space-3);
+			padding-bottom: 0;
+		}
+
+		.paso:not(:last-child)::before {
+			top: 23px;
+			bottom: auto;
+			left: 48px;
+			right: calc(-1 * var(--space-4));
+			width: auto;
+			height: 2px;
+		}
+
+		.paso__texto {
+			padding-top: 0;
+		}
+	}
+</style>

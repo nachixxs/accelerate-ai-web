@@ -4,9 +4,10 @@ import '../styles/global.css';
 
 interface Props {
 	title: string;
+	description: string;
 }
 
-const { title } = Astro.props;
+const { title, description } = Astro.props;
 ---
 
 <html lang="es-AR">
@@ -17,6 +18,7 @@ const { title } = Astro.props;
 		<link rel="icon" href="/favicon.ico" />
 		<Font cssVariable="--font-archivo" preload />
 		<title>{title}</title>
+		<meta name="description" content={description} />
 	</head>
 	<body>
 		<slot />

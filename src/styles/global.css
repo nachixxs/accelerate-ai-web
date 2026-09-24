@@ -4,3 +4,35 @@
 @import "./tokens/effects.css";
 @import "./tokens/layout.css";
 @import "./tokens/base.css";
+
+/* --- Sitio: lo que comparten todas las secciones --- */
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--surface-alt); }
+h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+h1, h2, h3 { color: var(--text-heading-dark); }
+
+:focus-visible { outline: 3px solid var(--brand-primary-deep); outline-offset: 3px; }
+
+/* Ancho de lectura y margen lateral: 16px en el celular, 32px desde tablet. */
+.contenedor { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: var(--space-2); }
+.seccion { padding-block: var(--space-6); }
+
+/* Los dos fondos de la marca: claro (el del body) y oscuro, para la portada y el cierre. */
+.seccion--oscura { background: var(--surface-dark); color: var(--text-body-light); }
+.seccion--oscura :is(h1, h2, h3) { color: var(--text-heading-light); }
+.seccion--oscura :focus-visible { outline-color: var(--brand-accent); }
+.seccion--oscura .t-eyebrow { color: var(--brand-accent); }
+.t-eyebrow { color: var(--brand-primary-deep); }
+
+/* Contenedor de un Glow: lo recorta y lo deja detrás del contenido. */
+.con-glow { position: relative; overflow: hidden; isolation: isolate; }
+
+/* Gradiente de texto: 1 o 2 veces en toda la página, sobre una palabra o una línea. */
+.texto-gradiente { background: var(--gradient-text); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+
+@media (min-width: 768px) {
+	.contenedor { padding-inline: var(--space-4); }
+	.seccion { padding-block: var(--space-8); }
+}

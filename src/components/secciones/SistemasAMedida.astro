@@ -1,0 +1,144 @@
+---
+// SPECS §2 y §4.3: la promesa amplia con 3-4 ejemplos al lado, como muestra y no como menú.
+// El primero va en la card invertida (la única card permitida sobre fondo claro) con un chip
+// montado en su borde: la regla de profundidad de la marca.
+import ShoppingBag from '@lucide/astro/icons/shopping-bag';
+import CalendarCheck from '@lucide/astro/icons/calendar-check';
+import Wallet from '@lucide/astro/icons/wallet';
+import ChartColumn from '@lucide/astro/icons/chart-column';
+import Glow from '../Glow.astro';
+
+const [destacado, ...resto] = [
+	{
+		icono: ShoppingBag,
+		titulo: 'Pedidos por WhatsApp que se cargan solos en una planilla',
+		detalle: 'El cliente pide por WhatsApp y el pedido queda anotado sin que nadie lo tipee. Vos solo revisás los casos raros.',
+	},
+	{
+		icono: CalendarCheck,
+		titulo: 'Turnos y reservas con recordatorios',
+		detalle: 'Tus clientes reservan por WhatsApp a cualquier hora y reciben un aviso antes del turno.',
+	},
+	{
+		icono: Wallet,
+		titulo: 'Cajas y cierres diarios sin cuadernos',
+		detalle: 'Cada movimiento queda registrado y el cierre del día sale en minutos.',
+	},
+	{
+		icono: ChartColumn,
+		titulo: 'Paneles para ver tu negocio de un vistazo',
+		detalle: 'Ventas, gastos y lo que más se mueve, en un tablero armado con tus propios datos.',
+	},
+];
+const IconoDestacado = destacado.icono;
+---
+
+<section class="seccion con-glow" aria-labelledby="sistemas-titulo">
+	<Glow tono="cian" fondo="claro" esquina="arriba-der" />
+
+	<div class="contenedor">
+		<div class="sistemas__intro">
+			<h2 id="sistemas-titulo" class="t-titular">Armamos el sistema que tu negocio necesita</h2>
+			<p class="t-cuerpo">
+				No vendemos un producto cerrado. Miramos cómo trabajás, elegimos el proceso que más tiempo o
+				plata te hace perder y armamos el sistema para eso. Algunos ejemplos de lo que ya construimos:
+			</p>
+		</div>
+
+		<div class="sistemas__grilla">
+			<article class="ejemplo ejemplo--destacado">
+				<span class="chip-montado">Ya funciona en una imprenta</span>
+				<IconoDestacado size={40} stroke-width={1.75} class="ejemplo__icono" />
+				<h3 class="t-label">{destacado.titulo}</h3>
+				<p>{destacado.detalle}</p>
+			</article>
+
+			{
+				resto.map(({ icono: Icono, titulo, detalle }) => (
+					<article class="ejemplo">
+						<Icono size={32} stroke-width={1.75} class="ejemplo__icono" />
+						<h3 class="t-label">{titulo}</h3>
+						<p>{detalle}</p>
+					</article>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.sistemas__intro {
+		display: grid;
+		gap: var(--space-3);
+		max-width: 760px;
+	}
+
+	.sistemas__grilla {
+		display: grid;
+		gap: var(--space-5);
+		margin-top: var(--space-6);
+	}
+
+	.ejemplo {
+		display: grid;
+		gap: var(--space-2);
+		align-content: start;
+	}
+
+	.ejemplo h3 {
+		font-weight: var(--fw-semibold);
+	}
+
+	.ejemplo__icono {
+		color: var(--brand-primary-deep);
+	}
+
+	/* Card invertida de la marca: #111b30, radius 28, sombra de card. */
+	.ejemplo--destacado {
+		position: relative;
+		padding: var(--space-5) var(--space-3) var(--space-4);
+		border-radius: var(--radius-card-lg);
+		background: var(--surface-card-dark);
+		color: var(--text-body-light);
+		box-shadow: var(--shadow-card);
+	}
+
+	.ejemplo--destacado h3 {
+		color: var(--text-heading-light);
+	}
+
+	.ejemplo--destacado .ejemplo__icono {
+		color: var(--brand-accent);
+	}
+
+	/* Chip "acento" de la marca, montado mitad adentro y mitad afuera del borde de la card. */
+	.chip-montado {
+		position: absolute;
+		top: 0;
+		left: var(--space-3);
+		transform: translateY(-50%);
+		padding: 10px 18px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+		line-height: 1;
+		white-space: nowrap;
+		box-shadow: var(--shadow-elevada);
+	}
+
+	/* Escritorio: el destacado ocupa la columna izquierda entera y los otros tres se apilan a la derecha. */
+	@media (min-width: 768px) {
+		.sistemas__grilla {
+			grid-template-columns: 1fr 1fr;
+			column-gap: var(--space-6);
+		}
+
+		.ejemplo--destacado {
+			grid-row: span 3;
+			align-content: end;
+			padding: var(--space-6) var(--space-5) var(--space-5);
+		}
+	}
+</style>

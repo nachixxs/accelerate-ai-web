@@ -1,0 +1,78 @@
+---
+// SPECS §4.5: Nacho y Colo, qué hace cada uno. Corto. Roles según la sociedad
+// (notas/negocio/Sociedad-y-Acuerdos.md). La marca no usa fotos.
+const personas = [
+	{
+		nombre: 'Nacho',
+		rol: 'La parte técnica: programa los sistemas, los bots de WhatsApp y las automatizaciones.',
+	},
+	{
+		nombre: 'Colo',
+		rol: 'Los números: planillas, paneles en Excel y Power BI, y la administración.',
+	},
+];
+---
+
+<section class="seccion" aria-labelledby="somos-titulo">
+	<div class="contenedor somos">
+		<div class="somos__intro">
+			<h2 id="somos-titulo" class="t-titular">Somos Nacho y Colo</h2>
+			<p class="t-cuerpo">
+				Una agencia chica, a propósito: hablás directo con las personas que arman tu sistema.
+			</p>
+		</div>
+
+		<dl class="somos__personas">
+			{
+				personas.map(({ nombre, rol }) => (
+					<div class="persona">
+						<dt class="t-label">{nombre}</dt>
+						<dd>{rol}</dd>
+					</div>
+				))
+			}
+		</dl>
+	</div>
+</section>
+
+<style>
+	.somos {
+		display: grid;
+		gap: var(--space-5);
+	}
+
+	.somos__intro {
+		display: grid;
+		gap: var(--space-3);
+	}
+
+	.somos__personas {
+		display: grid;
+		gap: var(--space-4);
+	}
+
+	.persona {
+		display: grid;
+		gap: var(--space-1);
+		padding-left: var(--space-3);
+		border-left: 2px solid var(--brand-primary-deep);
+	}
+
+	.persona dt {
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-bold);
+	}
+
+	@media (min-width: 768px) {
+		.somos__personas {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.somos {
+			grid-template-columns: 1fr 1fr;
+			align-items: end;
+		}
+	}
+</style>

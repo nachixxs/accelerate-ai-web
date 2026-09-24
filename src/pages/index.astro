@@ -1,7 +1,26 @@
 ---
+// Las 7 secciones de SPECS §4, en orden.
 import Base from '../layouts/Base.astro';
+import Portada from '../components/secciones/Portada.astro';
+import QueResolvemos from '../components/secciones/QueResolvemos.astro';
+import SistemasAMedida from '../components/secciones/SistemasAMedida.astro';
+import ComoTrabajamos from '../components/secciones/ComoTrabajamos.astro';
+import QuienesSomos from '../components/secciones/QuienesSomos.astro';
+import PreguntasFrecuentes from '../components/secciones/PreguntasFrecuentes.astro';
+import Cierre from '../components/secciones/Cierre.astro';
 ---
 
-<Base title="Accelerate.ai">
-	<h1>Accelerate.ai</h1>
+<Base
+	title="Accelerate.ai | Sistemas a medida para pymes"
+	description="Armamos sistemas a medida para negocios de cualquier rubro. Empezamos con una auditoría gratis para encontrar dónde perdés más tiempo."
+>
+	<Portada />
+	<main>
+		<QueResolvemos />
+		<SistemasAMedida />
+		<ComoTrabajamos />
+		<QuienesSomos />
+		<PreguntasFrecuentes />
+	</main>
+	<Cierre />
 </Base>

@@ -1,0 +1,37 @@
+---
+// Port de components/brand/Glow.jsx: elipse irregular con blur 90 que entra desde una
+// esquina y queda a medias fuera. Nunca centrada. La sección que lo contiene necesita
+// position: relative, overflow: hidden e isolation: isolate (clase .con-glow).
+interface Props {
+	tono?: 'azul' | 'cian';
+	fondo?: 'oscuro' | 'claro';
+	esquina?: 'arriba-izq' | 'arriba-der' | 'abajo-izq' | 'abajo-der';
+}
+
+const { tono = 'azul', fondo = 'oscuro', esquina = 'arriba-izq' } = Astro.props;
+---
+
+<div class:list={['glow', `glow--${tono}-${fondo}`, `glow--${esquina}`]} aria-hidden="true"></div>
+
+<style>
+	.glow {
+		position: absolute;
+		z-index: -1;
+		width: clamp(480px, 90vw, 1000px);
+		aspect-ratio: 1000 / 720;
+		border-radius: 50%;
+		filter: blur(var(--glow-blur));
+		pointer-events: none;
+	}
+
+	.glow--azul-oscuro { background: var(--glow-azul); }
+	.glow--cian-oscuro { background: var(--glow-cian); }
+	.glow--azul-claro { background: var(--glow-claro-azul); }
+	.glow--cian-claro { background: var(--glow-claro-cian); }
+
+	/* Mismos desplazamientos y giros que el Glow.jsx del sistema. */
+	.glow--arriba-izq { top: 0; left: 0; transform: translate(-34%, -42%) rotate(-18deg) scale(1, 0.82); }
+	.glow--arriba-der { top: 0; right: 0; transform: translate(30%, -45%) rotate(14deg) scale(1, 0.82); }
+	.glow--abajo-izq { bottom: 0; left: 0; transform: translate(-36%, 40%) rotate(22deg) scale(1, 0.82); }
+	.glow--abajo-der { bottom: 0; right: 0; transform: translate(32%, 46%) rotate(-12deg) scale(1, 0.82); }
+</style>

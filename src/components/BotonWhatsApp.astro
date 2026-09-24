@@ -1,0 +1,42 @@
+---
+// El CTA de la marca: el único lugar donde aparece #2971f2 a saturación máxima.
+// Es un link, no un <button>: no hay JavaScript, solo abre WhatsApp.
+import MessageCircle from '@lucide/astro/icons/message-circle';
+import { WHATSAPP_URL } from '../config';
+---
+
+<a class="boton" href={WHATSAPP_URL} target="_blank" rel="noopener">
+	Escribinos por WhatsApp
+	<MessageCircle size={24} />
+</a>
+
+<style>
+	/* 19px en 700 cuenta como texto grande para WCAG: blanco sobre #2971f2 pide 3:1 y da 4,4:1. */
+	.boton {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		min-height: 56px;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-pill);
+		background: var(--brand-primary);
+		color: var(--white);
+		font-size: 1.1875rem;
+		font-weight: var(--fw-bold);
+		line-height: 1;
+		letter-spacing: -0.01em;
+		white-space: nowrap;
+		box-shadow: var(--shadow-boton);
+		transition: background-color 0.2s;
+	}
+
+	.boton:hover {
+		background: var(--brand-primary-deep);
+		color: var(--white);
+	}
+
+	.boton:focus-visible {
+		outline: 3px solid var(--brand-accent);
+		outline-offset: 3px;
+	}
+</style>
