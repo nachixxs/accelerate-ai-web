@@ -115,8 +115,12 @@ en verde:
 
 1. **Portada sin superposición:** el chat arriba, una línea punteada con un pedido que baja y
    el panel "Pedidos de hoy" abajo; el chip "Cargado sin que nadie lo tipee" sobre el borde.
-2. **Rubros como cinta transportadora:** dos filas en sentidos opuestos (19 rubros), que además
-   se corren con el scroll. Pausa con checkbox y con el mouse encima.
+2. **Rubros como cinta transportadora:** una sola fila con los 19 rubros que corre lenta de
+   izquierda a derecha (150 s por vuelta, unos 25 px/s) y se difumina en los dos costados de la
+   pantalla (48 a 240 px de fundido). Sin deriva con el scroll, para que el ritmo sea parejo.
+   Pausa con checkbox y con el mouse encima, esta solo con puntero fino (en el celular un toque
+   la dejaba frenada). Rama `cinta-rubros` (2026-09-24); antes eran dos filas en sentidos
+   opuestos.
 3. **Interruptor:** sin las filas torcidas (se veía roto); íconos en círculos, tachado que se
    dibuja, sello y un anillo que invita a tocarlo.
 4. **Mocks nuevos:** pedidos (chat → planilla que se escribe sola), turnos (el aviso de Sofía
