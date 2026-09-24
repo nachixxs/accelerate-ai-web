@@ -2,135 +2,387 @@
 // SPECS §4.4 y el proceso de venta: auditoría gratis → propuesta con dos números →
 // construcción de 1 a 3 semanas con demo a mitad de camino → soporte mensual.
 // Es un <ol>: el orden ya lo dice la lista, sin rótulos de "Paso 1".
+// Línea de tiempo vertical (alternada en escritorio). La línea se llena con el scroll y cada
+// marca se enciende cuando la punta la alcanza, a media pantalla. Sin JavaScript: la línea usa
+// el view-timeline de la lista y cada marca su propio view(). Sin movimiento, todo queda
+// encendido. Cada paso lleva un visual chico; la propuesta es la única card invertida.
 import Search from '@lucide/astro/icons/search';
 import FileText from '@lucide/astro/icons/file-text';
 import Hammer from '@lucide/astro/icons/hammer';
 import LifeBuoy from '@lucide/astro/icons/life-buoy';
-
-const pasos = [
-	{
-		icono: Search,
-		titulo: 'Auditoría gratis',
-		detalle: 'Una charla de 30 a 45\u00a0minutos sobre cómo se mueve tu negocio. Salimos con un problema concreto para resolver.',
-	},
-	{
-		icono: FileText,
-		titulo: 'Propuesta con dos números',
-		detalle: 'Lo que cuesta armarlo y lo que cuesta por mes, con la fecha de entrega.',
-	},
-	{
-		icono: Hammer,
-		titulo: 'Construcción en 1 a 3\u00a0semanas',
-		detalle: 'A mitad de camino te mostramos cómo va, para ajustar antes de terminar.',
-	},
-	{
-		icono: LifeBuoy,
-		titulo: 'Soporte todos los meses',
-		detalle: 'Arreglamos lo que falle y mejoramos el sistema a medida que tu negocio cambia.',
-	},
-];
+import Flag from '@lucide/astro/icons/flag';
 ---
 
-<section class="seccion" aria-labelledby="proceso-titulo">
+<section id="proceso" class="seccion proceso" aria-labelledby="proceso-titulo">
 	<div class="contenedor">
-		<p class="t-eyebrow">Cómo trabajamos</p>
-		<h2 id="proceso-titulo" class="t-titular proceso__titulo">Primero entendemos tu negocio, después construimos</h2>
+		<div class="encabezado-seccion revelar">
+			<p class="t-eyebrow">Cómo trabajamos</p>
+			<h2 id="proceso-titulo" class="t-titular">Primero entendemos tu negocio, después construimos</h2>
+		</div>
 
-		<ol class="proceso">
-			{
-				pasos.map(({ icono: Icono, titulo, detalle }) => (
-					<li class="paso">
-						<span class="paso__marca">
-							<Icono size={24} stroke-width={1.75} />
-						</span>
-						<div class="paso__texto">
-							<h3 class="t-label">{titulo}</h3>
-							<p>{detalle}</p>
-						</div>
-					</li>
-				))
-			}
+		<ol class="linea">
+			<li class="paso">
+				<span class="paso__marca"><Search size={22} stroke-width={1.75} /></span>
+				<div class="paso__texto">
+					<h3 class="t-label">Auditoría gratis</h3>
+					<p>Una charla de 30 a 45&nbsp;minutos sobre cómo se mueve tu negocio. Salimos con un problema concreto para resolver.</p>
+				</div>
+				<div class="paso__visual visual-auditoria" aria-hidden="true">
+					<span>Pedidos</span>
+					<span>Caja</span>
+					<span class="visual-auditoria__elegido">Turnos: el que más tiempo te lleva</span>
+					<span>Stock</span>
+				</div>
+			</li>
+
+			<li class="paso">
+				<span class="paso__marca"><FileText size={22} stroke-width={1.75} /></span>
+				<div class="paso__texto">
+					<h3 class="t-label">Propuesta con dos números</h3>
+					<p>Lo que cuesta armarlo y lo que cuesta por mes, con la fecha de entrega.</p>
+				</div>
+				<div class="paso__visual visual-propuesta" aria-hidden="true">
+					<strong>Propuesta</strong>
+					<dl>
+						<div><dt>Armado</dt><dd>un pago</dd></div>
+						<div><dt>Soporte</dt><dd>por mes</dd></div>
+						<div><dt>Entrega</dt><dd>con fecha</dd></div>
+					</dl>
+				</div>
+			</li>
+
+			<li class="paso">
+				<span class="paso__marca"><Hammer size={22} stroke-width={1.75} /></span>
+				<div class="paso__texto">
+					<h3 class="t-label">Construcción en 1 a 3&nbsp;semanas</h3>
+					<p>A mitad de camino te mostramos cómo va, para ajustar antes de terminar.</p>
+				</div>
+				<div class="paso__visual visual-semanas" aria-hidden="true">
+					<span class="visual-semanas__demo"><Flag size={14} stroke-width={2} /> Demo</span>
+					<span class="visual-semanas__tramo">Semana 1</span>
+					<span class="visual-semanas__tramo">Semana 2</span>
+					<span class="visual-semanas__tramo">Semana 3</span>
+				</div>
+			</li>
+
+			<li class="paso">
+				<span class="paso__marca"><LifeBuoy size={22} stroke-width={1.75} /></span>
+				<div class="paso__texto">
+					<h3 class="t-label">Soporte todos los meses</h3>
+					<p>Arreglamos lo que falle y mejoramos el sistema a medida que tu negocio cambia.</p>
+				</div>
+				<div class="paso__visual visual-soporte" aria-hidden="true">
+					<p class="visual-soporte__pedido">¿Podemos sumar el CUIT en los pedidos?</p>
+					<p class="visual-soporte__respuesta">Listo, ya aparece en la planilla.</p>
+				</div>
+			</li>
 		</ol>
 	</div>
 </section>
 
 <style>
-	.proceso__titulo {
-		margin-top: var(--space-2);
-		max-width: 24ch;
-	}
-
-	.proceso {
-		display: grid;
-		margin-top: var(--space-6);
-	}
-
-	/* Celular: línea de tiempo vertical. La línea sale de cada marca hacia la siguiente. */
-	.paso {
+	.linea {
+		--marca: 48px;
 		position: relative;
 		display: grid;
-		grid-template-columns: 48px 1fr;
-		gap: var(--space-3);
-		padding-bottom: var(--space-5);
+		gap: var(--space-6);
+		margin-top: var(--space-6);
+		view-timeline: --proceso block;
 	}
 
-	.paso:not(:last-child)::before {
+	/* El riel y su relleno. Van a la altura del centro de las marcas y se desvanecen al final:
+	   el soporte sigue. */
+	.linea::before,
+	.linea::after {
 		content: '';
 		position: absolute;
-		top: 48px;
+		top: calc(var(--marca) / 2);
 		bottom: 0;
-		left: 23px;
+		left: calc(var(--marca) / 2 - 1px);
 		width: 2px;
+		mask-image: linear-gradient(#000 80%, transparent);
+	}
+
+	.linea::before {
 		background: var(--border-light);
 	}
 
+	.linea::after {
+		background: var(--brand-primary-deep);
+		transform-origin: top;
+	}
+
+	.paso {
+		position: relative;
+		display: grid;
+		grid-template-columns: var(--marca) 1fr;
+		column-gap: var(--space-3);
+		row-gap: var(--space-3);
+	}
+
+	/* Estado encendido: es el de base, así sin movimiento (o en Firefox) todo se ve completo. */
 	.paso__marca {
+		z-index: 1;
 		display: grid;
 		place-items: center;
-		width: 48px;
-		height: 48px;
+		width: var(--marca);
+		height: var(--marca);
+		border: 1px solid var(--brand-primary-deep);
 		border-radius: var(--radius-pill);
-		background: var(--white);
-		border: 1px solid var(--border-light);
-		color: var(--brand-primary-deep);
+		background: var(--brand-primary-deep);
+		color: var(--white);
+		box-shadow: 0 0 0 8px var(--surface-alt);
 	}
 
 	.paso__texto {
 		display: grid;
 		gap: var(--space-1);
+		align-content: start;
 		padding-top: var(--space-1);
 	}
 
 	.paso__texto h3 {
+		color: var(--text-heading-dark);
 		font-weight: var(--fw-semibold);
 	}
 
-	/* Escritorio: la misma línea, horizontal, con los cuatro pasos en fila. */
+	.paso__texto p {
+		max-width: 42ch;
+	}
+
+	.paso__visual {
+		grid-column: 2;
+	}
+
+	/* --- Visuales de cada paso --- */
+	.visual-auditoria {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+	}
+
+	.visual-auditoria span {
+		padding: 8px 14px;
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius-pill);
+		color: var(--text-muted-dark);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-medium);
+	}
+
+	.visual-auditoria .visual-auditoria__elegido {
+		border-color: var(--brand-primary-deep);
+		background: var(--blue-50);
+		color: var(--brand-primary-deep);
+		font-weight: var(--fw-semibold);
+	}
+
+	/* La propuesta: la única card invertida de la sección. Sin montos: los precios van en otra etapa. */
+	.visual-propuesta {
+		display: grid;
+		gap: var(--space-2);
+		max-width: 320px;
+		padding: var(--space-3);
+		border-radius: var(--radius-card);
+		background: var(--surface-card-dark);
+		color: var(--text-body-light);
+		box-shadow: var(--shadow-card);
+		font-size: 0.9375rem;
+		rotate: 1.5deg;
+	}
+
+	.visual-propuesta strong {
+		color: var(--text-heading-light);
+	}
+
+	.visual-propuesta dl {
+		display: grid;
+		gap: var(--space-1);
+	}
+
+	.visual-propuesta dl div {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-2);
+		padding-top: var(--space-1);
+		border-top: 1px solid var(--border-dark);
+	}
+
+	.visual-propuesta dd {
+		margin: 0;
+		color: var(--cyan-300);
+		font-weight: var(--fw-semibold);
+	}
+
+	.visual-semanas {
+		position: relative;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 4px;
+		width: min(100%, 360px);
+		padding-top: 36px;
+		view-timeline: --semanas block;
+	}
+
+	.visual-semanas__tramo {
+		padding: 8px 4px;
+		border-radius: 8px;
+		background: var(--blue-100);
+		color: var(--blue-900);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+		text-align: center;
+		transform-origin: left;
+	}
+
+	.visual-semanas__tramo:nth-of-type(2) {
+		border-radius: var(--radius-pill) 8px 8px var(--radius-pill);
+	}
+
+	.visual-semanas__tramo:nth-of-type(4) {
+		border-radius: 8px var(--radius-pill) var(--radius-pill) 8px;
+	}
+
+	/* La bandera de la demo, a mitad de la segunda semana, clavada sobre el borde de arriba. */
+	.visual-semanas__demo {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		translate: -50% 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 4px 10px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		font-size: 0.75rem;
+		font-weight: var(--fw-bold);
+		box-shadow: var(--shadow-elevada);
+	}
+
+	.visual-soporte {
+		display: grid;
+		gap: 6px;
+		max-width: 340px;
+		font-size: 0.9375rem;
+		line-height: 1.4;
+	}
+
+	.visual-soporte p {
+		padding: 10px 14px;
+		border-radius: 18px;
+	}
+
+	.visual-soporte__pedido {
+		justify-self: start;
+		border: 1px solid var(--border-light);
+		border-bottom-left-radius: 6px;
+		color: var(--text-heading-dark);
+	}
+
+	.visual-soporte__respuesta {
+		justify-self: end;
+		border-bottom-right-radius: 6px;
+		background: var(--brand-primary-deep);
+		color: #eaf1ff;
+	}
+
+	/* --- Escritorio: la línea al centro y los pasos alternados a cada lado. --- */
 	@media (min-width: 1024px) {
-		.proceso {
-			grid-template-columns: repeat(4, 1fr);
-			gap: var(--space-4);
+		.linea {
+			--marca: 56px;
+			gap: var(--space-7);
 		}
 
-		/* align-content: start: sin esto, los pasos más cortos estiran sus filas y el texto baja. */
+		.linea::before,
+		.linea::after {
+			left: calc(50% - 1px);
+		}
+
 		.paso {
-			grid-template-columns: 1fr;
-			align-content: start;
-			gap: var(--space-3);
-			padding-bottom: 0;
+			grid-template-columns: 1fr var(--marca) 1fr;
+			column-gap: var(--space-6);
+			align-items: start;
 		}
 
-		.paso:not(:last-child)::before {
-			top: 23px;
-			bottom: auto;
-			left: 48px;
-			right: calc(-1 * var(--space-4));
-			width: auto;
-			height: 2px;
+		.paso__marca {
+			grid-column: 2;
+			grid-row: 1;
+		}
+
+		.paso__texto,
+		.paso__visual {
+			grid-row: 1;
 		}
 
 		.paso__texto {
-			padding-top: 0;
+			padding-top: var(--space-1);
+		}
+
+		.paso:nth-child(odd) .paso__texto { grid-column: 1; justify-self: end; }
+		.paso:nth-child(odd) .paso__visual { grid-column: 3; justify-self: start; }
+		.paso:nth-child(even) .paso__texto { grid-column: 3; }
+		.paso:nth-child(even) .paso__visual { grid-column: 1; justify-self: end; }
+
+		.paso__texto p {
+			max-width: 36ch;
+		}
+	}
+
+	/* --- Movimiento --- */
+	@keyframes llenar-linea {
+		from { transform: scaleY(0); }
+	}
+
+	@keyframes encender-marca {
+		from {
+			border-color: var(--border-light);
+			background: var(--white);
+			color: var(--brand-primary-deep);
+		}
+	}
+
+	@keyframes visual-entra {
+		from { opacity: 0; transform: translateY(16px) scale(0.98); }
+	}
+
+	@keyframes tramo-avanza {
+		from { transform: scaleX(0.2); opacity: 0; }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			/* La punta del relleno va a media pantalla: arranca cuando el principio de la lista
+			   llega a la mitad y termina cuando el final llega a la mitad. */
+			.linea::after {
+				animation: llenar-linea linear both;
+				animation-timeline: --proceso;
+				animation-range: cover 50vh cover calc(100% - 50vh);
+			}
+
+			/* Cada marca se enciende en el mismo momento en que la punta la alcanza. */
+			.paso__marca {
+				animation: encender-marca linear both;
+				animation-timeline: view();
+				animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
+			}
+
+			.paso__visual {
+				animation: visual-entra linear both;
+				animation-timeline: view();
+				animation-range: entry 10% cover 35%;
+			}
+
+			.visual-semanas__tramo {
+				animation: tramo-avanza linear both;
+				animation-timeline: --semanas;
+			}
+
+			/* Las semanas se completan una detrás de otra, después de que entra el visual. */
+			.visual-semanas__tramo:nth-of-type(2) { animation-range: cover 30% cover 40%; }
+			.visual-semanas__tramo:nth-of-type(3) { animation-range: cover 38% cover 48%; }
+			.visual-semanas__tramo:nth-of-type(4) { animation-range: cover 46% cover 56%; }
 		}
 	}
 </style>
