@@ -141,9 +141,11 @@ en verde:
    de su título (antes iban a tamaño de párrafo y se veían básicos); el contacto como en
    minificando, una fila discreta por canal (WhatsApp y el mail de Ignacio y de Gabriel, en
    `EMAILS` de `config.ts`); "© año Accelerate.ai. Todos los derechos reservados."
-10. **Favicon:** la A clara con las estelas azul y celeste sobre un cuadrado `#0b1220`
-    redondeado (64 px), y el mismo fondo a sangre en `apple-touch-icon.png` (180 px). Los links
-    llevan `?v=2` para que los navegadores no sigan mostrando el viejo de su caché.
+10. **Favicon:** monograma "Ai" en Archivo 800 itálica, blanco, sobre un degradado de
+    `#0b1220` a `#1f57c2` (64 px, cuadrado redondeado), y el mismo a sangre en
+    `apple-touch-icon.png` (180 px). Lo eligió el usuario entre 13 opciones: la A con estelas se
+    empasta a 16 px. Se generaron con Playwright y un script temporal (no quedó en el repo). Los
+    links llevan `?v=3` para que los navegadores no sigan mostrando el viejo de su caché.
 
 **Ojo al revisar:** en la PC del usuario Windows tiene apagados los efectos de animación
 (Configuración > Accesibilidad > Efectos visuales > Efectos de animación), y Chrome lo informa
