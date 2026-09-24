@@ -6,10 +6,10 @@
 commits en `main`. La base está terminada: las 7 secciones con un borrador de textos que falta
 revisar (`REVISION-TEXTOS.md`), vistas en 360 y 1280 px con `npm run capturas`. Pasó la
 revisión de UX y accesibilidad y tiene las etiquetas Open Graph con su imagen, con un dominio
-provisorio. Sin repo en GitHub.
+provisorio. Repo público en GitHub: https://github.com/nachixxs/accelerate-ai-web (2026-09-24).
 
-**Rediseño dinámico terminado** en la rama `rediseno-dinamico` (ver la sección de abajo),
-sin merge a `main` todavía: espera la confirmación del usuario. El usuario vio la base "súper
+**Rediseño dinámico terminado** y con merge a `main` (2026-09-24, fast-forward desde
+`rediseno-dinamico`; ver la sección de abajo). El usuario vio la base "súper
 plana" y pidió una página como https://minificando.ai/: linda, profesional, con mucho
 movimiento y visuales reales del producto (panel, línea de tiempo).
 
@@ -142,7 +142,7 @@ ver el movimiento hay que prender esa opción.
 
 0. El usuario revisa en http://localhost:4400/ (`npx astro build` y
    `npx astro preview --port 4400`) con los efectos de animación de Windows prendidos, corre
-   `/review-animations` si quiere, y confirma el merge de `rediseno-dinamico` a `main`.
+   `/review-animations` si quiere. El merge a `main` ya está hecho.
 1. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`). Si
    cambia el titular de la portada, correr `npm run og` para rehacer la imagen.
 2. Hosting y dominio (pendientes 2 a 4), recién para publicar. Al tener el dominio, cambiar
@@ -200,7 +200,7 @@ ilustraciones): se usaron capturas de minificando como referencia.
 | 1 | ~~Nombre de la carpeta y del repo~~: `accelerate-ai-web` | — |
 | 2 | Hosting (GitHub Pages o Cloudflare Pages) | La publicación |
 | 3 | Dominio. Hoy está el provisorio `accelerate-ai.example` en `astro.config.mjs` | La URL propia y la vista previa de WhatsApp |
-| 4 | Repo público o privado | Si es privado, GitHub Pages pide plan pago |
+| 4 | ~~Repo público o privado~~: público, con el design system y los documentos internos incluidos (decisión del usuario) | — |
 | 5 | Los SVG del logo, si existen | Nada; los PNG alcanzan para la web |
 | 6 | Revisión de textos por Colo: las dudas están en `REVISION-TEXTOS.md` | El cierre |
 | 7 | En escritorio, el glow cian de "Sistemas a medida" se corta en línea recta donde empieza la sección (ya estaba así antes de la revisión) | Nada; es un detalle visual |
