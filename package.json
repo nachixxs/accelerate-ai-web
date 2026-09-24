@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "capturas": "astro build && node scripts/capturas.mjs"
+    "capturas": "astro build && node scripts/capturas.mjs",
+    "og": "node scripts/og.mjs"
   },
   "dependencies": {
     "@lucide/astro": "^1.47.0",

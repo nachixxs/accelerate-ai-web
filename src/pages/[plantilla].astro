@@ -1,0 +1,72 @@
+---
+// Plantilla de la imagen Open Graph (public/og.jpg), 1200 × 630. No es una página del sitio:
+// solo se genera cuando la pide scripts/og.mjs (npm run og); en el build normal no existe.
+// Repite la portada: fondo oscuro, glow desde arriba a la derecha y el mismo titular.
+import { Image } from 'astro:assets';
+import logotipo from '../assets/identidad/logotipo-claro.png';
+import Glow from '../components/Glow.astro';
+import Base from '../layouts/Base.astro';
+
+export function getStaticPaths() {
+	return process.env.OG_PLANTILLA ? [{ params: { plantilla: 'og' } }] : [];
+}
+---
+
+<Base title="Imagen Open Graph" description="Plantilla de la imagen para compartir el link.">
+	<div class="og seccion--oscura con-glow">
+		<Glow tono="azul" esquina="arriba-der" />
+		<Glow tono="cian" esquina="arriba-der" />
+
+		<Image src={logotipo} alt="" width={220} class="og__logo" loading="eager" />
+		<p class="og__titular">Tu equipo deja de <span class="texto-gradiente">copiar y pegar</span></p>
+		<div class="og__pie">
+			<p>Sistemas a medida para pymes</p>
+			<span class="og__chip">Auditoría gratis</span>
+		</div>
+	</div>
+</Base>
+
+<style>
+	/* Columna de 600 px centrada: si WhatsApp recorta la vista previa a un cuadrado del medio
+	   (630 × 630), el titular sigue entero. */
+	.og {
+		display: flex;
+		flex-direction: column;
+		width: 1200px;
+		height: 630px;
+		padding: 64px 300px;
+	}
+
+	.og__logo {
+		width: 220px;
+		height: auto;
+	}
+
+	.og__titular {
+		margin-top: auto;
+		color: var(--text-heading-light);
+		font-size: 76px;
+		font-weight: var(--type-hook-weight);
+		line-height: var(--type-hook-lh);
+		letter-spacing: var(--type-hook-ls);
+		text-wrap: balance;
+	}
+
+	.og__pie {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+		font-size: 24px;
+	}
+
+	.og__chip {
+		padding: 12px 20px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		font-weight: var(--fw-semibold);
+		line-height: 1;
+	}
+</style>

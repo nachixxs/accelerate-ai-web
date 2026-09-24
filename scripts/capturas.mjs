@@ -70,6 +70,24 @@ for (const { nombre, width, height } of ANCHOS) {
 	await pagina.close();
 }
 
+// Open Graph: la imagen tiene que estar publicada y con URL completa, o WhatsApp no la muestra.
+const pagina = await navegador.newPage();
+await pagina.goto(url);
+const og = await pagina.evaluate(() => {
+	const meta = (p) => document.querySelector(`meta[property="${p}"]`)?.content ?? '';
+	return { titulo: meta('og:title'), descripcion: meta('og:description'), imagen: meta('og:image') };
+});
+const imagenPublicada = (await pagina.request.get(new URL(new URL(og.imagen).pathname, url).href)).ok();
+const chequeosOg = [
+	[og.titulo && og.descripcion, 'Open Graph: título y descripción'],
+	[og.imagen.startsWith('https://') && imagenPublicada, `Open Graph: imagen con URL completa y publicada (${og.imagen})`],
+];
+console.log('\nopen graph');
+for (const [ok, texto] of chequeosOg) {
+	console.log(`  ${ok ? 'ok   ' : 'FALLA'} ${texto}`);
+	if (!ok) fallas++;
+}
+
 await navegador.close();
 await servidor.stop();
 console.log(`\nCapturas en capturas/. ${fallas ? `${fallas} chequeo(s) fallaron.` : 'Todos los chequeos pasan.'}`);

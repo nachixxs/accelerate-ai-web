@@ -8,6 +8,11 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+
+// Open Graph pide URL completas: salen del `site` de astro.config.mjs (provisorio por ahora).
+// La imagen se genera con npm run og.
+const url = new URL(Astro.url.pathname, Astro.site);
+const imagen = new URL('/og.jpg', Astro.site);
 ---
 
 <html lang="es-AR">
@@ -21,6 +26,20 @@ const { title, description } = Astro.props;
 		<Font cssVariable="--font-archivo" preload />
 		<title>{title}</title>
 		<meta name="description" content={description} />
+
+		<!-- Vista previa al compartir el link (WhatsApp, redes). -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Accelerate.ai" />
+		<meta property="og:locale" content="es_AR" />
+		<meta property="og:url" content={url} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={imagen} />
+		<meta property="og:image:type" content="image/jpeg" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="Tu equipo deja de copiar y pegar. Sistemas a medida para pymes, con auditoría gratis." />
+		<meta name="twitter:card" content="summary_large_image" />
 	</head>
 	<body>
 		<slot />

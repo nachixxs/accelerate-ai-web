@@ -5,7 +5,8 @@
 2026-09-23. Proyecto de Astro creado (plantilla mínima, Astro 7, TypeScript estricto) y
 commits en `main`. La base está terminada: las 7 secciones con un borrador de textos que falta
 revisar (`REVISION-TEXTOS.md`), vistas en 360 y 1280 px con `npm run capturas`. Pasó la
-revisión de UX y accesibilidad. Sin repo en GitHub.
+revisión de UX y accesibilidad y tiene las etiquetas Open Graph con su imagen, con un dominio
+provisorio. Sin repo en GitHub.
 
 ## La base (terminada)
 
@@ -42,12 +43,20 @@ revisión de UX y accesibilidad. Sin repo en GitHub.
    - Las capturas completas no cargaban las imágenes lazy (el logo del pie no salía).
    Descartadas de la guía: Title Case, evitar la primera persona y `translate="no"`, porque
    chocan con la marca o con el público.
+8. ~~Open Graph~~ (SPECS §9). Etiquetas `og:*` y `twitter:card` en `Base.astro`, armadas
+   con el `site` de `astro.config.mjs`. La imagen, `public/og.jpg` (1200 × 630, 50 KB), sale
+   de `src/pages/[plantilla].astro`: `npm run og` la compila aparte y la fotografía con
+   Playwright; en el build del sitio esa plantilla no existe. Repite la portada, con el texto
+   en una columna central de 600 px por si WhatsApp recorta la vista previa a un cuadrado.
+   `npm run capturas` chequea que las etiquetas estén y que la imagen esté publicada.
 
 ## Próximo paso
 
-1. Etiquetas Open Graph y su imagen, para la vista previa al compartir el link (SPECS §9).
-2. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`).
-3. Hosting y dominio (pendientes 2 a 4), recién para publicar.
+1. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`). Si
+   cambia el titular de la portada, correr `npm run og` para rehacer la imagen.
+2. Hosting y dominio (pendientes 2 a 4), recién para publicar. Al tener el dominio, cambiar
+   `SITIO` en `astro.config.mjs` y probar la vista previa mandando el link por WhatsApp antes
+   de compartirlo con nadie: WhatsApp guarda la primera vista previa de cada link.
 
 ## Decisiones tomadas (2026-09-23)
 
@@ -62,6 +71,9 @@ revisión de UX y accesibilidad. Sin repo en GitHub.
 | Marca: el design system de Colo (`F:\Accelerate.ai Design System.zip`) | Ya está hecho; se adapta la tipografía para web |
 | Archivo servida desde el sitio con la API de fuentes de Astro, no con el `@import` a Google | El `@import` frena el primer dibujado; así hay precarga y fallback con métricas ajustadas |
 | Escala web por roles del sistema, con `clamp()` 360→1280 px; cuerpo con lh 1.5 | En 360 px el cuerpo de redes dividido por 3 quedaría en 11 px; la web tiene párrafos más largos |
+| Imagen OG compuesta en código (plantilla Astro + Playwright), no en Canva | Usa la fuente, los tokens, el glow y el logo reales, y se regenera con un comando si cambia el texto |
+| Imagen OG en JPEG, no PNG | Pesa 50 KB; WhatsApp a veces no muestra imágenes de más de 300 KB |
+| Dominio provisorio `accelerate-ai.example` | Open Graph pide URL completas. `.example` es un dominio reservado que no existe, y el build avisa mientras siga ahí |
 
 ## Skills
 
@@ -83,7 +95,7 @@ Instaladas globales: `design-taste-frontend` e `image-to-code` (de `leonxlnx/tas
 |---|---|---|
 | 1 | ~~Nombre de la carpeta y del repo~~: `accelerate-ai-web` | — |
 | 2 | Hosting (GitHub Pages o Cloudflare Pages) | La publicación |
-| 3 | Dominio | La URL propia |
+| 3 | Dominio. Hoy está el provisorio `accelerate-ai.example` en `astro.config.mjs` | La URL propia y la vista previa de WhatsApp |
 | 4 | Repo público o privado | Si es privado, GitHub Pages pide plan pago |
 | 5 | Los SVG del logo, si existen | Nada; los PNG alcanzan para la web |
 | 6 | Revisión de textos por Colo: las dudas están en `REVISION-TEXTOS.md` | El cierre |
