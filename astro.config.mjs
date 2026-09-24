@@ -9,6 +9,14 @@ const SITIO = 'https://accelerate-ai.example';
 // https://astro.build/config
 export default defineConfig({
 	site: SITIO,
+	// El minificador por defecto (Lightning CSS) junta animation-timeline adentro del shorthand
+	// `animation`, y Chrome descarta esa declaración entera: se perdían todas las animaciones
+	// atadas al scroll. esbuild deja las propiedades separadas.
+	vite: {
+		build: {
+			cssMinify: 'esbuild',
+		},
+	},
 	// Archivo es la única familia de la marca. Astro la baja de Google en el build
 	// y la sirve desde el propio sitio, con un fallback de métricas ajustadas.
 	fonts: [

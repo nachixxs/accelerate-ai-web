@@ -37,8 +37,10 @@ h1, h2, h3 { color: var(--text-heading-dark); }
 .seccion--oscura .t-eyebrow { color: var(--brand-accent); }
 .t-eyebrow { color: var(--brand-primary-deep); }
 
-/* Contenedor de un Glow: lo recorta y lo deja detrás del contenido. */
-.con-glow { position: relative; overflow: hidden; isolation: isolate; }
+/* Contenedor de un Glow: lo recorta y lo deja detrás del contenido. clip y no hidden: hidden
+   vuelve a la sección un contenedor de scroll, y las animaciones atadas al scroll de adentro
+   (view()) quedan sin timeline y no se mueven. */
+.con-glow { position: relative; overflow: clip; isolation: isolate; }
 
 /* Gradiente de texto: 1 o 2 veces en toda la página, sobre una palabra o una línea. */
 .texto-gradiente { background: var(--gradient-text); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
