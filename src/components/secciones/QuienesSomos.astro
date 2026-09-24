@@ -1,18 +1,20 @@
 ---
-// SPECS §4.5: Nacho y Colo, qué hace cada uno. Corto. Roles según la sociedad
+// SPECS §4.5: Ignacio y Gabriel, qué hace cada uno. Corto. Roles según la sociedad
 // (notas/negocio/Sociedad-y-Acuerdos.md). La marca no usa fotos.
 // Es el "momento de escala" de la marca: los dos nombres a tamaño gigante, cada uno con su rol
-// al lado. Con el scroll, los nombres se acercan desde lados opuestos hasta quedar alineados.
+// al lado. Con el scroll, los nombres se acercan desde lados opuestos y se van llenando de
+// izquierda a derecha, del gris claro al color del titular.
 const personas = [
 	{
-		nombre: 'Nacho',
+		nombre: 'Ignacio',
 		rol: 'La parte técnica: programa los sistemas, los bots de WhatsApp y las automatizaciones.',
 	},
 	{
-		nombre: 'Colo',
+		nombre: 'Gabriel',
 		rol: 'Los números: planillas, paneles en Excel y Power BI, y la administración.',
 	},
 ];
+import BotonWhatsApp from '../BotonWhatsApp.astro';
 ---
 
 <section class="seccion somos" aria-labelledby="somos-titulo">
@@ -28,17 +30,29 @@ const personas = [
 					<div class="persona">
 						<dt class="persona__nombre">
 							{i > 0 && <span class="persona__y" aria-hidden="true">y </span>}
-							{nombre}
+							<span class="persona__texto">{nombre}</span>
 						</dt>
 						<dd class="persona__rol">{rol}</dd>
 					</div>
 				))
 			}
 		</dl>
+
+		<div class="somos__pie">
+			<BotonWhatsApp
+				variante="link"
+				texto="Hablar directo con Ignacio y Gabriel"
+				mensaje="Hola Ignacio y Gabriel, vi la web y quiero charlar sobre mi negocio."
+			/>
+		</div>
 	</div>
 </section>
 
 <style>
+	.somos__pie {
+		margin-top: var(--space-5);
+	}
+
 	.personas {
 		display: grid;
 		gap: var(--space-4);
@@ -50,10 +64,11 @@ const personas = [
 		gap: var(--space-2);
 	}
 
-	/* La escala gigante de la marca (200 en el lienzo de 1080), llevada a la web: 88 → 208 px. */
+	/* La escala gigante de la marca (200 en el lienzo de 1080), llevada a la web: 68 → 163 px.
+	   El tope lo pone "y Gabriel" en 360 px: a 68 px ocupa unos 290 de los 328 disponibles. */
 	.persona__nombre {
 		color: var(--text-heading-dark);
-		font-size: clamp(5.5rem, 2.565rem + 13.04vw, 13rem);
+		font-size: clamp(4.25rem, 1.8rem + 10.5vw, 10.25rem);
 		font-weight: var(--fw-black);
 		line-height: 0.9;
 		letter-spacing: -0.04em;
@@ -68,8 +83,6 @@ const personas = [
 	.persona__rol {
 		margin: 0;
 		max-width: 34ch;
-		padding-left: var(--space-2);
-		border-left: 2px solid var(--brand-primary-deep);
 	}
 
 	/* Escritorio: cada nombre con su rol al lado, al pie de la línea. El segundo, corrido a la
@@ -113,8 +126,26 @@ const personas = [
 		from { transform: translateX(14%); }
 	}
 
+	@keyframes nombre-se-llena {
+		from { background-size: 0% 100%; }
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
+			/* El relleno: una capa del color del titular que crece sobre un gris claro, recortada
+			   a las letras. Color plano, no el gradiente de la marca. */
+			.persona__texto {
+				background: linear-gradient(var(--text-heading-dark), var(--text-heading-dark)) 0 0 / 100% 100% no-repeat;
+				background-color: var(--slate-200);
+				-webkit-background-clip: text;
+				background-clip: text;
+				color: transparent;
+				-webkit-text-fill-color: transparent;
+				animation: nombre-se-llena linear both;
+				animation-timeline: view();
+				animation-range: entry 60% cover 55%;
+			}
+
 			.persona__nombre {
 				animation: nombre-desde-izquierda linear both;
 				animation-timeline: view();

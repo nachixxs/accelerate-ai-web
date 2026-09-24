@@ -1,14 +1,17 @@
 ---
-// Mock de "Turnos y reservas con recordatorios": la agenda de la semana que se va llenando y el
-// aviso de recordatorio montado sobre el borde de arriba (regla de profundidad de la marca).
-// Datos de ejemplo. Se anima con el timeline --celda de la card que lo contiene.
+// Mock de "Turnos y reservas con recordatorios": la agenda de la semana que se va llenando y,
+// montado sobre su borde de abajo (regla de profundidad de la marca), el recordatorio que salió
+// para el turno resaltado: el del martes a las 10:30. Datos de ejemplo.
+// Se anima con el timeline --celda de la card que lo contiene.
 import BellRing from '@lucide/astro/icons/bell-ring';
 
 const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'];
 // Un turno por celda: la hora si está reservado, null si está libre. Filas = franjas del día.
+// El turno de Sofía es el que lleva el recordatorio.
+const SOFIA = '10:30';
 const agenda = [
 	['09:00', null, '09:30', '09:00', null],
-	[null, '10:30', '11:00', null, '10:00'],
+	[null, SOFIA, '11:00', null, '10:00'],
 	['15:00', '16:00', null, '15:30', '16:30'],
 	[null, '18:00', '17:30', null, '18:00'],
 ];
@@ -18,22 +21,17 @@ let orden = 0;
 <div
 	class="mock-turnos"
 	role="img"
-	aria-label="Ejemplo: la agenda de turnos de la semana, casi completa, y un recordatorio enviado a una clienta para su turno de mañana a las 10:30."
+	aria-label="Ejemplo: la agenda de turnos de la semana, casi completa, con el turno del martes a las 10:30 resaltado y el recordatorio que se le mandó a la clienta: Sofía, te esperamos mañana a las 10:30."
 >
-	<div class="aviso">
-		<span class="aviso__icono"><BellRing size={16} /></span>
-		<span>
-			<strong>Recordatorio enviado</strong>
-			Sofía, te esperamos mañana a las 10:30.
-		</span>
-	</div>
-
 	<div class="agenda">
 		{dias.map((dia) => <span class="agenda__dia">{dia}</span>)}
 		{
-			agenda.flat().map((hora) =>
+			agenda.flat().map((hora, celda) =>
 				hora ? (
-					<span class="turno" style={`--i: ${orden++}`}>
+					<span
+						class:list={['turno', { 'turno--recordado': hora === SOFIA && celda === 6 }]}
+						style={`--i: ${orden++}`}
+					>
 						{hora}
 					</span>
 				) : (
@@ -42,19 +40,27 @@ let orden = 0;
 			)
 		}
 	</div>
+
+	<div class="aviso">
+		<span class="aviso__icono"><BellRing size={16} /></span>
+		<span class="aviso__texto">
+			<strong>Recordatorio enviado</strong>
+			Sofía, te esperamos mañana a las 10:30.
+		</span>
+	</div>
 </div>
 
 <style>
 	.mock-turnos {
-		position: relative;
-		padding-top: 44px;
+		display: grid;
 	}
 
+	/* El padding de abajo deja lugar para que el aviso se monte sobre el borde sin tapar turnos. */
 	.agenda {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		gap: 6px;
-		padding: 40px 12px 12px;
+		padding: 12px 12px 44px;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-card);
 		background: var(--navy-900);
@@ -85,16 +91,23 @@ let orden = 0;
 		border: 1px dashed var(--border-dark);
 	}
 
-	/* El aviso sale del borde de la agenda y se corre hacia afuera de la card. */
+	/* El turno del recordatorio, en el acento: une la agenda con el aviso de abajo. */
+	.turno--recordado {
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		box-shadow: 0 0 0 3px var(--navy-900), 0 0 0 5px var(--cyan-300);
+	}
+
+	/* El aviso, como la notificación del celular: sale del borde de abajo de la agenda. */
 	.aviso {
-		position: absolute;
-		top: 0;
-		right: -12px;
+		position: relative;
 		z-index: 1;
+		justify-self: end;
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		max-width: min(290px, 92%);
+		width: min(300px, calc(100% - 24px));
+		margin: -32px 12px 0 0;
 		padding: 10px 14px;
 		border-radius: 16px;
 		background: var(--off-white);
@@ -125,8 +138,21 @@ let orden = 0;
 		from { opacity: 0; transform: scale(0.9); }
 	}
 
-	@keyframes aviso-baja {
-		from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+	@keyframes turno-se-marca {
+		from { background: var(--blue-800); color: var(--blue-100); box-shadow: 0 0 0 3px var(--navy-900), 0 0 0 3px var(--cyan-300); }
+	}
+
+	@keyframes aviso-sube {
+		from { opacity: 0; transform: translateY(16px) scale(0.96); }
+	}
+
+	/* La campana suena una vez cuando llega el aviso. */
+	@keyframes campana {
+		0%, 100% { transform: none; }
+		20% { transform: rotate(-14deg); }
+		40% { transform: rotate(10deg); }
+		60% { transform: rotate(-6deg); }
+		80% { transform: rotate(3deg); }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
@@ -137,11 +163,29 @@ let orden = 0;
 				animation-range: entry calc(25% + var(--i) * 4%) entry calc(40% + var(--i) * 4%);
 			}
 
+			/* Primero se llena como los demás, después se marca en cian. */
+			.turno--recordado {
+				animation:
+					turno-se-llena linear both,
+					turno-se-marca linear both;
+				animation-timeline: --celda, --celda;
+				animation-range:
+					entry calc(25% + var(--i) * 4%) entry calc(40% + var(--i) * 4%),
+					cover 35% cover 40%;
+			}
+
 			.aviso {
-				transform-origin: top right;
-				animation: aviso-baja linear both;
+				transform-origin: bottom right;
+				animation: aviso-sube linear both;
 				animation-timeline: --celda;
-				animation-range: entry 90% cover 45%;
+				animation-range: cover 40% cover 47%;
+			}
+
+			.aviso__icono :global(svg) {
+				transform-origin: top center;
+				animation: campana linear both;
+				animation-timeline: --celda;
+				animation-range: cover 45% cover 52%;
 			}
 		}
 	}

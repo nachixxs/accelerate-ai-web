@@ -1,17 +1,26 @@
 ---
 // El pie, fuera de <main> para que siga siendo el landmark del pie. Mismo fondo oscuro
 // que la sección de cierre, así se leen como un solo bloque. El imagotipo va grande: la marca
-// lo pide desde 280 px de ancho (debajo de eso se usa el logotipo).
+// lo pide desde 280 px de ancho (debajo de eso se usa el logotipo). Con el scroll entra como
+// arranca la A: se descubre de izquierda a derecha, rápido al principio.
 import { Image } from 'astro:assets';
+import MessageCircle from '@lucide/astro/icons/message-circle';
 import imagotipo from '../assets/identidad/imagotipo-claro.png';
+import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 ---
 
 <footer class="seccion--oscura">
 	<div class="contenedor">
 		<div class="pie">
-			<Image src={imagotipo} alt="Accelerate.ai" width={720} class="pie__logo" />
+			<Image src={imagotipo} alt="Accelerate.ai" width={962} class="pie__logo" />
 			{/* TODO: links a las redes. Faltan las URL (REVISION-TEXTOS.md). */}
-			<p class="t-meta">© 2026 Accelerate.ai. Sistemas a medida para pymes.</p>
+			<div class="pie__datos">
+				<a class="pie__whatsapp" href={WHATSAPP_URL} target="_blank" rel="noopener">
+					<MessageCircle size={18} />
+					{WHATSAPP_NUMERO_VISIBLE}
+				</a>
+				<p class="t-meta">© 2026 Accelerate.ai. Sistemas a medida para pymes.</p>
+			</div>
 		</div>
 	</div>
 </footer>
@@ -28,14 +37,66 @@ import imagotipo from '../assets/identidad/imagotipo-claro.png';
 		color: var(--text-muted-light);
 	}
 
+	.pie__datos {
+		display: grid;
+		gap: var(--space-1);
+	}
+
+	/* El número también abre WhatsApp: el que busca el contacto al final lo encuentra. */
+	.pie__whatsapp {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		min-height: 44px;
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+		transition: color 0.2s;
+	}
+
+	.pie__whatsapp :global(svg) {
+		color: var(--cyan-300);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.pie__whatsapp:hover {
+			color: var(--cyan-300);
+		}
+	}
+
 	.pie__logo {
-		width: 280px;
+		width: min(100%, 328px);
 		height: auto;
 	}
 
 	@media (min-width: 768px) {
 		.pie__logo {
-			width: 360px;
+			width: 480px;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.pie__logo {
+			width: 620px;
+		}
+	}
+
+	@keyframes logo-arranca {
+		from {
+			clip-path: inset(0 100% 0 0);
+			transform: translateX(-12%);
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.pie__logo {
+				animation: logo-arranca cubic-bezier(0.16, 1, 0.3, 1) both;
+				animation-timeline: view();
+				/* El pie es lo último de la página: nunca llega a media pantalla, así que la entrada
+				   termina cuando el logo terminó de aparecer abajo. */
+				animation-range: entry 0% entry 100%;
+			}
 		}
 	}
 </style>

@@ -1,40 +1,107 @@
 ---
-// Mock de "Paneles para ver tu negocio de un vistazo": las ventas de la semana, con barras que
-// crecen con el scroll. Sin escala ni cifras: son datos de ejemplo, y la marca no pone
-// números sin fuente. Se anima con el timeline --celda de la card que lo contiene.
+// Mock de "Paneles para ver tu negocio de un vistazo": un tablero de la semana con tres cifras
+// que cuentan hacia arriba y la curva de ventas por día, que se dibuja con el scroll y marca el
+// pico. Son datos de ejemplo, y lo dice el propio panel: no son resultados de un cliente.
+// Una sola serie, así que un solo color (cian, el acento sobre oscuro) y sin leyenda: el título
+// la nombra. Es una imagen (role="img"), no un gráfico para explorar: sin tooltips.
+// Se anima con el timeline --celda de la card que lo contiene.
+
+// Ventas por día, en miles de pesos. Suman 1.284,5 (el total de la primera cifra).
 const semana = [
-	{ dia: 'Lun', alto: 42 },
-	{ dia: 'Mar', alto: 58 },
-	{ dia: 'Mié', alto: 51 },
-	{ dia: 'Jue', alto: 73 },
-	{ dia: 'Vie', alto: 88 },
-	{ dia: 'Sáb', alto: 100, pico: true },
-	{ dia: 'Dom', alto: 34 },
+	{ dia: 'Lun', miles: 142.3 },
+	{ dia: 'Mar', miles: 168.9 },
+	{ dia: 'Mié', miles: 151.2 },
+	{ dia: 'Jue', miles: 196.8 },
+	{ dia: 'Vie', miles: 263.5 },
+	{ dia: 'Sáb', miles: 312.4 },
+	{ dia: 'Dom', miles: 49.4 },
 ];
+
+// Geometría del gráfico: lienzo de 700 × 200, un punto al centro de cada una de las 7 columnas.
+const ANCHO = 700;
+const ALTO = 200;
+const TOPE = 330; // miles: la línea de arriba de la escala
+const x = (i: number) => 50 + i * 100;
+const y = (miles: number) => ALTO - 10 - (miles / TOPE) * (ALTO - 30);
+const puntos = semana.map(({ miles }, i) => `${x(i)},${y(miles).toFixed(1)}`);
+const linea = `M${puntos.join(' L')}`;
+const area = `${linea} L${x(6)},${ALTO} L${x(0)},${ALTO} Z`;
+const pico = semana.reduce((max, d, i) => (d.miles > semana[max].miles ? i : max), 0);
+
+const cifras = [
+	{ nombre: 'Ventas', fin: 1284500, desde: 1000000, formato: 'millones', variacion: '+12 %' },
+	{ nombre: 'Pedidos', fin: 142, desde: 0, formato: 'simple' },
+	{ nombre: 'Ticket promedio', fin: 9045, desde: 5000, formato: 'miles' },
+];
+const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}`;
 ---
 
 <div
 	class="mock-panel"
 	role="img"
-	aria-label="Ejemplo: un panel con las ventas de cada día de la semana en barras. El sábado es el día que más se vendió."
+	aria-label="Ejemplo con datos inventados: un panel con las ventas de la semana, 1.284.500 pesos, 142 pedidos y un ticket promedio de 9.045 pesos, y una curva de ventas por día con el pico el sábado."
 >
-	<div class="panel-barras__cabecera">
-		<strong>Ventas de la semana</strong>
-		<span>El día más fuerte: sábado</span>
+	<div class="tablero__barra">
+		<strong>Tu negocio esta semana</strong>
+		<span class="tablero__periodo">
+			<span class="tablero__periodo-activo">Semana</span>
+			<span>Mes</span>
+		</span>
 	</div>
-	<div class="barras">
+
+	<dl class="cifras">
 		{
-			semana.map(({ dia, alto, pico }, i) => (
-				<div class="barra" style={`--alto: ${alto}%; --i: ${i}`}>
-					<span class:list={['barra__relleno', { 'barra__relleno--pico': pico }]} />
-					<span class="barra__dia">{dia}</span>
+			cifras.map(({ nombre, fin, desde, formato, variacion }) => (
+				<div class="cifra">
+					<dt>{nombre}</dt>
+					<dd class={`cifra__valor cifra__valor--${formato}`} style={`--fin: ${fin}; --desde: ${desde}`}>
+						<span class="cifra__texto">{texto(fin)}</span>
+					</dd>
+					{variacion && <dd class="cifra__variacion">{variacion} vs. la semana pasada</dd>}
 				</div>
 			))
 		}
+	</dl>
+
+	<div class="grafico">
+		<div class="grafico__lienzo">
+			<svg viewBox={`0 0 ${ANCHO} ${ALTO}`} preserveAspectRatio="none" aria-hidden="true">
+				<defs>
+					<linearGradient id="panel-area" x1="0" y1="0" x2="0" y2="1">
+						<stop offset="0" stop-color="#173872" />
+						<stop offset="1" stop-color="#0f172a" />
+					</linearGradient>
+				</defs>
+				<path class="grafico__area" d={area} fill="url(#panel-area)" />
+				<path class="grafico__linea" d={linea} pathLength="1" fill="none" vector-effect="non-scaling-stroke" />
+			</svg>
+			<span
+				class="grafico__pico"
+				style={`left: ${(x(pico) / ANCHO) * 100}%; top: ${(y(semana[pico].miles) / ALTO) * 100}%`}
+			>
+				<span class="grafico__etiqueta">{semana[pico].dia} $ {Math.round(semana[pico].miles * 1000).toLocaleString('es-AR')}</span>
+			</span>
+		</div>
+		<div class="grafico__dias">
+			{semana.map(({ dia }, i) => <span class:list={{ 'grafico__dia--pico': i === pico }}>{dia}</span>)}
+		</div>
 	</div>
+
+	<p class="tablero__nota">Datos de ejemplo</p>
 </div>
 
 <style>
+	@property --v {
+		syntax: '<integer>';
+		inherits: true;
+		initial-value: 0;
+	}
+
+	@counter-style tres-cifras {
+		system: extends decimal;
+		pad: 3 '0';
+	}
+
 	.mock-panel {
 		display: grid;
 		gap: 16px;
@@ -44,72 +111,256 @@ const semana = [
 		background: var(--navy-900);
 	}
 
-	.panel-barras__cabecera {
+	.tablero__barra {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: baseline;
+		align-items: center;
 		justify-content: space-between;
-		gap: 4px 12px;
+		gap: 8px 12px;
 		font-size: 0.875rem;
 	}
 
-	.panel-barras__cabecera strong {
+	.tablero__barra strong {
 		color: var(--text-heading-light);
 		font-weight: var(--fw-semibold);
 	}
 
-	.panel-barras__cabecera span {
-		color: var(--cyan-300);
-		font-size: 0.8125rem;
+	/* El selector de período del panel: decorativo, el activo con el fill de la marca. */
+	.tablero__periodo {
+		display: inline-flex;
+		padding: 3px;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-pill);
+		color: var(--text-muted-light);
+		font-size: 0.75rem;
+		font-weight: var(--fw-semibold);
+	}
+
+	.tablero__periodo > span {
+		padding: 4px 10px;
+		border-radius: var(--radius-pill);
+	}
+
+	.tablero__periodo .tablero__periodo-activo {
+		background: var(--brand-primary-deep);
+		color: var(--white);
+	}
+
+	/* --- Las tres cifras. En el celular, las ventas a lo ancho y las otras dos abajo. --- */
+	.cifras {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px;
+	}
+
+	.cifra {
+		display: grid;
+		align-content: start;
+		gap: 2px;
+		padding: 12px;
+		border: 1px solid var(--border-dark);
+		border-radius: 14px;
+		background: var(--surface-card-dark);
+	}
+
+	.cifra:first-child {
+		grid-column: 1 / -1;
+	}
+
+	.cifra dt {
+		color: var(--text-muted-light);
+		font-size: 0.75rem;
 		font-weight: var(--fw-medium);
 	}
 
-	.barras {
+	.cifra dd {
+		margin: 0;
+	}
+
+	.cifra__valor {
+		color: var(--text-heading-light);
+		font-size: 1.375rem;
+		font-weight: var(--fw-bold);
+		letter-spacing: -0.02em;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	.cifra__variacion {
+		color: var(--cyan-300);
+		font-size: 0.75rem;
+		font-weight: var(--fw-semibold);
+	}
+
+	/* --- El gráfico: el SVG se estira al ancho de la card; el trazo no se deforma
+	   (non-scaling-stroke) y el punto del pico es HTML, así queda redondo. --- */
+	.grafico {
+		display: grid;
+		gap: 8px;
+	}
+
+	.grafico__lienzo {
+		position: relative;
+		height: 150px;
+		/* Tres guías horizontales, recesivas: dan escala sin competir con la curva. */
+		background:
+			linear-gradient(var(--border-dark), var(--border-dark)) 0 15% / 100% 1px no-repeat,
+			linear-gradient(var(--border-dark), var(--border-dark)) 0 50% / 100% 1px no-repeat,
+			linear-gradient(var(--border-dark), var(--border-dark)) 0 100% / 100% 1px no-repeat;
+	}
+
+	.grafico__lienzo svg {
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+
+	.grafico__linea {
+		stroke: var(--cyan-400);
+		stroke-width: 2.5px;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-dasharray: 1;
+		stroke-dashoffset: 0;
+	}
+
+	.grafico__pico {
+		position: absolute;
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		background: var(--cyan-400);
+		box-shadow: 0 0 0 3px var(--navy-900);
+		transform: translate(-50%, -50%);
+	}
+
+	/* La etiqueta del pico, arriba a la izquierda del punto: a la derecha no entra. */
+	.grafico__etiqueta {
+		position: absolute;
+		right: 50%;
+		bottom: calc(100% + 8px);
+		padding: 4px 10px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		font-size: 0.75rem;
+		font-weight: var(--fw-bold);
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		box-shadow: var(--shadow-elevada);
+	}
+
+	.grafico__dias {
 		display: grid;
 		grid-template-columns: repeat(7, 1fr);
-		gap: 8px;
-		height: 168px;
-		/* Guías horizontales: dan la sensación de escala sin poner números. */
-		background: repeating-linear-gradient(to top, var(--border-dark) 0 1px, transparent 1px 42px);
-		background-position: 0 -26px;
-	}
-
-	.barra {
-		display: grid;
-		grid-template-rows: 1fr auto;
-		gap: 6px;
-		align-items: end;
-		min-width: 0;
-	}
-
-	.barra__relleno {
-		height: var(--alto);
-		border-radius: 6px 6px 2px 2px;
-		background: var(--blue-700);
-		transform-origin: bottom;
-	}
-
-	.barra__relleno--pico {
-		background: var(--cyan-400);
-	}
-
-	.barra__dia {
 		color: var(--text-muted-light);
 		font-size: 0.75rem;
 		text-align: center;
-		background: var(--navy-900);
 	}
 
-	@keyframes crecer {
-		from { transform: scaleY(0.04); }
+	.grafico__dias .grafico__dia--pico {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
+	}
+
+	.tablero__nota {
+		justify-self: end;
+		color: var(--text-muted-light);
+		font-size: 0.75rem;
+	}
+
+	@media (min-width: 480px) {
+		.cifras {
+			grid-template-columns: 1.4fr 1fr 1.2fr;
+		}
+
+		.cifra:first-child {
+			grid-column: auto;
+		}
+
+		.grafico__lienzo {
+			height: 170px;
+		}
+	}
+
+	/* --- Movimiento --- */
+	@keyframes dibujar-linea {
+		from { stroke-dashoffset: 1; }
+	}
+
+	@keyframes aparecer {
+		from { opacity: 0; }
+	}
+
+	@keyframes pico-llega {
+		from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+	}
+
+	@keyframes etiqueta-llega {
+		from { opacity: 0; transform: translateY(6px); }
+	}
+
+	@keyframes contar {
+		from { --v: var(--desde); }
+		to { --v: var(--fin); }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
-			.barra__relleno {
-				animation: crecer linear both;
+			.grafico__linea {
+				animation: dibujar-linea linear both;
 				animation-timeline: --celda;
-				animation-range: entry calc(40% + var(--i) * 5%) cover calc(35% + var(--i) * 3%);
+				animation-range: entry 55% cover 45%;
+			}
+
+			.grafico__area {
+				animation: aparecer linear both;
+				animation-timeline: --celda;
+				animation-range: entry 70% cover 45%;
+			}
+
+			.grafico__pico {
+				animation: pico-llega linear both;
+				animation-timeline: --celda;
+				animation-range: cover 40% cover 46%;
+			}
+
+			.grafico__etiqueta {
+				animation: etiqueta-llega linear both;
+				animation-timeline: --celda;
+				animation-range: cover 44% cover 50%;
+			}
+		}
+
+		/* Las cifras cuentan hacia arriba con un contador de CSS. El texto real queda en el HTML
+		   para lectores y navegadores sin soporte; donde el contador anda, lo reemplaza. */
+		@supports (animation-timeline: view()) and (width: mod(10px, 3px)) {
+			.cifra__valor {
+				animation: contar linear both;
+				animation-timeline: --celda;
+				animation-range: entry 50% cover 42%;
+			}
+
+			.cifra__texto {
+				display: none;
+			}
+
+			.cifra__valor--simple::after {
+				counter-reset: v var(--v);
+				content: counter(v);
+			}
+
+			.cifra__valor--miles::after {
+				counter-reset: k calc(round(down, var(--v) / 1000)) u calc(mod(var(--v), 1000));
+				content: '$ ' counter(k) '.' counter(u, tres-cifras);
+			}
+
+			.cifra__valor--millones::after {
+				counter-reset:
+					m calc(round(down, var(--v) / 1000000))
+					k calc(mod(round(down, var(--v) / 1000), 1000))
+					u calc(mod(var(--v), 1000));
+				content: '$ ' counter(m) '.' counter(k, tres-cifras) '.' counter(u, tres-cifras);
 			}
 		}
 	}

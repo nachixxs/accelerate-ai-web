@@ -1,13 +1,16 @@
 ---
 // SPECS §4.2: 2-3 dolores concretos, contados como los cuenta el dueño.
 // Un interruptor "Hoy / Con un sistema" cambia cada dolor por cómo queda resuelto. Sin
-// JavaScript: son dos radios y la sección cambia con :has(). Hoy, los dolores están sueltos y
-// desalineados sobre el fondo; con un sistema se ordenan dentro de la card invertida (la única
-// de la sección). Sin prefers-reduced-motion el cambio es un fundido corto, sin desplazamientos.
+// JavaScript: son dos radios y la sección cambia con :has(). Hoy, los dolores van sueltos sobre
+// el fondo, con divisiones punteadas; con un sistema pasan a la card invertida (la única de la
+// sección). Al cambiar, cada dolor se tacha, se va y llega su solución, uno detrás de otro.
+// Con movimiento reducido el cambio es un fundido corto, sin desplazamientos.
 import MessagesSquare from '@lucide/astro/icons/messages-square';
 import NotebookPen from '@lucide/astro/icons/notebook-pen';
 import Calculator from '@lucide/astro/icons/calculator';
 import CircleCheck from '@lucide/astro/icons/circle-check';
+import Sparkles from '@lucide/astro/icons/sparkles';
+import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 const dolores = [
 	{
@@ -49,6 +52,7 @@ const dolores = [
 				</label>
 				<label>
 					<input type="radio" name="resolvemos" value="sistema" class="interruptor__sistema" />
+					<Sparkles size={18} stroke-width={2} class="interruptor__chispa" />
 					Con un sistema
 				</label>
 			</fieldset>
@@ -64,7 +68,7 @@ const dolores = [
 						</span>
 						<div class="dolor__textos">
 							<div class="hoy">
-								<p class="t-label dolor__frase">“{frase}”</p>
+								<p class="t-label dolor__frase"><span class="tachado">“{frase}”</span></p>
 								<p class="dolor__detalle">{detalle}</p>
 							</div>
 							<div class="sistema">
@@ -76,6 +80,14 @@ const dolores = [
 				))
 			}
 		</ul>
+
+		<div class="resolvemos__pie">
+			<BotonWhatsApp
+				variante="contorno"
+				texto="Quiero sacarme esto de encima"
+				mensaje="Hola, vi la web. Me pasa alguna de esas y quiero ver cómo resolverla."
+			/>
+		</div>
 	</div>
 </section>
 
@@ -124,14 +136,23 @@ const dolores = [
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
+		gap: 6px;
 		min-height: 48px;
-		padding-inline: var(--space-3);
+		padding-inline: var(--space-2);
 		border-radius: var(--radius-pill);
 		color: var(--text-body-dark);
 		font-weight: var(--fw-semibold);
 		white-space: nowrap;
 		cursor: pointer;
 		-webkit-tap-highlight-color: transparent;
+	}
+
+	/* Las dos columnas miden lo que la opción más larga: con letra grande en el celular, 24 px de
+	   aire por lado empujaban el interruptor fuera del margen. */
+	@media (min-width: 640px) {
+		.interruptor label {
+			padding-inline: var(--space-3);
+		}
 	}
 
 	/* La marca comparte la primera celda con "Hoy": cada opción va en su columna, o la grilla
@@ -185,15 +206,6 @@ const dolores = [
 		border-top: 1px dashed var(--slate-300);
 	}
 
-	.dolor:nth-child(2) {
-		translate: 12px 0;
-	}
-
-	.dolor:nth-child(3) {
-		translate: 4px 0;
-		rotate: -0.6deg;
-	}
-
 	/* Los dos estados de cada dolor ocupan la misma celda: el alto no cambia al pasar de uno a otro. */
 	.dolor__iconos,
 	.dolor__textos {
@@ -205,15 +217,28 @@ const dolores = [
 		grid-area: 1 / 1;
 	}
 
+	/* El ícono va en un círculo: el de hoy con borde punteado, como algo a medio resolver. */
 	.dolor__iconos {
 		align-self: start;
-		margin-top: 2px;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		border: 1px dashed var(--slate-300);
+		border-radius: var(--radius-pill);
 		color: var(--brand-primary-deep);
 	}
 
 	.dolor__frase {
 		color: var(--text-heading-dark);
 		font-weight: var(--fw-semibold);
+	}
+
+	/* La tachadura que cruza el dolor al pasar a "Con un sistema": una línea de fondo que crece
+	   de izquierda a derecha; box-decoration-break la repite en cada renglón de la frase. */
+	.tachado {
+		background: linear-gradient(var(--brand-primary-deep), var(--brand-primary-deep)) no-repeat 0 58% / 0% 2px;
+		-webkit-box-decoration-break: clone;
+		box-decoration-break: clone;
 	}
 
 	.dolor__detalle {
@@ -233,18 +258,20 @@ const dolores = [
 			box-shadow: var(--shadow-card);
 		}
 
-		.dolor {
-			translate: 0 0;
-			rotate: 0deg;
-		}
-
 		.dolor + .dolor {
 			border-top-color: var(--border-dark);
 			border-top-style: solid;
 		}
 
 		.dolor__iconos {
+			border-style: solid;
+			border-color: var(--border-dark);
+			background: var(--blue-950);
 			color: var(--brand-accent);
+		}
+
+		.tachado {
+			background-size: 100% 2px;
 		}
 
 		.dolor__frase {
@@ -272,6 +299,11 @@ const dolores = [
 			gap: var(--space-6);
 		}
 
+		/* El botón va después de las filas, no entre el interruptor y lo que el interruptor cambia. */
+		.resolvemos__pie {
+			grid-column: 2;
+		}
+
 		.resolvemos__intro {
 			position: sticky;
 			top: 120px;
@@ -281,13 +313,6 @@ const dolores = [
 			padding: var(--space-3) var(--space-5);
 		}
 
-		.dolor:nth-child(2) {
-			translate: 40px 0;
-		}
-
-		.dolor:nth-child(3) {
-			translate: 16px 0;
-		}
 	}
 
 	/* --- Movimiento. Sin él, el cambio igual se ve: un fundido corto de color y opacidad. --- */
@@ -309,6 +334,17 @@ const dolores = [
 		transition: opacity 0.2s, visibility 0s;
 	}
 
+	@keyframes sello-asienta {
+		from { transform: scale(0.9); }
+	}
+
+	/* Dos anillos que se abren y se apagan. */
+	@keyframes invita {
+		0%, 50% { box-shadow: 0 0 0 0 var(--blue-200); opacity: 0; }
+		5%, 55% { opacity: 1; }
+		45%, 95%, 100% { box-shadow: 0 0 0 14px var(--blue-200); opacity: 0; }
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
 		.interruptor__marca {
 			transition: transform 0.3s var(--curva-cajon);
@@ -320,14 +356,30 @@ const dolores = [
 		}
 
 		.dolor {
-			transition: translate 0.35s var(--curva-salida), rotate 0.35s var(--curva-salida), border-color 0.3s;
-			transition-delay: calc(var(--i) * 40ms);
+			transition: border-color 0.3s calc(var(--i) * 40ms);
 		}
 
 		.dolor__frase,
-		.dolor__detalle,
-		.dolor__iconos {
+		.dolor__detalle {
 			transition: color 0.3s calc(var(--i) * 40ms);
+		}
+
+		.dolor__iconos {
+			transition:
+				color 0.3s calc(var(--i) * 40ms),
+				background-color 0.3s calc(var(--i) * 40ms),
+				border-color 0.3s calc(var(--i) * 40ms);
+		}
+
+		/* La tachadura se dibuja rápido, antes de que el dolor se vaya. Al volver a "Hoy" se borra
+		   de golpe: la frase vuelve limpia. */
+		.resolvemos:has(.interruptor__sistema:checked) .tachado {
+			transition: background-size 0.2s var(--curva-salida) calc(var(--i) * 60ms);
+		}
+
+		/* El círculo del ícono se asienta como un sello: de 0.9 a su tamaño, sin rebote. */
+		.resolvemos:has(.interruptor__sistema:checked) .dolor__iconos {
+			animation: sello-asienta 0.35s var(--curva-salida) calc(120ms + var(--i) * 60ms) backwards;
 		}
 
 		/* El texto que se va se desenfoca y sube; el que llega baja a su lugar. El blur tapa el
@@ -354,9 +406,52 @@ const dolores = [
 				visibility 0s;
 		}
 
+		/* Con un sistema, la solución llega después de la tachadura. */
+		.resolvemos:has(.interruptor__sistema:checked) .lista :global(.sistema) {
+			transition-delay: calc(220ms + var(--i) * 60ms);
+		}
+
 		.resolvemos:has(.interruptor__sistema:checked) .lista :global(.hoy),
 		.resolvemos:not(:has(.interruptor__sistema:checked)) .lista :global(.sistema) {
 			transform: translateY(-8px);
+		}
+
+		/* El dolor tachado se queda un instante a la vista y después se va. */
+		.resolvemos:has(.interruptor__sistema:checked) .lista :global(.hoy) {
+			transition:
+				opacity 0.15s ease calc(160ms + var(--i) * 60ms),
+				transform 0.2s var(--curva-salida) calc(160ms + var(--i) * 60ms),
+				filter 0.15s ease calc(160ms + var(--i) * 60ms),
+				visibility 0s calc(310ms + var(--i) * 60ms);
+		}
+
+		/* La chispa de "Con un sistema" gira un poco al elegirlo. */
+		.interruptor :global(.interruptor__chispa) {
+			transition: transform 0.35s var(--curva-salida);
+		}
+
+		.resolvemos:has(.interruptor__sistema:checked) .interruptor :global(.interruptor__chispa) {
+			transform: rotate(72deg);
+		}
+
+		/* Invitación a tocar: cuando la sección llega a la pantalla, un anillo sale dos veces del
+		   interruptor. Atado al scroll: no queda latiendo mientras leés, y si ya lo tocaste no
+		   aparece más. */
+		@supports (animation-timeline: view()) {
+			.interruptor::after {
+				content: '';
+				position: absolute;
+				inset: -1px;
+				border-radius: inherit;
+				pointer-events: none;
+				animation: invita linear both;
+				animation-timeline: view();
+				animation-range: entry 100% cover 55%;
+			}
+
+			.resolvemos:has(.interruptor__sistema:checked) .interruptor::after {
+				animation: none;
+			}
 		}
 
 		@supports (animation-timeline: view()) {

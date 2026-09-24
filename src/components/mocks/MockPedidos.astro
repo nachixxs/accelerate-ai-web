@@ -1,78 +1,106 @@
 ---
-// Mock de "Pedidos por WhatsApp que se cargan solos": los mensajes de la mañana, cada uno con
-// su sello de "Cargado" a medida que entra. Datos de ejemplo, nombres inventados.
+// Mock de "Pedidos por WhatsApp que se cargan solos": a la izquierda los mensajes de la mañana,
+// a la derecha la planilla, donde cada pedido se escribe solo en su fila a medida que llega el
+// mensaje. La planilla es papel claro sobre la card oscura, como el ticket de la caja: se lee de
+// un vistazo que es otra herramienta. Datos de ejemplo, nombres inventados.
 // Se anima con el timeline --celda de la card que lo contiene (SistemasAMedida.astro).
+import ArrowRight from '@lucide/astro/icons/arrow-right';
 import Check from '@lucide/astro/icons/check';
+import FileSpreadsheet from '@lucide/astro/icons/file-spreadsheet';
 
-const mensajes = [
-	{ inicial: 'M', nombre: 'Marcos Sosa', hora: '09:14', texto: '300 tarjetas como las de la otra vez, porfa' },
-	{ inicial: 'C', nombre: 'Club Norte', hora: '09:31', texto: '¿Pueden hacer 2 banners de 1 metro para el sábado?' },
-	{ inicial: 'K', nombre: 'Kiosco Rivas', hora: '09:47', texto: 'Necesito 50 afiches A3, los retiro el jueves' },
+const pedidos = [
+	{ inicial: 'M', cliente: 'Marcos Sosa', hora: '09:14', texto: '300 tarjetas como las de la otra vez, para el viernes', pedido: '300 tarjetas', entrega: 'Viernes' },
+	{ inicial: 'C', cliente: 'Club Norte', hora: '09:31', texto: '¿Me hacen 2 banners de 1 metro para el sábado?', pedido: '2 banners', entrega: 'Sábado' },
+	{ inicial: 'K', cliente: 'Kiosco Rivas', hora: '09:47', texto: 'Necesito 50 afiches A3, los retiro el jueves', pedido: '50 afiches', entrega: 'Jueves' },
 ];
 ---
 
 <div
 	class="mock-pedidos"
 	role="img"
-	aria-label="Ejemplo: tres pedidos que llegan por WhatsApp durante la mañana, cada uno marcado como cargado en la planilla."
+	aria-label="Ejemplo: tres pedidos que llegan por WhatsApp durante la mañana y se escriben solos en la planilla de pedidos, cada uno con su cliente, lo que pidió y el día de entrega."
 >
-	{
-		mensajes.map(({ inicial, nombre, hora, texto }, i) => (
-			<div class="mensaje" style={`--i: ${i}`}>
-				<span class="mensaje__inicial">{inicial}</span>
-				<div class="mensaje__cuerpo">
-					<span class="mensaje__de">
-						{nombre}
-						<span>{hora}</span>
-					</span>
-					<p>{texto}</p>
+	<div class="mp-chat">
+		{
+			pedidos.map(({ inicial, cliente, hora, texto }, i) => (
+				<div class="mensaje" style={`--i: ${i}`}>
+					<span class="mensaje__inicial">{inicial}</span>
+					<div class="mensaje__cuerpo">
+						<span class="mensaje__de">
+							{cliente}
+							<span>{hora}</span>
+						</span>
+						<p>{texto}</p>
+					</div>
 				</div>
-				<span class="mensaje__sello">
-					<Check size={14} stroke-width={2.5} />
-					Cargado
-				</span>
-			</div>
-		))
-	}
+			))
+		}
+	</div>
+
+	<span class="mp-flecha">
+		<ArrowRight size={20} stroke-width={2} />
+	</span>
+
+	<div class="planilla">
+		<div class="planilla__titulo">
+			<FileSpreadsheet size={16} stroke-width={2} />
+			Pedidos
+			<span class="planilla__sello">
+				<Check size={12} stroke-width={3} />
+				Al día
+			</span>
+		</div>
+		<div class="planilla__tabla">
+			<span class="celda celda--cabecera">Cliente</span>
+			<span class="celda celda--cabecera">Pedido</span>
+			<span class="celda celda--cabecera">Entrega</span>
+			{
+				pedidos.map(({ cliente, pedido, entrega }, i) => (
+					<div class="planilla__fila" style={`--i: ${i}`}>
+						<span class="celda celda--cliente">{cliente}</span>
+						<span class="celda">{pedido}</span>
+						<span class="celda">{entrega}</span>
+					</div>
+				))
+			}
+		</div>
+	</div>
 </div>
 
 <style>
 	.mock-pedidos {
 		display: grid;
 		gap: 12px;
+		justify-items: center;
+	}
+
+	.mp-chat {
+		display: grid;
+		gap: 10px;
+		width: 100%;
 	}
 
 	.mensaje {
 		display: grid;
-		grid-template-columns: 32px 1fr;
+		grid-template-columns: 28px 1fr;
 		align-items: start;
-		column-gap: 12px;
-		row-gap: 8px;
-		padding: 12px 14px;
+		gap: 10px;
+		padding: 10px 12px;
 		border: 1px solid var(--border-dark);
-		border-radius: 18px;
+		border-radius: 16px;
 		border-bottom-left-radius: 6px;
 		background: var(--navy-800);
-	}
-
-	/* Cada mensaje entra un poco más corrido: se leen como una conversación que avanza. */
-	.mensaje:nth-child(2) {
-		margin-left: 6%;
-	}
-
-	.mensaje:nth-child(3) {
-		margin-left: 12%;
 	}
 
 	.mensaje__inicial {
 		display: grid;
 		place-items: center;
-		width: 32px;
-		height: 32px;
+		width: 28px;
+		height: 28px;
 		border-radius: var(--radius-pill);
 		background: var(--blue-900);
 		color: var(--blue-100);
-		font-size: 0.8125rem;
+		font-size: 0.75rem;
 		font-weight: var(--fw-bold);
 	}
 
@@ -99,30 +127,136 @@ const mensajes = [
 
 	.mensaje p {
 		color: var(--text-body-light);
-		font-size: 0.9375rem;
-		line-height: 1.4;
+		font-size: 0.875rem;
+		line-height: 1.35;
 	}
 
-	.mensaje__sello {
-		grid-column: 2;
-		justify-self: start;
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 4px 10px;
+	/* La flecha entre el chat y la planilla: en el celular apunta hacia abajo. */
+	.mp-flecha {
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 40px;
 		border-radius: var(--radius-pill);
 		background: var(--cyan-300);
 		color: var(--navy-950);
+		box-shadow: var(--shadow-elevada);
+		rotate: 90deg;
+	}
+
+	/* --- La planilla: papel off-white (la marca no usa #fff puro), con la grilla de una hoja de
+	   cálculo. Sale un poco del borde de abajo de la card: la regla de profundidad. --- */
+	.planilla {
+		width: 100%;
+		border-radius: 14px;
+		background: var(--off-white);
+		color: var(--text-body-dark);
+		font-size: 0.8125rem;
+		box-shadow: var(--shadow-elevada);
+		overflow: clip;
+	}
+
+	.planilla__titulo {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 10px 12px;
+		border-bottom: 1px solid var(--slate-200);
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-bold);
+	}
+
+	.planilla__titulo :global(svg) {
+		color: var(--brand-primary-deep);
+	}
+
+	.planilla__sello {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		margin-left: auto;
+		padding: 3px 8px;
+		border-radius: var(--radius-pill);
+		background: var(--blue-50);
+		color: var(--brand-primary-deep);
 		font-size: 0.75rem;
 		font-weight: var(--fw-semibold);
-		line-height: 1.2;
+	}
+
+	.planilla__tabla {
+		display: grid;
+		grid-template-columns: 1.15fr 1fr 0.9fr;
+	}
+
+	.planilla__fila {
+		display: grid;
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
+	}
+
+	.celda {
+		padding: 9px 10px;
+		border-top: 1px solid var(--slate-200);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.celda + .celda {
+		border-left: 1px solid var(--slate-200);
+	}
+
+	.planilla__fila .celda:first-child {
+		border-left: 0;
+	}
+
+	.celda--cabecera {
+		border-top: 0;
+		background: var(--slate-100);
+		color: var(--text-muted-dark);
+		font-size: 0.75rem;
+		font-weight: var(--fw-semibold);
+	}
+
+	.celda--cliente {
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-semibold);
+	}
+
+	/* Escritorio: chat y planilla lado a lado, con la flecha en el medio. */
+	@media (min-width: 1024px) {
+		.mock-pedidos {
+			grid-template-columns: 1fr auto 1.35fr;
+			align-items: center;
+		}
+
+		.mp-flecha {
+			rotate: 0deg;
+		}
+
+		.planilla {
+			margin-right: -20px;
+		}
 	}
 
 	@keyframes mensaje-llega {
 		from { opacity: 0; transform: translateY(16px) scale(0.97); }
 	}
 
-	@keyframes sello {
+	/* La fila se escribe de izquierda a derecha, como si alguien la tipeara muy rápido, y queda
+	   resaltada un momento. */
+	@keyframes fila-se-escribe {
+		from { clip-path: inset(0 100% 0 0); background-color: var(--blue-100); }
+		60% { clip-path: inset(0 0 0 0); background-color: var(--blue-100); }
+		to { background-color: rgba(220, 232, 254, 0); }
+	}
+
+	@keyframes flecha-empuja {
+		0%, 100% { transform: none; }
+		50% { transform: translateX(4px); }
+	}
+
+	@keyframes aparecer-sello {
 		from { opacity: 0; transform: scale(0.9); }
 	}
 
@@ -132,13 +266,26 @@ const mensajes = [
 				transform-origin: left bottom;
 				animation: mensaje-llega linear both;
 				animation-timeline: --celda;
-				animation-range: entry calc(30% + var(--i) * 22%) entry calc(60% + var(--i) * 22%);
+				animation-range: entry calc(30% + var(--i) * 20%) entry calc(50% + var(--i) * 20%);
 			}
 
-			.mensaje__sello {
-				animation: sello linear both;
+			.planilla__fila {
+				animation: fila-se-escribe linear both;
 				animation-timeline: --celda;
-				animation-range: entry calc(55% + var(--i) * 22%) entry calc(70% + var(--i) * 22%);
+				animation-range: entry calc(45% + var(--i) * 20%) cover calc(30% + var(--i) * 8%);
+			}
+
+			/* La flecha empuja tres veces, una por pedido, mientras la card cruza la pantalla. */
+			.mp-flecha :global(svg) {
+				animation: flecha-empuja linear 3 both;
+				animation-timeline: --celda;
+				animation-range: entry 40% cover 45%;
+			}
+
+			.planilla__sello {
+				animation: aparecer-sello linear both;
+				animation-timeline: --celda;
+				animation-range: cover 40% cover 46%;
 			}
 		}
 	}

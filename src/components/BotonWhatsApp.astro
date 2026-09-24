@@ -1,58 +1,189 @@
 ---
-// El CTA de la marca: el único lugar donde aparece #2971f2 a saturación máxima.
-// Es un link, no un <button>: no hay JavaScript, solo abre WhatsApp.
+// Los botones que abren WhatsApp. Son links, no <button>: no hay JavaScript.
+// - principal: el CTA de la marca, el único lugar con #2971f2 a saturación máxima. Va en la
+//   portada y en el cierre, con el texto de la marca.
+// - secundario: fill #1f57c2 sobre claro, o cian sobre oscuro (el acento de cada fondo).
+// - contorno: borde y texto, para no competir con una card que ya pesa.
+// - link: texto con flecha, para cerrar una sección sin sumar otro botón.
+// Cada uno lleva su propio texto y su propio mensaje de WhatsApp según la sección, como
+// minificando. Con el mouse encima se agrandan un poco (pedido del usuario, 2026-09-24).
+import ArrowRight from '@lucide/astro/icons/arrow-right';
 import MessageCircle from '@lucide/astro/icons/message-circle';
-import { WHATSAPP_URL } from '../config';
+import { whatsappUrl } from '../config';
+
+interface Props {
+	texto?: string;
+	mensaje?: string;
+	variante?: 'principal' | 'secundario' | 'contorno' | 'link';
+	class?: string;
+}
+
+const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', class: clase } = Astro.props;
 ---
 
-<a class="boton" href={WHATSAPP_URL} target="_blank" rel="noopener">
-	Escribinos por WhatsApp
-	<MessageCircle size={24} />
+<a class:list={['boton', `boton--${variante}`, clase]} href={whatsappUrl(mensaje)} target="_blank" rel="noopener">
+	{texto}
+	{variante === 'principal' ? <MessageCircle size={24} class="boton__icono" /> : <ArrowRight size={20} stroke-width={2} class="boton__icono" />}
 </a>
 
 <style>
-	/* 19px en 700 cuenta como texto grande para WCAG: blanco sobre #2971f2 pide 3:1 y da 4,4:1.
-	   Sin nowrap: con la letra del celular agrandada, el texto baja de línea en vez de quedar
-	   recortado por el overflow: hidden de la sección. */
+	/* Sin nowrap: con la letra del celular agrandada, el texto baja de línea en vez de quedar
+	   recortado por el overflow de la sección. */
 	.boton {
 		display: inline-flex;
 		max-width: 100%;
 		align-items: center;
 		gap: var(--space-1);
+		min-height: 48px;
+		padding: 12px var(--space-3);
+		border-radius: var(--radius-pill);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+		line-height: 1.2;
+		-webkit-tap-highlight-color: transparent;
+		transition:
+			background-color 0.2s,
+			border-color 0.2s,
+			color 0.2s,
+			box-shadow 0.2s;
+	}
+
+	.boton :global(.boton__icono) {
+		flex: none;
+	}
+
+	/* 19px en 700 cuenta como texto grande para WCAG: blanco sobre #2971f2 pide 3:1 y da 4,4:1. */
+	.boton--principal {
 		min-height: 56px;
 		padding: var(--space-2) var(--space-3);
-		border-radius: var(--radius-pill);
 		background: var(--brand-primary);
 		color: var(--white);
 		font-size: 1.1875rem;
 		font-weight: var(--fw-bold);
-		line-height: 1.2;
 		letter-spacing: -0.01em;
 		box-shadow: var(--shadow-boton);
-		-webkit-tap-highlight-color: transparent;
-		transition: background-color 0.2s;
 	}
 
-	.boton svg {
-		flex: none;
+	.boton--secundario {
+		background: var(--brand-primary-deep);
+		color: var(--white);
+		box-shadow: var(--shadow-elevada);
+	}
+
+	.boton--contorno {
+		border: 1.5px solid var(--brand-primary-deep);
+		color: var(--brand-primary-deep);
+	}
+
+	.boton--link {
+		min-height: 44px;
+		padding-inline: 0;
+		color: var(--brand-primary-deep);
+	}
+
+	/* Sobre fondo oscuro: el secundario pasa al cian de la marca y el resto a texto claro. */
+	:global(.seccion--oscura) .boton--secundario {
+		background: var(--cyan-300);
+		color: var(--navy-950);
+	}
+
+	:global(.seccion--oscura) .boton--contorno {
+		border-color: var(--border-dark);
+		color: var(--text-heading-light);
+	}
+
+	:global(.seccion--oscura) .boton--link {
+		color: var(--cyan-300);
 	}
 
 	/* :active reemplaza el resaltado gris de Android, que es un rectángulo encima de la píldora.
 	   El hover, solo con mouse: en el celular queda pegado al volver de WhatsApp. */
-	.boton:active {
+	.boton--principal:active {
 		background: var(--brand-primary-deep);
 		color: var(--white);
 	}
 
+	.boton--secundario:active {
+		background: var(--blue-800);
+		color: var(--white);
+	}
+
+	.boton--contorno:active {
+		background: var(--blue-50);
+	}
+
 	@media (hover: hover) and (pointer: fine) {
-		.boton:hover {
+		.boton--principal:hover {
 			background: var(--brand-primary-deep);
 			color: var(--white);
+		}
+
+		.boton--secundario:hover {
+			background: var(--blue-800);
+			color: var(--white);
+			box-shadow: var(--shadow-card);
+		}
+
+		:global(.seccion--oscura) .boton--secundario:hover {
+			background: var(--cyan-200);
+			color: var(--navy-950);
+		}
+
+		.boton--contorno:hover {
+			background: var(--blue-50);
+			color: var(--brand-primary-deep);
+		}
+
+		:global(.seccion--oscura) .boton--contorno:hover {
+			border-color: var(--cyan-300);
+			background: transparent;
+			color: var(--text-heading-light);
+		}
+
+		.boton--link:hover {
+			color: var(--brand-primary);
+		}
+
+		:global(.seccion--oscura) .boton--link:hover {
+			color: var(--cyan-200);
+		}
+	}
+
+	/* Con el mouse encima, el botón se agranda y la flecha o el globo se adelantan. */
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.boton {
+			transition:
+				background-color 0.2s,
+				border-color 0.2s,
+				color 0.2s,
+				box-shadow 0.2s,
+				transform 0.2s var(--curva-salida);
+		}
+
+		.boton :global(.boton__icono) {
+			transition: transform 0.2s var(--curva-salida);
+		}
+
+		.boton:hover {
+			transform: scale(1.05);
+		}
+
+		.boton:hover :global(.boton__icono) {
+			transform: translateX(3px);
+		}
+
+		.boton--principal:hover :global(.boton__icono) {
+			transform: rotate(-10deg);
 		}
 	}
 
 	.boton:focus-visible {
-		outline: 3px solid var(--brand-accent);
+		outline: 3px solid var(--brand-primary-deep);
 		outline-offset: 3px;
+	}
+
+	.boton--principal:focus-visible,
+	:global(.seccion--oscura) .boton:focus-visible {
+		outline-color: var(--brand-accent);
 	}
 </style>

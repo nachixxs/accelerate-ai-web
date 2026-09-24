@@ -1,9 +1,10 @@
 ---
 // Cinta de rubros debajo de la portada: responde "¿sirve para mi rubro?" antes de que lo
-// pregunten. Es la única cinta en movimiento de la página. Sin JavaScript: la pausa es un
-// checkbox (WCAG 2.2.2 pide poder frenar lo que se mueve más de 5 segundos), también frena
-// con el mouse encima y con prefers-reduced-motion queda quieta y en varias líneas.
-// No son clientes: son rubros donde se repiten las mismas tareas todos los días.
+// pregunten. Es la única cinta en movimiento de la página: dos filas que corren en sentidos
+// opuestos, como una cinta transportadora, y que además se corren un poco más con el scroll.
+// Sin JavaScript: la pausa es un checkbox (WCAG 2.2.2 pide poder frenar lo que se mueve más de
+// 5 segundos), también frena con el mouse encima y con prefers-reduced-motion queda quieta y
+// en varias líneas. No son clientes: son rubros donde se repiten las mismas tareas todos los días.
 import Printer from '@lucide/astro/icons/printer';
 import UtensilsCrossed from '@lucide/astro/icons/utensils-crossed';
 import Wrench from '@lucide/astro/icons/wrench';
@@ -14,20 +15,43 @@ import Building from '@lucide/astro/icons/building';
 import Calculator from '@lucide/astro/icons/calculator';
 import Dumbbell from '@lucide/astro/icons/dumbbell';
 import Scissors from '@lucide/astro/icons/scissors';
+import PawPrint from '@lucide/astro/icons/paw-print';
+import Hammer from '@lucide/astro/icons/hammer';
+import Plane from '@lucide/astro/icons/plane';
+import Glasses from '@lucide/astro/icons/glasses';
+import BookOpen from '@lucide/astro/icons/book-open';
+import Car from '@lucide/astro/icons/car';
+import Shirt from '@lucide/astro/icons/shirt';
+import Pill from '@lucide/astro/icons/pill';
+import GraduationCap from '@lucide/astro/icons/graduation-cap';
 import Pause from '@lucide/astro/icons/pause';
 import Play from '@lucide/astro/icons/play';
+import BotonWhatsApp from '../BotonWhatsApp.astro';
 
-const rubros = [
-	{ icono: Printer, nombre: 'Imprentas' },
-	{ icono: UtensilsCrossed, nombre: 'Gastronomía' },
-	{ icono: Wrench, nombre: 'Talleres' },
-	{ icono: Store, nombre: 'Comercios' },
-	{ icono: Stethoscope, nombre: 'Consultorios' },
-	{ icono: Truck, nombre: 'Distribuidoras' },
-	{ icono: Building, nombre: 'Inmobiliarias' },
-	{ icono: Calculator, nombre: 'Estudios contables' },
-	{ icono: Dumbbell, nombre: 'Gimnasios' },
-	{ icono: Scissors, nombre: 'Peluquerías' },
+const filas = [
+	[
+		{ icono: Printer, nombre: 'Imprentas' },
+		{ icono: UtensilsCrossed, nombre: 'Gastronomía' },
+		{ icono: Wrench, nombre: 'Talleres' },
+		{ icono: Store, nombre: 'Comercios' },
+		{ icono: Stethoscope, nombre: 'Consultorios' },
+		{ icono: Truck, nombre: 'Distribuidoras' },
+		{ icono: Building, nombre: 'Inmobiliarias' },
+		{ icono: Calculator, nombre: 'Estudios contables' },
+		{ icono: Dumbbell, nombre: 'Gimnasios' },
+		{ icono: Scissors, nombre: 'Peluquerías' },
+	],
+	[
+		{ icono: PawPrint, nombre: 'Veterinarias' },
+		{ icono: Hammer, nombre: 'Ferreterías' },
+		{ icono: Plane, nombre: 'Agencias de viaje' },
+		{ icono: Glasses, nombre: 'Ópticas' },
+		{ icono: BookOpen, nombre: 'Librerías' },
+		{ icono: Car, nombre: 'Lavaderos de autos' },
+		{ icono: Shirt, nombre: 'Indumentaria' },
+		{ icono: Pill, nombre: 'Farmacias' },
+		{ icono: GraduationCap, nombre: 'Institutos' },
+	],
 ];
 ---
 
@@ -43,26 +67,40 @@ const rubros = [
 	</div>
 
 	<div class="rubros__ventana">
-		<div class="rubros__pista">
-			{
-				[false, true].map((copia) => (
-					<ul class="rubros__lista" aria-hidden={copia ? 'true' : undefined}>
-						{rubros.map(({ icono: Icono, nombre }) => (
-							<li>
-								<Icono size={22} stroke-width={1.75} />
-								{nombre}
-							</li>
+		{
+			filas.map((rubros, f) => (
+				<div class={`rubros__fila rubros__fila--${f + 1}`}>
+					<div class="rubros__pista">
+						{[false, true].map((copia) => (
+							<ul class="rubros__lista" aria-hidden={copia ? 'true' : undefined}>
+								{rubros.map(({ icono: Icono, nombre }) => (
+									<li>
+										<span class="rubros__icono">
+											<Icono size={20} stroke-width={1.75} />
+										</span>
+										{nombre}
+									</li>
+								))}
+							</ul>
 						))}
-					</ul>
-				))
-			}
-		</div>
+					</div>
+				</div>
+			))
+		}
+	</div>
+
+	<div class="contenedor rubros__pie">
+		<BotonWhatsApp
+			variante="link"
+			texto="¿No ves tu rubro? Contanos el tuyo"
+			mensaje="Hola, vi la web. Mi rubro no estaba en la lista y quiero saber si un sistema me sirve."
+		/>
 	</div>
 </section>
 
 <style>
 	.rubros {
-		padding-block: var(--space-4);
+		padding-block: var(--space-4) var(--space-5);
 		border-block: 1px solid var(--border-light);
 		background: var(--white);
 	}
@@ -75,16 +113,20 @@ const rubros = [
 		margin-bottom: var(--space-3);
 	}
 
+	.rubros__pie {
+		margin-top: var(--space-2);
+	}
+
 	.rubros__titulo {
 		color: var(--text-muted-dark);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-medium);
 	}
 
-	/* Bordes que se funden con el fondo: la cinta entra y sale en vez de cortarse seco. */
 	.rubros__ventana {
+		display: grid;
+		gap: 12px;
 		overflow: hidden;
-		mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 	}
 
 	.rubros__pista {
@@ -94,15 +136,15 @@ const rubros = [
 
 	.rubros__lista {
 		display: flex;
-		gap: var(--space-2);
-		padding-right: var(--space-2);
+		gap: 12px;
+		padding-right: 12px;
 	}
 
 	.rubros__lista li {
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
-		padding: 10px 18px;
+		padding: 6px 18px 6px 6px;
 		border: 1px solid var(--border-light);
 		border-radius: var(--radius-pill);
 		background: var(--surface-alt);
@@ -111,8 +153,26 @@ const rubros = [
 		white-space: nowrap;
 	}
 
-	.rubros__lista :global(svg) {
+	/* El ícono en su propio círculo: la píldora se lee como una ficha, no como un tag. */
+	.rubros__icono {
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: var(--radius-pill);
+		background: var(--blue-50);
 		color: var(--brand-primary-deep);
+	}
+
+	/* La segunda fila, un tono más clara: se distingue de la primera sin sumar otra card
+	   invertida (la marca permite una sola por sección clara). */
+	.rubros__fila--2 .rubros__lista li {
+		background: var(--white);
+	}
+
+	.rubros__fila--2 .rubros__icono {
+		background: var(--surface-alt);
+		border: 1px solid var(--border-light);
 	}
 
 	/* Botón de pausa: un checkbox con apariencia de botón, 44 px de alto. */
@@ -131,6 +191,7 @@ const rubros = [
 		font-weight: var(--fw-medium);
 		cursor: pointer;
 		flex: none;
+		transition: border-color 0.2s, color 0.2s;
 	}
 
 	@media (hover: hover) and (pointer: fine) {
@@ -162,13 +223,13 @@ const rubros = [
 		display: block;
 	}
 
-	/* Sin movimiento: la cinta se vuelve una lista quieta en varias líneas, con el margen del
-	   resto de la página, y la copia se oculta. */
+	/* Sin movimiento: las dos filas se vuelven listas quietas en varias líneas, con el margen del
+	   resto de la página, y las copias se ocultan. */
 	.rubros__pista,
 	.rubros__lista {
 		flex-wrap: wrap;
 		width: auto;
-		row-gap: var(--space-1);
+		row-gap: 12px;
 	}
 
 	.rubros__pista {
@@ -187,17 +248,29 @@ const rubros = [
 		display: none;
 	}
 
-	.rubros__ventana {
-		mask-image: none;
+	/* La cinta corre sola; la fila entera, además, se desliza con el scroll: al bajar, la primera
+	   fila se adelanta hacia la izquierda y la segunda hacia la derecha. */
+	@keyframes cinta-izquierda {
+		to { transform: translateX(-50%); }
 	}
 
-	@keyframes cinta {
-		to {
-			transform: translateX(-50%);
-		}
+	@keyframes cinta-derecha {
+		from { transform: translateX(-50%); }
+		to { transform: translateX(0); }
+	}
+
+	@keyframes deriva-izquierda {
+		from { transform: translateX(4%); }
+		to { transform: translateX(-4%); }
+	}
+
+	@keyframes deriva-derecha {
+		from { transform: translateX(-4%); }
+		to { transform: translateX(4%); }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
+		/* Bordes que se funden con el fondo: la cinta entra y sale en vez de cortarse seco. */
 		.rubros__ventana {
 			mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 		}
@@ -212,7 +285,11 @@ const rubros = [
 			max-width: none;
 			margin-inline: 0;
 			padding-inline: 0;
-			animation: cinta 40s linear infinite;
+			animation: cinta-izquierda 45s linear infinite;
+		}
+
+		.rubros__fila--2 .rubros__pista {
+			animation: cinta-derecha 50s linear infinite;
 		}
 
 		.rubros__lista[aria-hidden] {
@@ -226,6 +303,23 @@ const rubros = [
 		.rubros:has(input:checked) .rubros__pista,
 		.rubros__ventana:hover .rubros__pista {
 			animation-play-state: paused;
+		}
+
+		@supports (animation-timeline: view()) {
+			.rubros__fila--1 {
+				animation: deriva-izquierda linear both;
+				animation-timeline: view();
+			}
+
+			.rubros__fila--2 {
+				animation: deriva-derecha linear both;
+				animation-timeline: view();
+			}
+
+			/* Con la pausa puesta, tampoco se mueve con el scroll. */
+			.rubros:has(input:checked) .rubros__fila {
+				animation: none;
+			}
 		}
 	}
 </style>

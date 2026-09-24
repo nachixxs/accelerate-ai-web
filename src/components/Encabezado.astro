@@ -3,9 +3,12 @@
 // Fondo sólido, sin vidrio ni blur (la marca los prohíbe fuera de los glows). La sombra y la
 // barra de progreso de lectura se mueven con el scroll, con CSS y sin JavaScript.
 // El botón de acá usa el azul profundo: #2971f2 queda para el botón principal de cada sección.
+// El logo es el imagotipo, con las capas de movimiento de la "A". La marca pide 280 px de mínimo,
+// pero en un lienzo de 1080 px: una pieza de redes se ve en el celular a un tercio de su tamaño,
+// así que 280 px del lienzo son unos 95 px en pantalla. A 150-176 px las capas se leen.
 import { Image } from 'astro:assets';
 import MessageCircle from '@lucide/astro/icons/message-circle';
-import logotipo from '../assets/identidad/logotipo-azul.png';
+import imagotipo from '../assets/identidad/imagotipo-azul.png';
 import { WHATSAPP_URL } from '../config';
 
 const links = [
@@ -19,7 +22,7 @@ const links = [
 <header class="encabezado">
 	<div class="contenedor encabezado__interior">
 		<a href="#inicio" class="encabezado__logo">
-			<Image src={logotipo} alt="Accelerate.ai" width={148} loading="eager" />
+			<Image src={imagotipo} alt="Accelerate.ai" width={352} loading="eager" />
 		</a>
 
 		<nav aria-label="Secciones" class="encabezado__nav">
@@ -29,8 +32,10 @@ const links = [
 		</nav>
 
 		<a class="encabezado__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
-			<MessageCircle size={20} />
-			<span class="encabezado__cta-texto">Escribinos por WhatsApp</span>
+			<span class="encabezado__cta-cara">
+				<MessageCircle size={20} />
+				<span class="encabezado__cta-texto">Escribinos por WhatsApp</span>
+			</span>
 		</a>
 	</div>
 	<div class="encabezado__progreso" aria-hidden="true"></div>
@@ -60,7 +65,7 @@ const links = [
 	}
 
 	.encabezado__logo img {
-		width: 132px;
+		width: 150px;
 		height: auto;
 	}
 
@@ -89,24 +94,32 @@ const links = [
 
 	.encabezado__cta {
 		display: inline-flex;
+		border-radius: var(--radius-pill);
+		color: var(--white);
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.encabezado__cta-cara {
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		gap: var(--space-1);
 		min-width: 44px;
 		min-height: 44px;
 		padding-inline: 12px;
-		border-radius: var(--radius-pill);
+		border-radius: inherit;
 		background: var(--brand-primary-deep);
-		color: var(--white);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
-		-webkit-tap-highlight-color: transparent;
-		transition: background-color 0.2s;
+		transition: background-color 0.2s, transform 0.2s var(--curva-salida);
 	}
 
-	.encabezado__cta:active {
-		background: var(--blue-800);
+	.encabezado__cta:hover {
 		color: var(--white);
+	}
+
+	.encabezado__cta:active .encabezado__cta-cara {
+		background: var(--blue-800);
 	}
 
 	/* Hover solo con mouse: en el celular queda pegado después de tocar. */
@@ -116,14 +129,43 @@ const links = [
 			background: var(--blue-50);
 		}
 
-		.encabezado__cta:hover {
+		.encabezado__cta:hover .encabezado__cta-cara {
 			background: var(--blue-800);
-			color: var(--white);
+		}
+
+		@media (prefers-reduced-motion: no-preference) {
+			.encabezado__cta:hover .encabezado__cta-cara {
+				transform: scale(1.05);
+			}
+
+			/* El logo arranca un poco hacia adelante, como la A. */
+			.encabezado__logo:hover img {
+				transform: translateX(4px);
+			}
 		}
 	}
 
 	.encabezado__cta :global(svg) {
 		flex: none;
+	}
+
+	.encabezado__logo img {
+		transition: transform 0.3s var(--curva-salida);
+	}
+
+	/* Entrada del logo al cargar: se descubre de izquierda a derecha, arrancando rápido, como las
+	   capas de movimiento de la A. clip-path y no blur: la marca no usa blur fuera de los glows. */
+	@keyframes logo-arranca {
+		from {
+			clip-path: inset(0 100% 0 0);
+			transform: translateX(-24px);
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.encabezado__logo img {
+			animation: logo-arranca 0.8s var(--curva-salida) 0.1s backwards;
+		}
 	}
 
 	/* En el celular el botón es solo el ícono; el texto queda para el lector de pantalla. */
@@ -140,10 +182,10 @@ const links = [
 
 	@media (min-width: 640px) {
 		.encabezado__logo img {
-			width: 148px;
+			width: 176px;
 		}
 
-		.encabezado__cta {
+		.encabezado__cta-cara {
 			padding-inline: var(--space-3);
 		}
 	}

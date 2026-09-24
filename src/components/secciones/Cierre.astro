@@ -3,12 +3,15 @@
 // Layout "CTA" de la marca: fondo oscuro, glow desde otra esquina que la portada, titular
 // arriba y botón abajo. Al lado, el chat con el mensaje real que abre el botón (sale de
 // config.ts, así no se desfasan) y la respuesta, que llega con el scroll: primero tu mensaje,
-// después "escribiendo..." y la respuesta. Sin movimiento, el chat se ve completo.
+// después "escribiendo..." (en la burbuja y en la cabecera), la respuesta y los tildes que pasan
+// a leído. Todo queda adentro de la caja. Sin movimiento, el chat se ve completo.
+// El avatar es el isotipo claro sobre el fondo de la marca, no el avatar de redes: ese trae el
+// margen de seguridad para el recorte circular, y a 40 px la A quedaba chiquita y corrida.
 import { Image } from 'astro:assets';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
 import Burbuja from '../mocks/Burbuja.astro';
-import avatar from '../../assets/identidad/avatar-claro.png';
+import isotipo from '../../assets/identidad/isotipo-claro.png';
 import { WHATSAPP_MENSAJE } from '../../config';
 ---
 
@@ -32,14 +35,22 @@ import { WHATSAPP_MENSAJE } from '../../config';
 			aria-label={`El mensaje que se manda con el botón: “${WHATSAPP_MENSAJE}”, y la respuesta de Accelerate.ai, que propone un día para la charla.`}
 		>
 			<div class="chat__cabecera">
-				<Image src={avatar} alt="" width={40} height={40} class="chat__avatar" />
-				<span>Accelerate.ai<small>en línea</small></span>
+				<span class="chat__avatar">
+					<Image src={isotipo} alt="" width={52} />
+				</span>
+				<span>
+					Accelerate.ai
+					<span class="chat__estado">
+						<small class="chat__estado-linea">en línea</small>
+						<small class="chat__estado-escribe" aria-hidden="true">escribiendo…</small>
+					</span>
+				</span>
 			</div>
 			<div class="chat__mensajes">
 				<Burbuja de="enviada" hora="Ahora" class="cierre__mio">{WHATSAPP_MENSAJE}</Burbuja>
 				<div class="chat__turno">
 					<span class="escribiendo"><i></i><i></i><i></i></span>
-					<Burbuja de="recibida" hora="Ahora" sangra class="cierre__respuesta">
+					<Burbuja de="recibida" hora="Ahora" class="cierre__respuesta">
 						¡Hola! Buenísimo. ¿Qué día te queda cómodo para charlar media hora?
 					</Burbuja>
 				</div>
@@ -100,11 +111,36 @@ import { WHATSAPP_MENSAJE } from '../../config';
 		font-weight: var(--fw-regular);
 	}
 
+	/* "en línea" y "escribiendo..." comparten el lugar; sin movimiento solo se ve el primero. */
+	.chat__estado {
+		display: grid;
+	}
+
+	.chat__estado > * {
+		grid-area: 1 / 1;
+	}
+
+	.chat__estado-escribe {
+		visibility: hidden;
+	}
+
+	/* El isotipo centrado en su círculo: la A ocupa dos tercios del ancho, como en un avatar. */
 	.chat__avatar {
+		display: grid;
+		flex: none;
+		place-items: center;
 		width: 40px;
 		height: 40px;
-		border-radius: var(--radius-pill);
 		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-pill);
+		background: var(--surface-dark);
+	}
+
+	.chat__avatar :global(img) {
+		width: 26px;
+		height: auto;
+		/* El trazo diagonal de la A carga el peso a la izquierda: un píxel a la derecha la centra a la vista. */
+		translate: 1px 0;
 	}
 
 	.chat__mensajes {
@@ -126,13 +162,6 @@ import { WHATSAPP_MENSAJE } from '../../config';
 
 	.escribiendo {
 		display: none;
-	}
-
-	/* En el celular la respuesta sale menos del borde: así no toca el costado de la pantalla. */
-	@media (max-width: 479px) {
-		.cierre__chat :global(.burbuja--sangra) {
-			margin-left: -12px;
-		}
 	}
 
 	@media (min-width: 1024px) {
@@ -164,6 +193,22 @@ import { WHATSAPP_MENSAJE } from '../../config';
 
 	@keyframes burbuja-llega {
 		from { opacity: 0; transform: translateY(16px) scale(0.96); }
+	}
+
+	/* El estado de la cabecera: "escribiendo..." mientras dura, después vuelve "en línea". */
+	@keyframes estado-escribe {
+		0%, 100% { visibility: hidden; opacity: 0; }
+		10%, 90% { visibility: visible; opacity: 1; }
+	}
+
+	@keyframes estado-linea {
+		0%, 100% { opacity: 1; }
+		10%, 90% { opacity: 0; }
+	}
+
+	/* Los tildes del mensaje pasan de enviado a leído cuando llega la respuesta. */
+	@keyframes tildes-leido {
+		from { color: #cddcf7; }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
@@ -199,6 +244,24 @@ import { WHATSAPP_MENSAJE } from '../../config';
 
 			.escribiendo i:nth-child(2) { animation-range: cover 31% cover 46%; }
 			.escribiendo i:nth-child(3) { animation-range: cover 32% cover 47%; }
+
+			.chat__estado-escribe {
+				animation: estado-escribe linear both;
+				animation-timeline: --chat;
+				animation-range: cover 30% cover 45%;
+			}
+
+			.chat__estado-linea {
+				animation: estado-linea linear both;
+				animation-timeline: --chat;
+				animation-range: cover 30% cover 45%;
+			}
+
+			.cierre__chat :global(.cierre__mio svg) {
+				animation: tildes-leido linear both;
+				animation-timeline: --chat;
+				animation-range: cover 43% cover 46%;
+			}
 
 			.cierre__chat :global(.cierre__respuesta) {
 				transform-origin: left bottom;

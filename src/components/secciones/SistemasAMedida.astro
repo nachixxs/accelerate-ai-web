@@ -6,6 +6,7 @@
 // Cada card define el timeline --celda: sus mocks se arman mientras la card cruza la pantalla.
 // Las clases .ejemplo--destacado y .chip-montado las usa scripts/capturas.mjs.
 import Glow from '../Glow.astro';
+import BotonWhatsApp from '../BotonWhatsApp.astro';
 import MockPedidos from '../mocks/MockPedidos.astro';
 import MockTurnos from '../mocks/MockTurnos.astro';
 import MockCaja from '../mocks/MockCaja.astro';
@@ -59,12 +60,37 @@ import MockPanel from '../mocks/MockPanel.astro';
 				<MockPanel />
 			</article>
 		</div>
+
+		<div class="sistemas__pie">
+			<p class="t-label">¿Lo tuyo es otra cosa? Lo armamos igual.</p>
+			<BotonWhatsApp
+				variante="secundario"
+				texto="Quiero uno para mi negocio"
+				mensaje="Hola, vi los sistemas que armaron y quiero uno para mi negocio."
+			/>
+		</div>
 	</div>
 </section>
 
 <style>
 	.sistemas .encabezado-seccion .t-cuerpo {
 		color: var(--text-body-light);
+	}
+
+	.sistemas__pie {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		margin-top: var(--space-5);
+		padding-top: var(--space-4);
+		border-top: 1px solid var(--border-dark);
+	}
+
+	.sistemas__pie .t-label {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
 	}
 
 	.bento {

@@ -11,6 +11,7 @@ import FileText from '@lucide/astro/icons/file-text';
 import Hammer from '@lucide/astro/icons/hammer';
 import LifeBuoy from '@lucide/astro/icons/life-buoy';
 import Flag from '@lucide/astro/icons/flag';
+import BotonWhatsApp from '../BotonWhatsApp.astro';
 ---
 
 <section id="proceso" class="seccion proceso" aria-labelledby="proceso-titulo">
@@ -77,10 +78,25 @@ import Flag from '@lucide/astro/icons/flag';
 				</div>
 			</li>
 		</ol>
+
+		<div class="proceso__pie">
+			<BotonWhatsApp
+				variante="secundario"
+				texto="Pedir mi auditoría gratis"
+				mensaje="Hola, quiero agendar la auditoría gratis de 30 a 45 minutos."
+			/>
+		</div>
 	</div>
 </section>
 
 <style>
+	/* El botón cierra la línea de tiempo: queda debajo, donde la línea se desvanece. */
+	.proceso__pie {
+		display: flex;
+		justify-content: center;
+		margin-top: var(--space-6);
+	}
+
 	.linea {
 		--marca: 48px;
 		position: relative;
