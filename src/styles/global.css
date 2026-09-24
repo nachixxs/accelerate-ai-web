@@ -17,8 +17,26 @@ h1, h2, h3 { color: var(--text-heading-dark); }
 
 :focus-visible { outline: 3px solid var(--brand-primary-deep); outline-offset: 3px; }
 
-/* Los links del encabezado llevan a secciones: que el encabezado fijo (72px) no tape el título. */
-[id] { scroll-margin-top: 96px; }
+/* Lo que dibuja el navegador también lleva la marca: selección, barra de scroll y cursor de texto. */
+::selection { background: var(--blue-100); color: var(--navy-950); }
+.seccion--oscura ::selection { background: var(--blue-800); color: var(--white); }
+html { scrollbar-color: var(--slate-300) var(--surface-alt); caret-color: var(--brand-primary-deep); }
+
+/* El encabezado fijo (72px) no tapa lo que se muestra: ni el título al que lleva un link ni el
+   elemento que recibe el foco con Tab. */
+html { scroll-padding-top: 96px; }
+
+/* Sin la espera del doble toque para zoom en lo que se toca. */
+:is(a, button, label, summary) { touch-action: manipulation; }
+
+/* Link para saltar el encabezado con el teclado: aparece solo cuando recibe el foco. */
+.saltar {
+	position: absolute; top: var(--space-1); left: var(--space-2); z-index: 20;
+	padding: 10px 18px; border-radius: var(--radius-pill);
+	background: var(--navy-950); color: var(--white); font-weight: var(--fw-semibold);
+	translate: 0 -200%;
+}
+.saltar:focus-visible { translate: 0 0; }
 
 /* Texto para lectores de pantalla que no se ve: describe los mocks, que son decorativos. */
 .solo-lector {

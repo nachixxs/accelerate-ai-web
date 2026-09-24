@@ -128,7 +128,17 @@ import MockPanel from '../mocks/MockPanel.astro';
 		background: linear-gradient(160deg, var(--surface-card-dark) 55%, var(--navy-850));
 	}
 
+	/* Tablet: pedidos y panel a lo ancho, turnos y caja lado a lado. */
 	@media (min-width: 768px) {
+		.bento {
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.ejemplo--pedidos,
+		.ejemplo--panel {
+			grid-column: span 2;
+		}
+
 		.ejemplo {
 			padding: var(--space-5) var(--space-4) var(--space-4);
 		}

@@ -353,6 +353,11 @@ const ESTADOS = { nuevo: 'Nuevo', produccion: 'En producción', listo: 'Listo' }
 		50% { opacity: 1; }
 	}
 
+	@keyframes punto-scroll {
+		0%, 33%, 66%, 100% { opacity: 0.35; }
+		16%, 50%, 83% { opacity: 1; }
+	}
+
 	@keyframes fila-nueva {
 		from { opacity: 0; transform: translateX(-16px); background-color: rgba(34, 211, 238, 0.2); }
 		40% { opacity: 1; transform: none; background-color: rgba(34, 211, 238, 0.2); }
@@ -435,9 +440,15 @@ const ESTADOS = { nuevo: 'Nuevo', produccion: 'En producción', listo: 'Listo' }
 			.chat :global(.chat__dos) { animation-range: cover 39% cover 46%; }
 			.fila--nueva { animation-range: cover 44% cover 60%; }
 
+			/* Los puntos laten con el mismo scroll: sin loop infinito fuera de pantalla. */
 			.escribiendo i {
-				animation: punto 0.6s ease-in-out infinite;
+				animation: punto-scroll linear both;
+				animation-timeline: --producto;
+				animation-range: cover 30% cover 40%;
 			}
+
+			.escribiendo i:nth-child(2) { animation-range: cover 30.5% cover 40.5%; }
+			.escribiendo i:nth-child(3) { animation-range: cover 31% cover 41%; }
 		}
 	}
 </style>

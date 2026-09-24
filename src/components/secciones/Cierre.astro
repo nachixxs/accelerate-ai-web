@@ -29,7 +29,7 @@ import { WHATSAPP_MENSAJE } from '../../config';
 		<div
 			class="cierre__chat"
 			role="img"
-			aria-label={`El mensaje que se manda con el botón: "${WHATSAPP_MENSAJE}", y la respuesta de Accelerate.ai, que propone un día para la charla.`}
+			aria-label={`El mensaje que se manda con el botón: “${WHATSAPP_MENSAJE}”, y la respuesta de Accelerate.ai, que propone un día para la charla.`}
 		>
 			<div class="chat__cabecera">
 				<Image src={avatar} alt="" width={40} height={40} class="chat__avatar" />
@@ -155,9 +155,11 @@ import { WHATSAPP_MENSAJE } from '../../config';
 		15%, 85% { opacity: 1; }
 	}
 
+	/* Tres latidos mientras dura "escribiendo...", atados al mismo scroll: nada queda girando
+	   cuando el chat sale de la pantalla. */
 	@keyframes punto {
-		0%, 100% { opacity: 0.35; }
-		50% { opacity: 1; }
+		0%, 33%, 66%, 100% { opacity: 0.35; }
+		16%, 50%, 83% { opacity: 1; }
 	}
 
 	@keyframes burbuja-llega {
@@ -190,11 +192,13 @@ import { WHATSAPP_MENSAJE } from '../../config';
 				height: 6px;
 				border-radius: 50%;
 				background: var(--text-body-light);
-				animation: punto 0.6s ease-in-out infinite;
+				animation: punto linear both;
+				animation-timeline: --chat;
+				animation-range: cover 30% cover 45%;
 			}
 
-			.escribiendo i:nth-child(2) { animation-delay: 0.15s; }
-			.escribiendo i:nth-child(3) { animation-delay: 0.3s; }
+			.escribiendo i:nth-child(2) { animation-range: cover 31% cover 46%; }
+			.escribiendo i:nth-child(3) { animation-range: cover 32% cover 47%; }
 
 			.cierre__chat :global(.cierre__respuesta) {
 				transform-origin: left bottom;
