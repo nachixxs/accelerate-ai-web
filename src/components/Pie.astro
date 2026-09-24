@@ -6,10 +6,20 @@
 // Tres columnas: la marca, las secciones y el contacto. El imagotipo va a 200-232 px, como en el
 // encabezado: los 280 px de mínimo de la marca son sobre el lienzo de 1080 (ver Encabezado.astro).
 import { Image } from 'astro:assets';
+// El contacto, como en minificando: una línea discreta por canal (ícono, canal y dato), no un
+// número grande. WhatsApp primero porque es el canal principal; después el mail de cada socio.
 import ArrowUp from '@lucide/astro/icons/arrow-up';
+import Mail from '@lucide/astro/icons/mail';
 import MessageCircle from '@lucide/astro/icons/message-circle';
 import imagotipo from '../assets/identidad/imagotipo-claro.png';
-import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
+import { EMAILS, WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
+
+const contactos = [
+	{ icono: MessageCircle, canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
+	...EMAILS.map(({ nombre, email }) => ({ icono: Mail, canal: nombre, dato: email, href: `mailto:${email}`, externo: false })),
+];
+
+const anio = new Date().getFullYear();
 
 const links = [
 	{ href: '#resolvemos', texto: 'Qué resolvemos' },
@@ -39,19 +49,29 @@ const links = [
 
 			<div class="pie__bloque" style="--i: 2">
 				<h2 class="pie__titulo">Contacto</h2>
-				<a class="pie__whatsapp" href={WHATSAPP_URL} target="_blank" rel="noopener">
-					<span class="pie__whatsapp-icono"><MessageCircle size={20} /></span>
-					<span>
-						<strong>{WHATSAPP_NUMERO_VISIBLE}</strong>
-						<small>Te responden Ignacio y Gabriel</small>
-					</span>
-				</a>
+				<ul class="pie__contactos">
+					{
+						contactos.map(({ icono: Icono, canal, dato, href, externo }) => (
+							<li>
+								<a class="pie__contacto" href={href} target={externo ? '_blank' : undefined} rel={externo ? 'noopener' : undefined}>
+									<span class="pie__contacto-icono">
+										<Icono size={18} stroke-width={1.75} />
+									</span>
+									<span class="pie__contacto-texto">
+										<span class="pie__contacto-canal">{canal}</span>
+										<span class="pie__contacto-dato">{dato}</span>
+									</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
 				{/* TODO: links a las redes. Faltan las URL (REVISION-TEXTOS.md). */}
 			</div>
 		</div>
 
 		<div class="pie__base">
-			<p class="t-meta">© 2026 Accelerate.ai</p>
+			<p class="pie__legal">© {anio} Accelerate.ai. Todos los derechos reservados.</p>
 			<a class="pie__arriba" href="#inicio">
 				Volver arriba
 				<ArrowUp size={18} stroke-width={2} />
@@ -96,8 +116,9 @@ const links = [
 	}
 
 	.pie__marca p {
-		max-width: 30ch;
+		max-width: 32ch;
 		color: var(--text-body-light);
+		font-size: 1rem;
 	}
 
 	.pie__logo {
@@ -105,10 +126,13 @@ const links = [
 		height: auto;
 	}
 
+	/* Título de columna y links al mismo tamaño chico: el título se distingue por peso y color, y
+	   los links no le ganan en jerarquía (antes iban a tamaño de párrafo). */
 	.pie__titulo {
 		color: var(--text-heading-light);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
+		letter-spacing: 0.01em;
 	}
 
 	/* En el celular, los links en dos columnas: la lista no se vuelve una torre. */
@@ -125,39 +149,52 @@ const links = [
 		min-height: 44px;
 		background: linear-gradient(var(--cyan-300), var(--cyan-300)) no-repeat 0 calc(50% + 0.8em) / 0% 1px;
 		color: var(--text-body-light);
+		font-size: var(--type-meta-size);
 		transition: color 0.2s, background-size 0.25s var(--curva-salida);
 	}
 
-	.pie__whatsapp {
-		display: inline-flex;
+	.pie__contactos {
+		display: grid;
+		gap: var(--space-1);
+	}
+
+	/* Una fila por canal: el ícono en un recuadro fino, el canal chico arriba y el dato abajo. */
+	.pie__contacto {
+		display: flex;
 		align-items: center;
 		gap: 12px;
 		min-height: 44px;
-		color: var(--text-body-light);
-		font-size: 0.8125rem;
 	}
 
-	.pie__whatsapp strong {
-		display: block;
-		color: var(--text-heading-light);
-		font-size: 1.0625rem;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.pie__whatsapp small {
-		font-size: inherit;
-	}
-
-	.pie__whatsapp-icono {
+	.pie__contacto-icono {
 		display: grid;
 		flex: none;
 		place-items: center;
-		width: 44px;
-		height: 44px;
-		border-radius: var(--radius-pill);
-		background: var(--cyan-300);
-		color: var(--navy-950);
-		transition: transform 0.2s var(--curva-salida);
+		width: 40px;
+		height: 40px;
+		border: 1px solid var(--border-dark);
+		border-radius: 12px;
+		color: var(--cyan-300);
+		transition: border-color 0.2s;
+	}
+
+	.pie__contacto-texto {
+		display: grid;
+		min-width: 0;
+		line-height: 1.35;
+	}
+
+	.pie__contacto-canal {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+	}
+
+	.pie__contacto-dato {
+		color: var(--text-body-light);
+		font-size: var(--type-meta-size);
+		font-variant-numeric: tabular-nums;
+		overflow-wrap: anywhere;
+		transition: color 0.2s;
 	}
 
 	.pie__base {
@@ -168,6 +205,11 @@ const links = [
 		gap: var(--space-2);
 		padding-block: var(--space-2) var(--space-3);
 		border-top: 1px solid var(--border-dark);
+	}
+
+	.pie__legal {
+		color: var(--text-muted-light);
+		font-size: var(--type-meta-size);
 	}
 
 	.pie__arriba {
@@ -195,8 +237,12 @@ const links = [
 			color: var(--text-heading-light);
 		}
 
-		.pie__whatsapp:hover strong {
-			color: var(--cyan-300);
+		.pie__contacto:hover .pie__contacto-icono {
+			border-color: var(--cyan-300);
+		}
+
+		.pie__contacto:hover .pie__contacto-dato {
+			color: var(--text-heading-light);
 		}
 
 		.pie__arriba:hover {
@@ -205,10 +251,6 @@ const links = [
 	}
 
 	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-		.pie__whatsapp:hover .pie__whatsapp-icono {
-			transform: scale(1.08) rotate(-10deg);
-		}
-
 		.pie__arriba:hover :global(svg) {
 			transform: translateY(-3px);
 		}
@@ -226,7 +268,7 @@ const links = [
 
 	@media (min-width: 768px) {
 		.pie__grilla {
-			grid-template-columns: 1.4fr 1fr 1fr;
+			grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.25fr);
 			gap: var(--space-4);
 		}
 

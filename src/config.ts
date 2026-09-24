@@ -9,3 +9,9 @@ export const whatsappUrl = (mensaje = WHATSAPP_MENSAJE) =>
 	`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
 
 export const WHATSAPP_URL = whatsappUrl();
+
+// Los mails de los dos socios, para el pie. El WhatsApp sigue siendo el contacto principal.
+export const EMAILS = [
+	{ nombre: 'Ignacio', email: 'ignacionogpa@gmail.com' },
+	{ nombre: 'Gabriel', email: 'ggil24761@gmail.com' },
+];

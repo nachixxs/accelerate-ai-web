@@ -137,6 +137,13 @@ en verde:
    movido -6 % dentro del círculo (la A cursiva centrada por su caja se ve corrida).
 9. **Pie nuevo:** marca + secciones + contacto, estela de velocidad con los colores de la A que
    cruza con el scroll, "Volver arriba". Secciones con id nuevo: `#resolvemos` y `#somos`.
+   Rehecho el 2026-09-24 (rama `pie-contacto`): los links de secciones a tamaño chico, debajo
+   de su título (antes iban a tamaño de párrafo y se veían básicos); el contacto como en
+   minificando, una fila discreta por canal (WhatsApp y el mail de Ignacio y de Gabriel, en
+   `EMAILS` de `config.ts`); "© año Accelerate.ai. Todos los derechos reservados."
+10. **Favicon:** la A clara con las estelas azul y celeste sobre un cuadrado `#0b1220`
+    redondeado (64 px), y el mismo fondo a sangre en `apple-touch-icon.png` (180 px). Los links
+    llevan `?v=2` para que los navegadores no sigan mostrando el viejo de su caché.
 
 **Ojo al revisar:** en la PC del usuario Windows tiene apagados los efectos de animación
 (Configuración > Accesibilidad > Efectos visuales > Efectos de animación), y Chrome lo informa
