@@ -1,7 +1,25 @@
-/* De .claude/skills/accelerate-ai-design/tokens/typography.css: solo la familia y los pesos.
-   La escala del sistema es fija para un lienzo de 1080px; la de la web es responsive y va aparte.
+/* De .claude/skills/accelerate-ai-design/tokens/typography.css: la familia, los pesos y los roles.
+   La escala del sistema es fija para un lienzo de 1080px; la de la web es responsive: cada tamaño
+   va del mínimo a 360px de ancho al máximo a 1280px, en línea recta, con clamp().
+   Fuera del sistema: el cuerpo pasa de lh 1.4 a 1.5 y "gigante" no se usa hasta que haya cifras.
    --font-archivo lo define la API de fuentes de Astro (astro.config.mjs), con su fallback ajustado. */
 :root{
 --font-core:var(--font-archivo),system-ui,sans-serif;
 --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;--fw-black:800;
+
+--type-hook-size:clamp(2.5rem, 1.7174rem + 3.4783vw, 4.5rem);          /* 40 → 72 */  --type-hook-weight:800; --type-hook-lh:1.05; --type-hook-ls:-0.02em;
+--type-titular-size:clamp(1.75rem, 1.2609rem + 2.1739vw, 3rem);        /* 28 → 48 */  --type-titular-weight:700; --type-titular-lh:1.08; --type-titular-ls:-0.01em;
+--type-label-size:clamp(1.25rem, 1.1033rem + 0.6522vw, 1.625rem);      /* 20 → 26 */  --type-label-weight:500; --type-label-lh:1.3;
+--type-cuerpo-size:clamp(1.0625rem, 0.9891rem + 0.3261vw, 1.25rem);    /* 17 → 20 */  --type-cuerpo-weight:400; --type-cuerpo-lh:1.5;
+--type-eyebrow-size:clamp(0.8125rem, 0.788rem + 0.1087vw, 0.875rem);   /* 13 → 14 */  --type-eyebrow-weight:600; --type-eyebrow-ls:0.08em;
+--type-meta-size:clamp(0.875rem, 0.8505rem + 0.1087vw, 0.9375rem);     /* 14 → 15 */  --type-meta-weight:500;
+
+--measure-cuerpo:65ch; /* largo máximo de línea de un párrafo */
 }
+body{font-size:var(--type-cuerpo-size);font-weight:var(--type-cuerpo-weight);line-height:var(--type-cuerpo-lh)}
+.t-hook{font-family:var(--font-core);font-size:var(--type-hook-size);font-weight:var(--type-hook-weight);line-height:var(--type-hook-lh);letter-spacing:var(--type-hook-ls);text-wrap:balance}
+.t-titular{font-family:var(--font-core);font-size:var(--type-titular-size);font-weight:var(--type-titular-weight);line-height:var(--type-titular-lh);letter-spacing:var(--type-titular-ls);text-wrap:balance}
+.t-label{font-family:var(--font-core);font-size:var(--type-label-size);font-weight:var(--type-label-weight);line-height:var(--type-label-lh)}
+.t-cuerpo{font-family:var(--font-core);font-size:var(--type-cuerpo-size);font-weight:var(--type-cuerpo-weight);line-height:var(--type-cuerpo-lh);max-width:var(--measure-cuerpo);text-wrap:pretty}
+.t-eyebrow{font-family:var(--font-core);font-size:var(--type-eyebrow-size);font-weight:var(--type-eyebrow-weight);letter-spacing:var(--type-eyebrow-ls);text-transform:uppercase}
+.t-meta{font-family:var(--font-core);font-size:var(--type-meta-size);font-weight:var(--type-meta-weight)}

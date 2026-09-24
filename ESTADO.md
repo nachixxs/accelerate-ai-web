@@ -16,7 +16,9 @@ página todavía no tiene contenido. Sin repo en GitHub.
    `src/assets/identidad/`. Archivo se carga con la API de fuentes de Astro
    (`astro.config.mjs`), servida desde el sitio, no con el `@import` a Google del sistema.
    `src/layouts/Base.astro` carga la fuente y `src/styles/global.css`.
-4. Escala tipográfica responsive para web, derivada de la del design system.
+4. ~~Escala tipográfica responsive~~. En `src/styles/tokens/typography.css`, con `clamp()` de
+   360 a 1280 px: hook 40→72 (`h1`), titular 28→48 (`h2`), label 20→26 (`h3`), cuerpo 17→20
+   (lh 1.5, 65ch), eyebrow 13→14, meta 14→15. Sin "gigante" hasta que haya cifras con fuente.
 5. Esqueleto con las 7 secciones de `SPECS.md` §4 como componentes `.astro` y el botón de
    WhatsApp funcionando.
 6. Playwright como dependencia de desarrollo, para capturas en 360 px y en escritorio.
@@ -32,6 +34,8 @@ página todavía no tiene contenido. Sin repo en GitHub.
 | Sin casos de clientes todavía | Falta el permiso de los dueños |
 | Precios en una etapa posterior | Pedido del usuario |
 | Marca: el design system de Colo (`F:\Accelerate.ai Design System.zip`) | Ya está hecho; se adapta la tipografía para web |
+| Archivo servida desde el sitio con la API de fuentes de Astro, no con el `@import` a Google | El `@import` frena el primer dibujado; así hay precarga y fallback con métricas ajustadas |
+| Escala web por roles del sistema, con `clamp()` 360→1280 px; cuerpo con lh 1.5 | En 360 px el cuerpo de redes dividido por 3 quedaría en 11 px; la web tiene párrafos más largos |
 
 ## Skills
 
