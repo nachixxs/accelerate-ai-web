@@ -1,0 +1,5 @@
+/* Copiado tal cual de .claude/skills/accelerate-ai-design/tokens/base.css. Si cambia la marca, se vuelve a copiar. */
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-core);color:var(--text-body-dark);margin:0}
+a{color:var(--brand-primary-deep);text-decoration:none}
+a:hover{color:var(--brand-primary)}

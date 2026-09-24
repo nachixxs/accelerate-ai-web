@@ -3,16 +3,19 @@
 ## Dónde estamos
 
 2026-09-23. Proyecto de Astro creado (plantilla mínima, Astro 7, TypeScript estricto) y
-primer commit en `main`. `npm run build` compila. La página es todavía la de ejemplo de la
-plantilla. Sin repo en GitHub.
+primer commit en `main`. `npm run build` compila. Tokens, logos y fuente ya integrados; la
+página todavía no tiene contenido. Sin repo en GitHub.
 
 ## Próximo paso: la base
 
 1. ~~Nombre de la carpeta y del repo~~: `accelerate-ai-web`.
 2. ~~`npm create astro@latest`, `git init`, primer commit~~. Se generó en una carpeta
    temporal y se copió, sin el `CLAUDE.md`/`AGENTS.md`/`README.md` genéricos de la plantilla.
-3. Pasar al proyecto los tokens (`tokens/*.css`) y los logos (`assets/identidad/`) del design
-   system, que está en `.claude/skills/accelerate-ai-design/`.
+3. ~~Tokens y logos del design system~~. En `src/styles/tokens/` (colores, efectos y base tal
+   cual; de layout solo `--space-*`; de tipografía solo familia y pesos) y
+   `src/assets/identidad/`. Archivo se carga con la API de fuentes de Astro
+   (`astro.config.mjs`), servida desde el sitio, no con el `@import` a Google del sistema.
+   `src/layouts/Base.astro` carga la fuente y `src/styles/global.css`.
 4. Escala tipográfica responsive para web, derivada de la del design system.
 5. Esqueleto con las 7 secciones de `SPECS.md` §4 como componentes `.astro` y el botón de
    WhatsApp funcionando.

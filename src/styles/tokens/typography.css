@@ -1,0 +1,7 @@
+/* De .claude/skills/accelerate-ai-design/tokens/typography.css: solo la familia y los pesos.
+   La escala del sistema es fija para un lienzo de 1080px; la de la web es responsive y va aparte.
+   --font-archivo lo define la API de fuentes de Astro (astro.config.mjs), con su fallback ajustado. */
+:root{
+--font-core:var(--font-archivo),system-ui,sans-serif;
+--fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;--fw-black:800;
+}
