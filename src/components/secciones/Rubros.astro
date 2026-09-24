@@ -10,7 +10,7 @@ import Wrench from '@lucide/astro/icons/wrench';
 import Store from '@lucide/astro/icons/store';
 import Stethoscope from '@lucide/astro/icons/stethoscope';
 import Truck from '@lucide/astro/icons/truck';
-import Building2 from '@lucide/astro/icons/building-2';
+import Building from '@lucide/astro/icons/building';
 import Calculator from '@lucide/astro/icons/calculator';
 import Dumbbell from '@lucide/astro/icons/dumbbell';
 import Scissors from '@lucide/astro/icons/scissors';
@@ -24,7 +24,7 @@ const rubros = [
 	{ icono: Store, nombre: 'Comercios' },
 	{ icono: Stethoscope, nombre: 'Consultorios' },
 	{ icono: Truck, nombre: 'Distribuidoras' },
-	{ icono: Building2, nombre: 'Inmobiliarias' },
+	{ icono: Building, nombre: 'Inmobiliarias' },
 	{ icono: Calculator, nombre: 'Estudios contables' },
 	{ icono: Dumbbell, nombre: 'Gimnasios' },
 	{ icono: Scissors, nombre: 'Peluquerías' },
@@ -62,14 +62,13 @@ const rubros = [
 
 <style>
 	.rubros {
-		padding-block: var(--space-4) var(--space-5);
+		padding-block: var(--space-4);
 		border-block: 1px solid var(--border-light);
 		background: var(--white);
 	}
 
 	.rubros__cabecera {
 		display: flex;
-		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-2);
@@ -103,7 +102,7 @@ const rubros = [
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
-		padding: 12px 20px;
+		padding: 10px 18px;
 		border: 1px solid var(--border-light);
 		border-radius: var(--radius-pill);
 		background: var(--surface-alt);
@@ -131,6 +130,7 @@ const rubros = [
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-medium);
 		cursor: pointer;
+		flex: none;
 	}
 
 	.rubros__pausa:hover {
