@@ -8,9 +8,10 @@ revisar (`REVISION-TEXTOS.md`), vistas en 360 y 1280 px con `npm run capturas`. 
 revisión de UX y accesibilidad y tiene las etiquetas Open Graph con su imagen, con un dominio
 provisorio. Sin repo en GitHub.
 
-**En curso: rediseño dinámico** en la rama `rediseno-dinamico` (ver la sección de abajo). El
-usuario vio la base "súper plana" y pidió una página como https://minificando.ai/: linda,
-profesional, con mucho movimiento y visuales reales del producto (panel, línea de tiempo).
+**Rediseño dinámico terminado** en la rama `rediseno-dinamico` (ver la sección de abajo),
+sin merge a `main` todavía: espera la confirmación del usuario. El usuario vio la base "súper
+plana" y pidió una página como https://minificando.ai/: linda, profesional, con mucho
+movimiento y visuales reales del producto (panel, línea de tiempo).
 
 ## La base (terminada)
 
@@ -54,61 +55,63 @@ profesional, con mucho movimiento y visuales reales del producto (panel, línea 
    en una columna central de 600 px por si WhatsApp recorta la vista previa a un cuadrado.
    `npm run capturas` chequea que las etiquetas estén y que la imagen esté publicada.
 
-## Rediseño dinámico (en curso, rama `rediseno-dinamico`)
+## Rediseño dinámico (terminado, rama `rediseno-dinamico`)
 
 Referencia: minificando.ai (Astro, modo claro, panel del producto en la portada, cinta de
 logos, línea de tiempo de "tu día", calendario, reseñas, video). De ahí se toma la estructura y
 la riqueza visual; los colores, la tipografía y los efectos siguen siendo los de la marca.
 
-**Hecho (sin revisar a fondo todavía):**
-- `global.css`: utilidades de movimiento. `.entrada` (entrada al cargar, en cascada con
-  `--orden`) y `.revelar` (aparición con el scroll con `animation-timeline: view()`, sin
-  JavaScript). Todo apagado con `prefers-reduced-motion`. Más `.solo-lector`,
-  `scroll-margin-top` para el encabezado fijo y `.encabezado-seccion`.
-- `Encabezado.astro`: fijo, logotipo azul, links a `#sistemas` `#proceso` `#preguntas`, botón
-  de WhatsApp en azul profundo (solo ícono en el celular), sombra y barra de lectura atadas al
-  scroll.
-- `mocks/Burbuja.astro`: burbuja de WhatsApp, port del `WhatsAppMock` de la marca, con el tilde.
-- `Portada.astro` rehecha: fondo claro, texto a la izquierda y el producto a la derecha (panel
-  "Pedidos de hoy" en card oscura, chat de WhatsApp montado encima, chip "Cargado sin que nadie
-  lo tipee" sobre el borde). La historia (llega el pedido, "escribiendo…", el sistema confirma,
-  el pedido aparece arriba de la planilla) corre al cargar en escritorio y avanza con el scroll
-  en el celular. Vista en 1280 y 360 px: bien.
-- `Rubros.astro`: cinta de rubros con botón de pausa (checkbox, sin JS). **Escrita pero todavía
-  no está en `index.astro` ni se probó.**
+Todo el movimiento es CSS, sin JavaScript: `animation-timeline: view()` y `view-timeline`
+con nombre, `:has()`, `@supports` y `prefers-reduced-motion` en todo lo que se mueve. El estado
+de base es el final, así en Firefox y con movimiento reducido la página se ve completa y quieta.
 
-**Falta, en este orden:**
-1. Sumar `Rubros` a `index.astro` y probarla.
-2. `QueResolvemos`: interruptor "Hoy / Con un sistema" (radios + `:has()`) que transforma cada
-   dolor en su solución.
-3. `SistemasAMedida` con `id="sistemas"`, en fondo oscuro: grilla bento con un mock por
-   ejemplo (chat de pedidos con el chip "Ya funciona en una imprenta", calendario de turnos con
-   aviso de recordatorio, ticket de cierre de caja, gráfico de barras que crece con el scroll).
-   Mantener las clases `.chip-montado` y `.ejemplo--destacado`, que usa `capturas.mjs`.
-4. `ComoTrabajamos` con `id="proceso"`: línea de tiempo vertical (alternada en escritorio)
-   con la línea que se llena con el scroll (`view-timeline`) y un mini visual por paso.
-5. `QuienesSomos`: el "momento de escala" de la marca, "Nacho y Colo" gigante, con los nombres
-   deslizándose con el scroll.
-6. `PreguntasFrecuentes` con `id="preguntas"`: título fijo a la izquierda en escritorio y
-   apertura suave (`::details-content` + `interpolate-size`).
-7. `Cierre`: el mensaje real que se manda por WhatsApp como burbuja, con la respuesta
-   apareciendo con el scroll; imagotipo claro grande en el pie.
-8. Pasar las skills: `emil-design-eng`, `find-animation-opportunities`, `review-animations`,
-   `impeccable`, `design-taste-frontend` (checklist final) y `web-design-guidelines`.
-9. Actualizar `capturas.mjs`: la captura completa con `reducedMotion: 'reduce'` (si no, lo que
-   se revela con el scroll sale invisible) y chequeos para lo nuevo.
-10. `npm run capturas`, mirar todo en 360 y 1280, ESTADO.md, commit y merge a `main` con
-    confirmación del usuario.
+**Hecho:**
+1. `Portada`: fondo claro, texto a la izquierda y el producto a la derecha (panel "Pedidos de
+   hoy", chat montado encima, chip sobre el borde). La historia corre al cargar en escritorio y
+   con el scroll en el celular.
+2. `Rubros`: cinta de rubros con botón de pausa (checkbox, sin JS). Con movimiento reducido
+   queda quieta y centrada.
+3. `QueResolvemos`: interruptor "Hoy / Con un sistema" (radios + `:has()`). "Hoy" se ve
+   desordenado (filas corridas, divisiones punteadas); "Con un sistema" pasa a la card oscura,
+   con un fundido con blur y en cascada.
+4. `SistemasAMedida` (`#sistemas`), fondo oscuro: bento de 4 cards (7/5/5/7 en escritorio,
+   2 columnas en tablet, 1 en el celular), cada una con su mock en `src/components/mocks/`
+   (pedidos, turnos con recordatorio, ticket de caja, gráfico de barras) que se arma con el
+   scroll.
+5. `ComoTrabajamos` (`#proceso`): línea de tiempo alternada en escritorio. La línea se llena
+   con el scroll y cada marca se enciende cuando la punta la alcanza. Un visual por paso; la
+   propuesta es la única card invertida de la sección.
+6. `QuienesSomos`: "Nacho y Colo" a escala gigante, los nombres entran desde lados opuestos.
+7. `PreguntasFrecuentes` (`#preguntas`): título fijo en escritorio y apertura suave con
+   `::details-content` + `interpolate-size`.
+8. `Cierre`: el mensaje real del botón (sale de `config.ts`) como burbuja, "escribiendo…" y la
+   respuesta con el scroll. Imagotipo claro grande en el pie.
+9. `capturas.mjs`: primera pantalla con movimiento; página completa con
+   `reducedMotion: 'reduce'`; chequea que las animaciones de scroll tengan timeline, el
+   interruptor, los links del encabezado, gradiente ≤ 2, eyebrows ≤ 1 cada 3 secciones y
+   que no haya rayas largas.
+10. Pasada de skills y pulido final: selección y barra de scroll con la marca, puntos de
+    "escribiendo" atados al scroll (sin loop infinito), interruptor a 300 ms, link para saltar
+    al contenido, `touch-action` y `scroll-padding-top` para que el encabezado no tape el foco.
+    `review-animations` no la puede correr Claude: la corre el usuario con `/review-animations`.
 
-**Reglas de la marca que cuidar en el rediseño:** `#2971f2` solo en el botón principal; en
-el fondo claro, una sola card invertida por sección (por eso Sistemas va en fondo oscuro);
-un solo glow sobre claro; sin vidrio ni blur fuera de los glows; texto sin alpha; nada de
-números sin fuente (los mocks usan datos de ejemplo, sin métricas); en la cinta, rubros y no
-clientes; sin em-dash (lo pide Taste).
+**Dos errores que dejaban las animaciones de scroll muertas en el build (ya corregidos):**
+- Lightning CSS, el minificador de Vite, junta `animation-timeline` dentro del atajo
+  `animation` (`animation: linear both nombre view()`), y Chrome descarta esa declaración
+  entera. Se minifica con esbuild (`astro.config.mjs`). En el dev server no se ve: solo en el
+  build.
+- `overflow: hidden` en `.con-glow` volvía a cada sección un contenedor de scroll, y los
+  `view()` de adentro quedaban sin timeline. Ahora es `overflow: clip`.
+
+**Reglas de la marca que se cuidaron:** `#2971f2` solo en el botón principal; en el fondo
+claro, una sola card invertida por sección; un glow sobre claro y dos sobre oscuro; sin vidrio
+ni blur fuera de los glows; texto sin alpha; los mocks usan datos de ejemplo, sin métricas;
+en la cinta, rubros y no clientes; sin em-dash; sin rebote ni escala al tocar.
 
 ## Próximo paso
 
-0. Terminar el rediseño dinámico (sección de arriba).
+0. El usuario revisa en http://localhost:4400/ (`npx astro preview --port 4400`), corre
+   `/review-animations` si quiere, y confirma el merge de `rediseno-dinamico` a `main`.
 1. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`). Si
    cambia el titular de la portada, correr `npm run og` para rehacer la imagen.
 2. Hosting y dominio (pendientes 2 a 4), recién para publicar. Al tener el dominio, cambiar
@@ -134,6 +137,10 @@ clientes; sin em-dash (lo pide Taste).
 | Rediseño: movimiento solo con CSS (intensidad 7), sin JavaScript | Todo sale con animaciones de CSS y `animation-timeline`; en Firefox la página se ve completa y quieta |
 | Logotipo en el encabezado, imagotipo en el pie y el cierre | La marca pide imagotipo desde 280 px de ancho; debajo va el logotipo. El zip de la agencia trae los mismos PNG que ya están en el repo, sin SVG |
 | Dominio provisorio `accelerate-ai.example` | Open Graph pide URL completas. `.example` es un dominio reservado que no existe, y el build avisa mientras siga ahí |
+| Minificar el CSS con esbuild y no con Lightning CSS | Lightning CSS rompe `animation-timeline` al juntarlo en el atajo `animation` |
+| Sin modo oscuro | La marca tiene dos fondos fijos (claro y oscuro por sección); Taste lo pide, manda la marca |
+| Sin escala al presionar botones | La marca no la usa; el feedback es de color |
+| Los puntos de "escribiendo" y la portada del celular avanzan con el scroll, no en loop | Nada queda girando fuera de la pantalla y el que lee maneja el ritmo |
 
 ## Skills
 
