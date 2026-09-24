@@ -1,84 +1,250 @@
 ---
-// El pie, fuera de <main> para que siga siendo el landmark del pie. Mismo fondo oscuro
-// que la sección de cierre, así se leen como un solo bloque. El imagotipo va grande: la marca
-// lo pide desde 280 px de ancho (debajo de eso se usa el logotipo). Con el scroll entra como
-// arranca la A: se descubre de izquierda a derecha, rápido al principio.
+// El pie, fuera de <main> para que siga siendo el landmark del pie. Mismo fondo oscuro que la
+// sección de cierre, así se leen como un solo bloque; los separa la estela: las tres capas de
+// velocidad de la A (atrás, medio, frente) que cruzan el ancho con el scroll, una detrás de
+// la otra, como arranca el isotipo.
+// Tres columnas: la marca, las secciones y el contacto. El imagotipo va a 200-232 px, como en el
+// encabezado: los 280 px de mínimo de la marca son sobre el lienzo de 1080 (ver Encabezado.astro).
 import { Image } from 'astro:assets';
+import ArrowUp from '@lucide/astro/icons/arrow-up';
 import MessageCircle from '@lucide/astro/icons/message-circle';
 import imagotipo from '../assets/identidad/imagotipo-claro.png';
 import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
+
+const links = [
+	{ href: '#resolvemos', texto: 'Qué resolvemos' },
+	{ href: '#sistemas', texto: 'Qué armamos' },
+	{ href: '#proceso', texto: 'Cómo trabajamos' },
+	{ href: '#somos', texto: 'Quiénes somos' },
+	{ href: '#preguntas', texto: 'Preguntas' },
+];
 ---
 
-<footer class="seccion--oscura">
+<footer class="seccion--oscura pie">
+	<div class="pie__estela" aria-hidden="true"><span></span><span></span><span></span></div>
+
 	<div class="contenedor">
-		<div class="pie">
-			<Image src={imagotipo} alt="Accelerate.ai" width={962} class="pie__logo" />
-			{/* TODO: links a las redes. Faltan las URL (REVISION-TEXTOS.md). */}
-			<div class="pie__datos">
-				<a class="pie__whatsapp" href={WHATSAPP_URL} target="_blank" rel="noopener">
-					<MessageCircle size={18} />
-					{WHATSAPP_NUMERO_VISIBLE}
-				</a>
-				<p class="t-meta">© 2026 Accelerate.ai. Sistemas a medida para pymes.</p>
+		<div class="pie__grilla">
+			<div class="pie__bloque pie__marca" style="--i: 0">
+				<Image src={imagotipo} alt="Accelerate.ai" width={464} class="pie__logo" />
+				<p>Sistemas a medida para pymes que repiten tareas todos los días.</p>
 			</div>
+
+			<nav class="pie__bloque" aria-labelledby="pie-secciones" style="--i: 1">
+				<h2 id="pie-secciones" class="pie__titulo">Secciones</h2>
+				<ul class="pie__links">
+					{links.map(({ href, texto }) => <li><a class="pie__link" href={href}>{texto}</a></li>)}
+				</ul>
+			</nav>
+
+			<div class="pie__bloque" style="--i: 2">
+				<h2 class="pie__titulo">Contacto</h2>
+				<a class="pie__whatsapp" href={WHATSAPP_URL} target="_blank" rel="noopener">
+					<span class="pie__whatsapp-icono"><MessageCircle size={20} /></span>
+					<span>
+						<strong>{WHATSAPP_NUMERO_VISIBLE}</strong>
+						<small>Te responden Ignacio y Gabriel</small>
+					</span>
+				</a>
+				{/* TODO: links a las redes. Faltan las URL (REVISION-TEXTOS.md). */}
+			</div>
+		</div>
+
+		<div class="pie__base">
+			<p class="t-meta">© 2026 Accelerate.ai</p>
+			<a class="pie__arriba" href="#inicio">
+				Volver arriba
+				<ArrowUp size={18} stroke-width={2} />
+			</a>
 		</div>
 	</div>
 </footer>
 
 <style>
 	.pie {
+		color: var(--text-muted-light);
+		view-timeline: --pie block;
+	}
+
+	/* La estela: tres líneas con los colores de las capas de la A sobre oscuro. */
+	.pie__estela {
+		display: grid;
+		gap: 3px;
+	}
+
+	.pie__estela span {
+		height: 3px;
+		transform-origin: left;
+	}
+
+	/* Escalonadas como la estela de la A: la de atrás cruza todo el ancho, las de adelante se
+	   quedan más cortas. */
+	.pie__estela span:nth-child(1) { background: var(--mark-back-on-dark); }
+	.pie__estela span:nth-child(2) { width: 72%; background: var(--mark-mid-on-dark); }
+	.pie__estela span:nth-child(3) { width: 44%; background: var(--mark-front-on-dark); }
+
+	.pie__grilla {
+		display: grid;
+		gap: var(--space-5);
+		padding-block: var(--space-6) var(--space-5);
+	}
+
+	.pie__bloque {
+		display: grid;
+		align-content: start;
+		gap: var(--space-2);
+	}
+
+	.pie__marca p {
+		max-width: 30ch;
+		color: var(--text-body-light);
+	}
+
+	.pie__logo {
+		width: 200px;
+		height: auto;
+	}
+
+	.pie__titulo {
+		color: var(--text-heading-light);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+	}
+
+	/* En el celular, los links en dos columnas: la lista no se vuelve una torre. */
+	.pie__links {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		column-gap: var(--space-2);
+	}
+
+	/* El subrayado crece desde la izquierda con el mouse: la misma dirección que la estela. */
+	.pie__link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		background: linear-gradient(var(--cyan-300), var(--cyan-300)) no-repeat 0 calc(50% + 0.8em) / 0% 1px;
+		color: var(--text-body-light);
+		transition: color 0.2s, background-size 0.25s var(--curva-salida);
+	}
+
+	.pie__whatsapp {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		min-height: 44px;
+		color: var(--text-body-light);
+		font-size: 0.8125rem;
+	}
+
+	.pie__whatsapp strong {
+		display: block;
+		color: var(--text-heading-light);
+		font-size: 1.0625rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.pie__whatsapp small {
+		font-size: inherit;
+	}
+
+	.pie__whatsapp-icono {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		transition: transform 0.2s var(--curva-salida);
+	}
+
+	.pie__base {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: end;
+		align-items: center;
 		justify-content: space-between;
-		gap: var(--space-3);
-		padding-block: var(--space-5) var(--space-4);
+		gap: var(--space-2);
+		padding-block: var(--space-2) var(--space-3);
 		border-top: 1px solid var(--border-dark);
-		color: var(--text-muted-light);
 	}
 
-	.pie__datos {
-		display: grid;
-		gap: var(--space-1);
-	}
-
-	/* El número también abre WhatsApp: el que busca el contacto al final lo encuentra. */
-	.pie__whatsapp {
+	.pie__arriba {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-1);
 		min-height: 44px;
+		padding-inline: var(--space-2);
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-pill);
 		color: var(--text-heading-light);
+		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
-		font-variant-numeric: tabular-nums;
-		transition: color 0.2s;
+		transition: border-color 0.2s;
 	}
 
-	.pie__whatsapp :global(svg) {
+	.pie__arriba :global(svg) {
 		color: var(--cyan-300);
+		transition: transform 0.2s var(--curva-salida);
 	}
 
 	@media (hover: hover) and (pointer: fine) {
-		.pie__whatsapp:hover {
+		.pie__link:hover {
+			background-size: 100% 1px;
+			color: var(--text-heading-light);
+		}
+
+		.pie__whatsapp:hover strong {
 			color: var(--cyan-300);
+		}
+
+		.pie__arriba:hover {
+			border-color: var(--cyan-300);
 		}
 	}
 
-	.pie__logo {
-		width: min(100%, 328px);
-		height: auto;
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.pie__whatsapp:hover .pie__whatsapp-icono {
+			transform: scale(1.08) rotate(-10deg);
+		}
+
+		.pie__arriba:hover :global(svg) {
+			transform: translateY(-3px);
+		}
+	}
+
+	.pie a:focus-visible {
+		outline: 3px solid var(--brand-accent);
+		outline-offset: 3px;
+		border-radius: 4px;
+	}
+
+	.pie .pie__arriba:focus-visible {
+		border-radius: var(--radius-pill);
 	}
 
 	@media (min-width: 768px) {
+		.pie__grilla {
+			grid-template-columns: 1.4fr 1fr 1fr;
+			gap: var(--space-4);
+		}
+
+		.pie__links {
+			grid-template-columns: 1fr;
+		}
+
 		.pie__logo {
-			width: 480px;
+			width: 232px;
 		}
 	}
 
-	@media (min-width: 1024px) {
-		.pie__logo {
-			width: 620px;
-		}
+	@keyframes estela-cruza {
+		from { transform: scaleX(0); }
+	}
+
+	@keyframes bloque-sube {
+		from { opacity: 0; transform: translateY(24px); }
 	}
 
 	@keyframes logo-arranca {
@@ -88,14 +254,29 @@ import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 		}
 	}
 
+	/* El pie es lo último de la página: los tramos terminan antes de que termine de entrar, así
+	   se completan aunque no haya más scroll. */
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
+			.pie__estela span {
+				animation: estela-cruza var(--curva-salida) both;
+				animation-timeline: --pie;
+			}
+
+			.pie__estela span:nth-child(1) { animation-range: entry 0% entry 30%; }
+			.pie__estela span:nth-child(2) { animation-range: entry 5% entry 38%; }
+			.pie__estela span:nth-child(3) { animation-range: entry 10% entry 46%; }
+
+			.pie__bloque {
+				animation: bloque-sube linear both;
+				animation-timeline: --pie;
+				animation-range: entry calc(20% + var(--i) * 12%) entry calc(55% + var(--i) * 12%);
+			}
+
 			.pie__logo {
-				animation: logo-arranca cubic-bezier(0.16, 1, 0.3, 1) both;
-				animation-timeline: view();
-				/* El pie es lo último de la página: nunca llega a media pantalla, así que la entrada
-				   termina cuando el logo terminó de aparecer abajo. */
-				animation-range: entry 0% entry 100%;
+				animation: logo-arranca var(--curva-salida) both;
+				animation-timeline: --pie;
+				animation-range: entry 25% entry 65%;
 			}
 		}
 	}

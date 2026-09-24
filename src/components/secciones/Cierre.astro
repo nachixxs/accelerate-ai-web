@@ -1,18 +1,29 @@
 ---
 // SPECS §4.7: el botón de WhatsApp otra vez. Las redes van en el pie (Pie.astro).
 // Layout "CTA" de la marca: fondo oscuro, glow desde otra esquina que la portada, titular
-// arriba y botón abajo. Al lado, el chat con el mensaje real que abre el botón (sale de
-// config.ts, así no se desfasan) y la respuesta, que llega con el scroll: primero tu mensaje,
-// después "escribiendo..." (en la burbuja y en la cabecera), la respuesta y los tildes que pasan
-// a leído. Todo queda adentro de la caja. Sin movimiento, el chat se ve completo.
-// El avatar es el isotipo claro sobre el fondo de la marca, no el avatar de redes: ese trae el
-// margen de seguridad para el recorte circular, y a 40 px la A quedaba chiquita y corrida.
+// arriba y botón abajo. Al lado, la charla entera que arranca el botón: el mensaje real que
+// abre (sale de config.ts, así no se desfasan), la respuesta, el día elegido y la auditoría
+// agendada, que queda como aviso sobre el borde de la caja. Todo llega con el scroll, con
+// "escribiendo..." en la burbuja y en la cabecera y los tildes que pasan a leído.
+// Sin movimiento, la charla se ve completa.
+// El avatar es el de la marca para recorte circular (avatar-claro): la A ya viene centrada.
+// El isotipo suelto carga las capas de velocidad a la izquierda y en un círculo se ve corrido.
 import { Image } from 'astro:assets';
+import CalendarCheck from '@lucide/astro/icons/calendar-check';
+import ClipboardCheck from '@lucide/astro/icons/clipboard-check';
+import Clock from '@lucide/astro/icons/clock';
+import Gift from '@lucide/astro/icons/gift';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
 import Burbuja from '../mocks/Burbuja.astro';
-import isotipo from '../../assets/identidad/isotipo-claro.png';
+import avatar from '../../assets/identidad/avatar-claro.png';
 import { WHATSAPP_MENSAJE } from '../../config';
+
+const datos = [
+	{ icono: Clock, texto: '30 a 45 minutos' },
+	{ icono: Gift, texto: 'Gratis' },
+	{ icono: ClipboardCheck, texto: 'Sin preparar nada' },
+];
 ---
 
 <section class="seccion seccion--oscura con-glow cierre" aria-labelledby="cierre-titulo">
@@ -22,21 +33,30 @@ import { WHATSAPP_MENSAJE } from '../../config';
 	<div class="contenedor cierre__grilla">
 		<div class="cierre__texto">
 			<h2 id="cierre-titulo" class="t-hook">Empezá por la <span class="texto-gradiente">auditoría gratis</span></h2>
-			<p class="t-cuerpo">
-				Son 30 a 45&nbsp;minutos para encontrar el proceso que más tiempo te hace perder. No tenés que
-				preparar nada.
-			</p>
+			<p class="t-cuerpo">Una charla para encontrar el proceso que más tiempo te hace perder.</p>
+			<ul class="cierre__datos">
+				{
+					datos.map(({ icono: Icono, texto }, i) => (
+						<li style={`--i: ${i}`}>
+							<Icono size={18} stroke-width={2} />
+							{texto}
+						</li>
+					))
+				}
+			</ul>
 			<BotonWhatsApp />
 		</div>
 
 		<div
 			class="cierre__chat"
 			role="img"
-			aria-label={`El mensaje que se manda con el botón: “${WHATSAPP_MENSAJE}”, y la respuesta de Accelerate.ai, que propone un día para la charla.`}
+			aria-label={`Ejemplo de la charla por WhatsApp. Vos: “${WHATSAPP_MENSAJE}”. Accelerate.ai pregunta qué día te queda cómodo, elegís el jueves a la tarde y queda agendada la auditoría para el jueves a las 17.`}
 		>
 			<div class="chat__cabecera">
 				<span class="chat__avatar">
-					<Image src={isotipo} alt="" width={52} />
+					<span class="chat__avatar-circulo">
+						<Image src={avatar} alt="" width={132} />
+					</span>
 				</span>
 				<span>
 					Accelerate.ai
@@ -46,14 +66,31 @@ import { WHATSAPP_MENSAJE } from '../../config';
 					</span>
 				</span>
 			</div>
+
 			<div class="chat__mensajes">
-				<Burbuja de="enviada" hora="Ahora" class="cierre__mio">{WHATSAPP_MENSAJE}</Burbuja>
-				<div class="chat__turno">
+				<span class="chat__dia">Hoy</span>
+				<Burbuja de="enviada" hora="10:02" class="chat__mio chat__mio--1">{WHATSAPP_MENSAJE}</Burbuja>
+				<div class="chat__turno chat__turno--1">
 					<span class="escribiendo"><i></i><i></i><i></i></span>
-					<Burbuja de="recibida" hora="Ahora" class="cierre__respuesta">
+					<Burbuja de="recibida" hora="10:03" class="chat__respuesta">
 						¡Hola! Buenísimo. ¿Qué día te queda cómodo para charlar media hora?
 					</Burbuja>
 				</div>
+				<Burbuja de="enviada" hora="10:04" class="chat__mio chat__mio--2">El jueves a la tarde me viene bien.</Burbuja>
+				<div class="chat__turno chat__turno--2">
+					<span class="escribiendo"><i></i><i></i><i></i></span>
+					<Burbuja de="recibida" hora="10:04" class="chat__respuesta">Listo, jueves a las 17. ¡Hablamos!</Burbuja>
+				</div>
+			</div>
+
+			<div class="agendada">
+				<span class="agendada__icono">
+					<CalendarCheck size={20} stroke-width={2} />
+				</span>
+				<span>
+					<strong>Auditoría agendada</strong>
+					<small>Jueves 17:00 · 30 a 45 min</small>
+				</span>
 			</div>
 		</div>
 	</div>
@@ -77,14 +114,41 @@ import { WHATSAPP_MENSAJE } from '../../config';
 	}
 
 	.cierre__texto p {
-		max-width: 44ch;
+		max-width: 40ch;
 	}
 
-	/* El chat: la card oscura de la marca, un tono arriba del fondo de la sección. */
+	/* Los tres datos de la auditoría, en píldoras: se leen de un vistazo antes del botón. */
+	.cierre__datos {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+		margin-bottom: var(--space-1);
+	}
+
+	.cierre__datos li {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		padding: var(--space-1) var(--space-2);
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-pill);
+		background: var(--surface-card-dark);
+		color: var(--text-heading-light);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+	}
+
+	.cierre__datos :global(svg) {
+		color: var(--cyan-300);
+	}
+
+	/* El chat: la card oscura de la marca, un tono arriba del fondo de la sección. Deja lugar
+	   abajo para el aviso de la auditoría agendada, que se monta sobre el borde. */
 	.cierre__chat {
 		width: 100%;
 		max-width: 440px;
 		justify-self: center;
+		margin-bottom: 32px;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-card-lg);
 		background: var(--surface-card-dark);
@@ -124,30 +188,61 @@ import { WHATSAPP_MENSAJE } from '../../config';
 		visibility: hidden;
 	}
 
-	/* El isotipo centrado en su círculo: la A ocupa dos tercios del ancho, como en un avatar. */
+	/* El avatar de la marca llena el círculo; el punto cian dice "en línea", como en WhatsApp.
+	   La A es cursiva y lo claro cae a la derecha (las capas de la izquierda son azules sobre
+	   navy): centrada por su caja se ve corrida. Va movida a la izquierda, adentro del círculo,
+	   sin recortar las capas. El fondo del círculo es el mismo navy del PNG. */
 	.chat__avatar {
-		display: grid;
+		position: relative;
 		flex: none;
-		place-items: center;
-		width: 40px;
-		height: 40px;
-		border: 1px solid var(--border-dark);
+		width: 44px;
+		height: 44px;
+	}
+
+	.chat__avatar-circulo {
+		display: block;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
 		border-radius: var(--radius-pill);
-		background: var(--surface-dark);
+		background: var(--navy-950);
+		box-shadow: 0 0 0 1px var(--border-dark);
 	}
 
 	.chat__avatar :global(img) {
-		width: 26px;
-		height: auto;
-		/* El trazo diagonal de la A carga el peso a la izquierda: un píxel a la derecha la centra a la vista. */
-		translate: 1px 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		translate: -6% 0;
+	}
+
+	.chat__avatar::after {
+		content: '';
+		position: absolute;
+		right: -1px;
+		bottom: -1px;
+		width: 12px;
+		height: 12px;
+		border: 2px solid var(--surface-card-dark);
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
 	}
 
 	.chat__mensajes {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-2);
-		padding: var(--space-3) var(--space-2) var(--space-4);
+		gap: 12px;
+		padding: var(--space-2) var(--space-2) var(--space-5);
+	}
+
+	.chat__dia {
+		align-self: center;
+		padding: 4px 12px;
+		border-radius: var(--radius-pill);
+		background: var(--navy-850);
+		color: var(--text-muted-light);
+		font-size: 0.75rem;
+		font-weight: var(--fw-medium);
 	}
 
 	/* "Escribiendo..." y la respuesta ocupan el mismo lugar: uno se va cuando llega la otra. */
@@ -162,6 +257,45 @@ import { WHATSAPP_MENSAJE } from '../../config';
 
 	.escribiendo {
 		display: none;
+	}
+
+	/* El aviso de la auditoría agendada: papel claro sobre la card oscura, montado sobre el
+	   borde de abajo (la regla de profundidad de la marca), como el recordatorio de turnos. */
+	.agendada {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		width: max-content;
+		max-width: calc(100% - 32px);
+		margin: -32px 16px -32px auto;
+		padding: 10px 16px 10px 10px;
+		border-radius: 18px;
+		background: var(--off-white);
+		box-shadow: var(--shadow-elevada);
+		color: var(--navy-700);
+		font-size: 0.8125rem;
+		line-height: 1.3;
+	}
+
+	.agendada strong {
+		display: block;
+		color: var(--navy-950);
+		font-size: 0.9375rem;
+	}
+
+	.agendada small {
+		font-size: inherit;
+	}
+
+	.agendada__icono {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 12px;
+		background: var(--cyan-300);
+		color: var(--navy-950);
 	}
 
 	@media (min-width: 1024px) {
@@ -195,15 +329,20 @@ import { WHATSAPP_MENSAJE } from '../../config';
 		from { opacity: 0; transform: translateY(16px) scale(0.96); }
 	}
 
+	@keyframes dato-llega {
+		from { opacity: 0; transform: translateY(12px); }
+	}
+
 	/* El estado de la cabecera: "escribiendo..." mientras dura, después vuelve "en línea". */
+	/* Primero se va uno y después entra el otro: fundidos a la vez, se superponen las letras. */
 	@keyframes estado-escribe {
-		0%, 100% { visibility: hidden; opacity: 0; }
-		10%, 90% { visibility: visible; opacity: 1; }
+		0%, 8%, 92%, 100% { visibility: hidden; opacity: 0; }
+		16%, 84% { visibility: visible; opacity: 1; }
 	}
 
 	@keyframes estado-linea {
 		0%, 100% { opacity: 1; }
-		10%, 90% { opacity: 0; }
+		8%, 92% { opacity: 0; }
 	}
 
 	/* Los tildes del mensaje pasan de enviado a leído cuando llega la respuesta. */
@@ -211,14 +350,41 @@ import { WHATSAPP_MENSAJE } from '../../config';
 		from { color: #cddcf7; }
 	}
 
+	@keyframes agendada-sube {
+		from { opacity: 0; transform: translateY(24px) scale(0.94); }
+	}
+
+	@keyframes sello-asienta {
+		from { transform: scale(0.8) rotate(-12deg); }
+	}
+
+	/* La charla, paso a paso sobre el scroll del chat:
+	   tu mensaje → escribiendo → respuesta → tu día → escribiendo → confirmación → agendada. */
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
-			.cierre__chat :global(.cierre__mio) {
+			.cierre__datos li {
+				animation: dato-llega linear both;
+				animation-timeline: view();
+				animation-range: entry calc(20% + var(--i) * 15%) entry calc(70% + var(--i) * 15%);
+			}
+
+			.cierre__chat :global(.chat__mio) {
 				transform-origin: right bottom;
 				animation: burbuja-llega linear both;
 				animation-timeline: --chat;
-				animation-range: entry 60% cover 30%;
 			}
+
+			.cierre__chat :global(.chat__mio--1) { animation-range: entry 50% entry 100%; }
+			.cierre__chat :global(.chat__mio--2) { animation-range: cover 40% cover 44%; }
+
+			.cierre__chat :global(.chat__respuesta) {
+				transform-origin: left bottom;
+				animation: burbuja-llega linear both;
+				animation-timeline: --chat;
+			}
+
+			.chat__turno--1 :global(.chat__respuesta) { animation-range: cover 36% cover 40%; }
+			.chat__turno--2 :global(.chat__respuesta) { animation-range: cover 52% cover 56%; }
 
 			.escribiendo {
 				display: inline-flex;
@@ -229,7 +395,6 @@ import { WHATSAPP_MENSAJE } from '../../config';
 				background: var(--navy-800);
 				animation: escribiendo linear both;
 				animation-timeline: --chat;
-				animation-range: cover 30% cover 45%;
 			}
 
 			.escribiendo i {
@@ -239,35 +404,46 @@ import { WHATSAPP_MENSAJE } from '../../config';
 				background: var(--text-body-light);
 				animation: punto linear both;
 				animation-timeline: --chat;
-				animation-range: cover 30% cover 45%;
 			}
 
-			.escribiendo i:nth-child(2) { animation-range: cover 31% cover 46%; }
-			.escribiendo i:nth-child(3) { animation-range: cover 32% cover 47%; }
+			.chat__turno--1 .escribiendo,
+			.chat__turno--1 .escribiendo i { animation-range: cover 28% cover 36%; }
+			.chat__turno--2 .escribiendo,
+			.chat__turno--2 .escribiendo i { animation-range: cover 45% cover 52%; }
 
+			/* La cabecera dice "escribiendo..." en los dos turnos. Sin relleno: fuera de cada tramo
+			   manda el estilo base. */
 			.chat__estado-escribe {
-				animation: estado-escribe linear both;
-				animation-timeline: --chat;
-				animation-range: cover 30% cover 45%;
+				animation: estado-escribe linear none, estado-escribe linear none;
+				animation-timeline: --chat, --chat;
+				animation-range: cover 28% cover 36%, cover 45% cover 52%;
 			}
 
 			.chat__estado-linea {
-				animation: estado-linea linear both;
-				animation-timeline: --chat;
-				animation-range: cover 30% cover 45%;
+				animation: estado-linea linear none, estado-linea linear none;
+				animation-timeline: --chat, --chat;
+				animation-range: cover 28% cover 36%, cover 45% cover 52%;
 			}
 
-			.cierre__chat :global(.cierre__mio svg) {
+			.cierre__chat :global(.chat__mio svg) {
 				animation: tildes-leido linear both;
 				animation-timeline: --chat;
-				animation-range: cover 43% cover 46%;
 			}
 
-			.cierre__chat :global(.cierre__respuesta) {
-				transform-origin: left bottom;
-				animation: burbuja-llega linear both;
+			.cierre__chat :global(.chat__mio--1 svg) { animation-range: cover 34% cover 36%; }
+			.cierre__chat :global(.chat__mio--2 svg) { animation-range: cover 50% cover 52%; }
+
+			.agendada {
+				transform-origin: right bottom;
+				animation: agendada-sube linear both;
 				animation-timeline: --chat;
-				animation-range: cover 44% cover 52%;
+				animation-range: cover 57% cover 62%;
+			}
+
+			.agendada__icono {
+				animation: sello-asienta var(--curva-salida) both;
+				animation-timeline: --chat;
+				animation-range: cover 60% cover 64%;
 			}
 		}
 	}
