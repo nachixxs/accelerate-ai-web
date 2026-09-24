@@ -1,0 +1,145 @@
+---
+// Mock de "Pedidos por WhatsApp que se cargan solos": los mensajes de la mañana, cada uno con
+// su sello de "Cargado" a medida que entra. Datos de ejemplo, nombres inventados.
+// Se anima con el timeline --celda de la card que lo contiene (SistemasAMedida.astro).
+import Check from '@lucide/astro/icons/check';
+
+const mensajes = [
+	{ inicial: 'M', nombre: 'Marcos Sosa', hora: '09:14', texto: '300 tarjetas como las de la otra vez, porfa' },
+	{ inicial: 'C', nombre: 'Club Norte', hora: '09:31', texto: '¿Pueden hacer 2 banners de 1 metro para el sábado?' },
+	{ inicial: 'K', nombre: 'Kiosco Rivas', hora: '09:47', texto: 'Necesito 50 afiches A3, los retiro el jueves' },
+];
+---
+
+<div
+	class="mock-pedidos"
+	role="img"
+	aria-label="Ejemplo: tres pedidos que llegan por WhatsApp durante la mañana, cada uno marcado como cargado en la planilla."
+>
+	{
+		mensajes.map(({ inicial, nombre, hora, texto }, i) => (
+			<div class="mensaje" style={`--i: ${i}`}>
+				<span class="mensaje__inicial">{inicial}</span>
+				<div class="mensaje__cuerpo">
+					<span class="mensaje__de">
+						{nombre}
+						<span>{hora}</span>
+					</span>
+					<p>{texto}</p>
+				</div>
+				<span class="mensaje__sello">
+					<Check size={14} stroke-width={2.5} />
+					Cargado
+				</span>
+			</div>
+		))
+	}
+</div>
+
+<style>
+	.mock-pedidos {
+		display: grid;
+		gap: 12px;
+	}
+
+	.mensaje {
+		display: grid;
+		grid-template-columns: 32px 1fr;
+		align-items: start;
+		column-gap: 12px;
+		row-gap: 8px;
+		padding: 12px 14px;
+		border: 1px solid var(--border-dark);
+		border-radius: 18px;
+		border-bottom-left-radius: 6px;
+		background: var(--navy-800);
+	}
+
+	/* Cada mensaje entra un poco más corrido: se leen como una conversación que avanza. */
+	.mensaje:nth-child(2) {
+		margin-left: 6%;
+	}
+
+	.mensaje:nth-child(3) {
+		margin-left: 12%;
+	}
+
+	.mensaje__inicial {
+		display: grid;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		border-radius: var(--radius-pill);
+		background: var(--blue-900);
+		color: var(--blue-100);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-bold);
+	}
+
+	.mensaje__cuerpo {
+		display: grid;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	.mensaje__de {
+		display: flex;
+		justify-content: space-between;
+		gap: 8px;
+		color: var(--text-heading-light);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+	}
+
+	.mensaje__de span {
+		color: var(--text-muted-light);
+		font-weight: var(--fw-regular);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.mensaje p {
+		color: var(--text-body-light);
+		font-size: 0.9375rem;
+		line-height: 1.4;
+	}
+
+	.mensaje__sello {
+		grid-column: 2;
+		justify-self: start;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 4px 10px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		font-size: 0.75rem;
+		font-weight: var(--fw-semibold);
+		line-height: 1.2;
+	}
+
+	@keyframes mensaje-llega {
+		from { opacity: 0; transform: translateY(16px) scale(0.97); }
+	}
+
+	@keyframes sello {
+		from { opacity: 0; transform: scale(0.85); }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.mensaje {
+				transform-origin: left bottom;
+				animation: mensaje-llega linear both;
+				animation-timeline: --celda;
+				animation-range: entry calc(30% + var(--i) * 22%) entry calc(60% + var(--i) * 22%);
+			}
+
+			.mensaje__sello {
+				animation: sello linear both;
+				animation-timeline: --celda;
+				animation-range: entry calc(55% + var(--i) * 22%) entry calc(70% + var(--i) * 22%);
+			}
+		}
+	}
+</style>

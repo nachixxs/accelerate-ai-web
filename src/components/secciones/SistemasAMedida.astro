@@ -1,115 +1,110 @@
 ---
-// SPECS §2 y §4.3: la promesa amplia con 3-4 ejemplos al lado, como muestra y no como menú.
-// El primero va en la card invertida (la única card permitida sobre fondo claro) con un chip
-// montado en su borde: la regla de profundidad de la marca.
-import ShoppingBag from '@lucide/astro/icons/shopping-bag';
-import CalendarCheck from '@lucide/astro/icons/calendar-check';
-import Wallet from '@lucide/astro/icons/wallet';
-import ChartColumn from '@lucide/astro/icons/chart-column';
+// SPECS §2 y §4.3: la promesa amplia con 4 ejemplos al lado, como muestra y no como menú.
+// Fondo oscuro: en el claro la marca permite una sola card invertida por sección, y acá cada
+// ejemplo lleva su card con un mock del sistema funcionando. Grilla bento asimétrica: pedidos
+// ancho y turnos angosto arriba, caja angosta y panel ancho abajo; en el celular, una columna.
+// Cada card define el timeline --celda: sus mocks se arman mientras la card cruza la pantalla.
+// Las clases .ejemplo--destacado y .chip-montado las usa scripts/capturas.mjs.
 import Glow from '../Glow.astro';
-
-const [destacado, ...resto] = [
-	{
-		icono: ShoppingBag,
-		titulo: 'Pedidos por WhatsApp que se cargan solos en una planilla',
-		detalle: 'El cliente pide por WhatsApp y el pedido queda anotado sin que nadie lo tipee. Vos solo revisás los casos raros.',
-	},
-	{
-		icono: CalendarCheck,
-		titulo: 'Turnos y reservas con recordatorios',
-		detalle: 'Tus clientes reservan por WhatsApp a cualquier hora y reciben un aviso antes del turno.',
-	},
-	{
-		icono: Wallet,
-		titulo: 'Cajas y cierres diarios sin cuadernos',
-		detalle: 'Cada movimiento queda registrado y el cierre del día sale en minutos.',
-	},
-	{
-		icono: ChartColumn,
-		titulo: 'Paneles para ver tu negocio de un vistazo',
-		detalle: 'Ventas, gastos y lo que más se mueve, en un tablero armado con tus propios datos.',
-	},
-];
-const IconoDestacado = destacado.icono;
+import MockPedidos from '../mocks/MockPedidos.astro';
+import MockTurnos from '../mocks/MockTurnos.astro';
+import MockCaja from '../mocks/MockCaja.astro';
+import MockPanel from '../mocks/MockPanel.astro';
 ---
 
-<section class="seccion con-glow" aria-labelledby="sistemas-titulo">
-	<Glow tono="cian" fondo="claro" esquina="arriba-der" />
+<section id="sistemas" class="seccion seccion--oscura con-glow sistemas" aria-labelledby="sistemas-titulo">
+	<Glow tono="azul" esquina="arriba-der" />
+	<Glow tono="cian" esquina="arriba-der" />
 
 	<div class="contenedor">
-		<div class="sistemas__intro">
+		<div class="encabezado-seccion revelar">
 			<h2 id="sistemas-titulo" class="t-titular">Armamos el sistema que tu negocio necesita</h2>
 			<p class="t-cuerpo">
-				No vendemos un producto cerrado. Miramos cómo trabajás, elegimos el proceso que más tiempo o
-				plata te hace perder y armamos el sistema para eso. Algunos ejemplos de lo que ya construimos:
+				No vendemos un producto cerrado. Elegimos el proceso que más tiempo o plata te hace perder y
+				armamos el sistema para eso. Algunos de los que ya construimos:
 			</p>
 		</div>
 
-		<div class="sistemas__grilla">
-			<article class="ejemplo ejemplo--destacado">
+		<div class="bento">
+			<article class="ejemplo ejemplo--destacado ejemplo--pedidos">
 				<span class="chip-montado">Ya funciona en una imprenta</span>
-				<IconoDestacado size={40} stroke-width={1.75} class="ejemplo__icono" />
-				<h3 class="t-label">{destacado.titulo}</h3>
-				<p>{destacado.detalle}</p>
+				<div class="ejemplo__texto">
+					<h3 class="t-label">Pedidos por WhatsApp que se cargan solos en una planilla</h3>
+					<p>El cliente pide por WhatsApp y el pedido queda anotado sin que nadie lo tipee. Vos solo revisás los casos raros.</p>
+				</div>
+				<MockPedidos />
 			</article>
 
-			{
-				resto.map(({ icono: Icono, titulo, detalle }) => (
-					<article class="ejemplo">
-						<Icono size={32} stroke-width={1.75} class="ejemplo__icono" />
-						<h3 class="t-label">{titulo}</h3>
-						<p>{detalle}</p>
-					</article>
-				))
-			}
+			<article class="ejemplo ejemplo--turnos">
+				<div class="ejemplo__texto">
+					<h3 class="t-label">Turnos y reservas con recordatorios</h3>
+					<p>Tus clientes reservan por WhatsApp a cualquier hora y reciben un aviso antes del turno.</p>
+				</div>
+				<MockTurnos />
+			</article>
+
+			<article class="ejemplo ejemplo--caja">
+				<div class="ejemplo__texto">
+					<h3 class="t-label">Cajas y cierres diarios sin cuadernos</h3>
+					<p>Cada movimiento queda registrado y el cierre del día sale en minutos.</p>
+				</div>
+				<MockCaja />
+			</article>
+
+			<article class="ejemplo ejemplo--panel">
+				<div class="ejemplo__texto">
+					<h3 class="t-label">Paneles para ver tu negocio de un vistazo</h3>
+					<p>Ventas, gastos y lo que más se mueve, en un tablero armado con tus propios datos.</p>
+				</div>
+				<MockPanel />
+			</article>
 		</div>
 	</div>
 </section>
 
 <style>
-	.sistemas__intro {
-		display: grid;
-		gap: var(--space-3);
-		max-width: 760px;
+	.sistemas .encabezado-seccion .t-cuerpo {
+		color: var(--text-body-light);
 	}
 
-	.sistemas__grilla {
+	.bento {
 		display: grid;
-		gap: var(--space-5);
+		gap: var(--space-3);
 		margin-top: var(--space-6);
 	}
 
 	.ejemplo {
+		position: relative;
 		display: grid;
-		gap: var(--space-2);
+		grid-template-rows: auto 1fr;
 		align-content: start;
+		gap: var(--space-4);
+		padding: var(--space-4) var(--space-3);
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-card-lg);
+		background: var(--surface-card-dark);
+		box-shadow: 0 24px 60px rgba(2, 6, 18, 0.35);
+		view-timeline: --celda block;
+	}
+
+	/* Los mocks van abajo de la card, pegados al borde de abajo en las celdas más altas. */
+	.ejemplo > :last-child {
+		align-self: end;
+	}
+
+	.ejemplo__texto {
+		display: grid;
+		gap: var(--space-1);
 	}
 
 	.ejemplo h3 {
 		font-weight: var(--fw-semibold);
 	}
 
-	.ejemplo__icono {
-		color: var(--brand-primary-deep);
-	}
-
-	/* Card invertida de la marca: #111b30, radius 28, sombra de card. */
+	/* Variedad de fondos en la grilla: el destacado lleva un degradé azul profundo desde abajo. */
 	.ejemplo--destacado {
-		position: relative;
-		padding: var(--space-5) var(--space-3) var(--space-4);
-		border-radius: var(--radius-card-lg);
-		background: var(--surface-card-dark);
-		color: var(--text-body-light);
-		box-shadow: var(--shadow-card);
-	}
-
-	.ejemplo--destacado h3 {
-		color: var(--text-heading-light);
-	}
-
-	.ejemplo--destacado .ejemplo__icono {
-		align-self: start;
-		color: var(--brand-accent);
+		padding-top: var(--space-5);
+		background: linear-gradient(180deg, var(--surface-card-dark) 40%, var(--blue-950));
 	}
 
 	/* Chip "acento" de la marca, montado mitad adentro y mitad afuera del borde de la card. */
@@ -129,19 +124,61 @@ const IconoDestacado = destacado.icono;
 		box-shadow: var(--shadow-elevada);
 	}
 
-	/* Escritorio: el destacado ocupa la columna izquierda entera y los otros tres se apilan a la derecha. */
+	.ejemplo--caja {
+		background: linear-gradient(160deg, var(--surface-card-dark) 55%, var(--navy-850));
+	}
+
 	@media (min-width: 768px) {
-		.sistemas__grilla {
-			grid-template-columns: 1fr 1fr;
-			column-gap: var(--space-6);
+		.ejemplo {
+			padding: var(--space-5) var(--space-4) var(--space-4);
 		}
 
-		/* Ícono arriba y texto abajo: la card es tan alta como los tres ejemplos de al lado. */
 		.ejemplo--destacado {
-			grid-row: span 3;
-			grid-template-rows: 1fr auto auto;
-			align-content: stretch;
-			padding: var(--space-6) var(--space-5) var(--space-5);
+			padding-top: var(--space-6);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.bento {
+			grid-template-columns: repeat(12, 1fr);
+			gap: var(--space-3);
+		}
+
+		.ejemplo--pedidos {
+			grid-column: span 7;
+		}
+
+		.ejemplo--turnos {
+			grid-column: span 5;
+		}
+
+		.ejemplo--caja {
+			grid-column: span 5;
+		}
+
+		.ejemplo--panel {
+			grid-column: span 7;
+		}
+	}
+
+	/* Borde que se aclara al pasar el mouse: la card responde sin moverse de lugar. */
+	@media (hover: hover) and (pointer: fine) {
+		.ejemplo {
+			transition: border-color 0.2s;
+		}
+
+		.ejemplo:hover {
+			border-color: var(--blue-800);
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.ejemplo {
+				animation: entrar-subiendo linear both;
+				animation-timeline: --celda;
+				animation-range: entry 0% entry 60%;
+			}
 		}
 	}
 </style>

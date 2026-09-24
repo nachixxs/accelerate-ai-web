@@ -1,0 +1,148 @@
+---
+// Mock de "Turnos y reservas con recordatorios": la agenda de la semana que se va llenando y el
+// aviso de recordatorio montado sobre el borde de arriba (regla de profundidad de la marca).
+// Datos de ejemplo. Se anima con el timeline --celda de la card que lo contiene.
+import BellRing from '@lucide/astro/icons/bell-ring';
+
+const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'];
+// Un turno por celda: la hora si está reservado, null si está libre. Filas = franjas del día.
+const agenda = [
+	['09:00', null, '09:30', '09:00', null],
+	[null, '10:30', '11:00', null, '10:00'],
+	['15:00', '16:00', null, '15:30', '16:30'],
+	[null, '18:00', '17:30', null, '18:00'],
+];
+let orden = 0;
+---
+
+<div
+	class="mock-turnos"
+	role="img"
+	aria-label="Ejemplo: la agenda de turnos de la semana, casi completa, y un recordatorio enviado a una clienta para su turno de mañana a las 10:30."
+>
+	<div class="aviso">
+		<span class="aviso__icono"><BellRing size={16} /></span>
+		<span>
+			<strong>Recordatorio enviado</strong>
+			Sofía, te esperamos mañana a las 10:30.
+		</span>
+	</div>
+
+	<div class="agenda">
+		{dias.map((dia) => <span class="agenda__dia">{dia}</span>)}
+		{
+			agenda.flat().map((hora) =>
+				hora ? (
+					<span class="turno" style={`--i: ${orden++}`}>
+						{hora}
+					</span>
+				) : (
+					<span class="turno turno--libre" />
+				),
+			)
+		}
+	</div>
+</div>
+
+<style>
+	.mock-turnos {
+		position: relative;
+		padding-top: 44px;
+	}
+
+	.agenda {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 6px;
+		padding: 40px 12px 12px;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-card);
+		background: var(--navy-900);
+	}
+
+	.agenda__dia {
+		padding-bottom: 4px;
+		color: var(--text-muted-light);
+		font-size: 0.75rem;
+		font-weight: var(--fw-semibold);
+		text-align: center;
+	}
+
+	.turno {
+		display: grid;
+		place-items: center;
+		height: 36px;
+		border-radius: 8px;
+		background: var(--blue-800);
+		color: var(--blue-100);
+		font-size: 0.75rem;
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.turno--libre {
+		background: none;
+		border: 1px dashed var(--border-dark);
+	}
+
+	/* El aviso sale del borde de la agenda y se corre hacia afuera de la card. */
+	.aviso {
+		position: absolute;
+		top: 0;
+		right: -12px;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		max-width: min(290px, 92%);
+		padding: 10px 14px;
+		border-radius: 16px;
+		background: var(--off-white);
+		color: var(--text-body-dark);
+		font-size: 0.8125rem;
+		line-height: 1.35;
+		box-shadow: var(--shadow-elevada);
+	}
+
+	.aviso strong {
+		display: block;
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-bold);
+	}
+
+	.aviso__icono {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		border-radius: var(--radius-pill);
+		background: var(--blue-50);
+		color: var(--brand-primary-deep);
+	}
+
+	@keyframes turno-se-llena {
+		from { opacity: 0; transform: scale(0.9); }
+	}
+
+	@keyframes aviso-baja {
+		from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.turno:not(.turno--libre) {
+				animation: turno-se-llena linear both;
+				animation-timeline: --celda;
+				animation-range: entry calc(25% + var(--i) * 4%) entry calc(40% + var(--i) * 4%);
+			}
+
+			.aviso {
+				transform-origin: top right;
+				animation: aviso-baja linear both;
+				animation-timeline: --celda;
+				animation-range: entry 90% cover 45%;
+			}
+		}
+	}
+</style>

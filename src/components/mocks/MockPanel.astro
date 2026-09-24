@@ -1,0 +1,116 @@
+---
+// Mock de "Paneles para ver tu negocio de un vistazo": las ventas de la semana, con barras que
+// crecen con el scroll. Sin escala ni cifras: son datos de ejemplo, y la marca no pone
+// números sin fuente. Se anima con el timeline --celda de la card que lo contiene.
+const semana = [
+	{ dia: 'Lun', alto: 42 },
+	{ dia: 'Mar', alto: 58 },
+	{ dia: 'Mié', alto: 51 },
+	{ dia: 'Jue', alto: 73 },
+	{ dia: 'Vie', alto: 88 },
+	{ dia: 'Sáb', alto: 100, pico: true },
+	{ dia: 'Dom', alto: 34 },
+];
+---
+
+<div
+	class="mock-panel"
+	role="img"
+	aria-label="Ejemplo: un panel con las ventas de cada día de la semana en barras. El sábado es el día que más se vendió."
+>
+	<div class="panel-barras__cabecera">
+		<strong>Ventas de la semana</strong>
+		<span>El día más fuerte: sábado</span>
+	</div>
+	<div class="barras">
+		{
+			semana.map(({ dia, alto, pico }, i) => (
+				<div class="barra" style={`--alto: ${alto}%; --i: ${i}`}>
+					<span class:list={['barra__relleno', { 'barra__relleno--pico': pico }]} />
+					<span class="barra__dia">{dia}</span>
+				</div>
+			))
+		}
+	</div>
+</div>
+
+<style>
+	.mock-panel {
+		display: grid;
+		gap: 16px;
+		padding: 16px;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-card);
+		background: var(--navy-900);
+	}
+
+	.panel-barras__cabecera {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 4px 12px;
+		font-size: 0.875rem;
+	}
+
+	.panel-barras__cabecera strong {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
+	}
+
+	.panel-barras__cabecera span {
+		color: var(--cyan-300);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-medium);
+	}
+
+	.barras {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: 8px;
+		height: 168px;
+		/* Guías horizontales: dan la sensación de escala sin poner números. */
+		background: repeating-linear-gradient(to top, var(--border-dark) 0 1px, transparent 1px 42px);
+		background-position: 0 -26px;
+	}
+
+	.barra {
+		display: grid;
+		grid-template-rows: 1fr auto;
+		gap: 6px;
+		align-items: end;
+		min-width: 0;
+	}
+
+	.barra__relleno {
+		height: var(--alto);
+		border-radius: 6px 6px 2px 2px;
+		background: var(--blue-700);
+		transform-origin: bottom;
+	}
+
+	.barra__relleno--pico {
+		background: var(--cyan-400);
+	}
+
+	.barra__dia {
+		color: var(--text-muted-light);
+		font-size: 0.75rem;
+		text-align: center;
+		background: var(--navy-900);
+	}
+
+	@keyframes crecer {
+		from { transform: scaleY(0.04); }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.barra__relleno {
+				animation: crecer linear both;
+				animation-timeline: --celda;
+				animation-range: entry calc(40% + var(--i) * 5%) cover calc(35% + var(--i) * 3%);
+			}
+		}
+	}
+</style>
