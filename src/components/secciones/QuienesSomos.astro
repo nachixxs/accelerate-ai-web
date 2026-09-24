@@ -1,6 +1,8 @@
 ---
 // SPECS §4.5: Nacho y Colo, qué hace cada uno. Corto. Roles según la sociedad
 // (notas/negocio/Sociedad-y-Acuerdos.md). La marca no usa fotos.
+// Es el "momento de escala" de la marca: los dos nombres a tamaño gigante, cada uno con su rol
+// al lado. Con el scroll, los nombres se acercan desde lados opuestos hasta quedar alineados.
 const personas = [
 	{
 		nombre: 'Nacho',
@@ -13,21 +15,22 @@ const personas = [
 ];
 ---
 
-<section class="seccion" aria-labelledby="somos-titulo">
-	<div class="contenedor somos">
-		<div class="somos__intro">
-			<h2 id="somos-titulo" class="t-titular">Somos Nacho y Colo</h2>
-			<p class="t-cuerpo">
-				Una agencia chica, a propósito: hablás directo con las personas que arman tu sistema.
-			</p>
+<section class="seccion somos" aria-labelledby="somos-titulo">
+	<div class="contenedor">
+		<div class="encabezado-seccion revelar">
+			<h2 id="somos-titulo" class="t-titular">Una agencia chica, a propósito</h2>
+			<p class="t-cuerpo">Hablás directo con las dos personas que arman tu sistema.</p>
 		</div>
 
-		<dl class="somos__personas">
+		<dl class="personas">
 			{
-				personas.map(({ nombre, rol }) => (
+				personas.map(({ nombre, rol }, i) => (
 					<div class="persona">
-						<dt class="t-label">{nombre}</dt>
-						<dd>{rol}</dd>
+						<dt class="persona__nombre">
+							{i > 0 && <span class="persona__y" aria-hidden="true">y </span>}
+							{nombre}
+						</dt>
+						<dd class="persona__rol">{rol}</dd>
 					</div>
 				))
 			}
@@ -36,44 +39,97 @@ const personas = [
 </section>
 
 <style>
-	.somos {
-		display: grid;
-		gap: var(--space-5);
-	}
-
-	.somos__intro {
-		display: grid;
-		gap: var(--space-3);
-	}
-
-	.somos__personas {
+	.personas {
 		display: grid;
 		gap: var(--space-4);
+		margin-top: var(--space-5);
 	}
 
 	.persona {
 		display: grid;
-		align-content: start;
-		gap: var(--space-1);
-		padding-left: var(--space-3);
+		gap: var(--space-2);
+	}
+
+	/* La escala gigante de la marca (200 en el lienzo de 1080), llevada a la web: 88 → 208 px. */
+	.persona__nombre {
+		color: var(--text-heading-dark);
+		font-size: clamp(5.5rem, 2.565rem + 13.04vw, 13rem);
+		font-weight: var(--fw-black);
+		line-height: 0.9;
+		letter-spacing: -0.04em;
+		white-space: nowrap;
+	}
+
+	.persona__y {
+		color: var(--brand-primary-deep);
+		font-weight: var(--fw-medium);
+	}
+
+	.persona__rol {
+		margin: 0;
+		max-width: 34ch;
+		padding-left: var(--space-2);
 		border-left: 2px solid var(--brand-primary-deep);
 	}
 
-	.persona dt {
-		color: var(--text-heading-dark);
-		font-weight: var(--fw-bold);
-	}
+	/* Escritorio: cada nombre con su rol al lado, al pie de la línea. El segundo, corrido a la
+	   derecha: el espacio vacío cae de un lado distinto en cada fila. */
+	@media (min-width: 1024px) {
+		.personas {
+			gap: var(--space-3);
+		}
 
-	@media (min-width: 768px) {
-		.somos__personas {
-			grid-template-columns: 1fr 1fr;
+		.persona {
+			grid-template-columns: auto 1fr;
+			align-items: end;
+			column-gap: var(--space-5);
+		}
+
+		.persona:nth-child(2) {
+			grid-template-columns: 1fr auto;
+		}
+
+		.persona:nth-child(2) .persona__nombre {
+			grid-column: 2;
+			grid-row: 1;
+		}
+
+		.persona:nth-child(2) .persona__rol {
+			grid-column: 1;
+			grid-row: 1;
+			justify-self: end;
+		}
+
+		.persona__rol {
+			margin-bottom: var(--space-3);
 		}
 	}
 
-	@media (min-width: 1024px) {
-		.somos {
-			grid-template-columns: 1fr 1fr;
-			align-items: end;
+	@keyframes nombre-desde-izquierda {
+		from { transform: translateX(-14%); }
+	}
+
+	@keyframes nombre-desde-derecha {
+		from { transform: translateX(14%); }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.persona__nombre {
+				animation: nombre-desde-izquierda linear both;
+				animation-timeline: view();
+				animation-range: entry 0% cover 50%;
+			}
+
+			.persona:nth-child(2) .persona__nombre {
+				animation-name: nombre-desde-derecha;
+			}
+
+			.persona__rol {
+				animation: aparecer linear both;
+				animation-timeline: view();
+				animation-range: entry 40% cover 40%;
+			}
 		}
 	}
 </style>
