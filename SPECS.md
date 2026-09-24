@@ -40,7 +40,7 @@ técnicos: la página no habla de n8n, APIs ni modelos.
 | 2 | Qué resolvemos | 2-3 dolores concretos, contados como los cuenta el dueño, no como los ve un técnico |
 | 3 | Sistemas a medida | La promesa del §2 y los ejemplos de la tabla |
 | 4 | Cómo trabajamos | La auditoría como primer paso: auditoría gratis de 30-45 min → propuesta con dos números → construcción de 1 a 3 semanas, con una demo a mitad de camino → soporte mensual |
-| 5 | Quiénes somos | Nacho y Colo, qué hace cada uno. Corto |
+| 5 | Quiénes somos | Ignacio y Gabriel, qué hace cada uno. Corto |
 | 6 | Preguntas frecuentes | Las objeciones típicas: "¿y si falla?", "¿tengo que cambiar mi número?", "¿cuánto tarda?", "¿sirve para mi rubro?" |
 | 7 | Cierre y pie | El botón de WhatsApp otra vez, más las redes |
 

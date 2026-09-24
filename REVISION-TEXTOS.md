@@ -38,7 +38,7 @@ Marcá cada punto con ✔ (va así), ✘ (sacar) o escribí el cambio al lado.
 
 ## 5. Quiénes somos
 
-- ¿Van los nombres **Nacho y Colo**, o los nombres completos?
+- ~~¿Van los nombres **Nacho y Colo**, o los nombres completos?~~ Resuelto: Ignacio y Gabriel.
 - Tu rol: *"Los números: planillas, paneles en Excel y Power BI, y la administración"*.
   ¿Cómo lo dirías vos?
 - ¿Decimos dónde estamos (General Alvear, Mendoza)? Suma confianza para clientes de la zona;

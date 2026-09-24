@@ -81,7 +81,7 @@ de base es el final, así en Firefox y con movimiento reducido la página se ve 
 5. `ComoTrabajamos` (`#proceso`): línea de tiempo alternada en escritorio. La línea se llena
    con el scroll y cada marca se enciende cuando la punta la alcanza. Un visual por paso; la
    propuesta es la única card invertida de la sección.
-6. `QuienesSomos`: "Nacho y Colo" a escala gigante, los nombres entran desde lados opuestos.
+6. `QuienesSomos`: los nombres (hoy Ignacio y Gabriel) a escala gigante, los nombres entran desde lados opuestos.
 7. `PreguntasFrecuentes` (`#preguntas`): título fijo en escritorio y apertura suave con
    `::details-content` + `interpolate-size`.
 8. `Cierre`: el mensaje real del botón (sale de `config.ts`) como burbuja, "escribiendo…" y la
@@ -108,9 +108,40 @@ claro, una sola card invertida por sección; un glow sobre claro y dos sobre osc
 ni blur fuera de los glows; texto sin alpha; los mocks usan datos de ejemplo, sin métricas;
 en la cinta, rubros y no clientes; sin em-dash; sin rebote ni escala al tocar.
 
+## Segunda tanda del rediseño (2026-09-24, misma rama)
+
+Pedidos del usuario después de ver la primera versión, todos hechos y con `npm run capturas`
+en verde:
+
+1. **Portada sin superposición:** el chat arriba, una línea punteada con un pedido que baja y
+   el panel "Pedidos de hoy" abajo; el chip "Cargado sin que nadie lo tipee" sobre el borde.
+2. **Rubros como cinta transportadora:** dos filas en sentidos opuestos (19 rubros), que además
+   se corren con el scroll. Pausa con checkbox y con el mouse encima.
+3. **Interruptor:** sin las filas torcidas (se veía roto); íconos en círculos, tachado que se
+   dibuja, sello y un anillo que invita a tocarlo.
+4. **Mocks nuevos:** pedidos (chat → planilla que se escribe sola), turnos (el aviso de Sofía
+   debajo de la agenda, sobre el borde), panel con KPI que cuentan en CSS y gráfico de línea.
+5. **Quiénes somos:** Ignacio y Gabriel, con el nombre que se llena con el scroll.
+6. **Logo:** imagotipo azul en el encabezado (150-176 px) y en el pie (200-232 px).
+7. **Botones de WhatsApp:** sin las capas de velocidad (al usuario no le gustaron); con el
+   mouse se agrandan (`scale(1.05)`). Uno por sección, cada uno con su texto y su mensaje
+   (`whatsappUrl(mensaje)` en `config.ts`), como minificando. "Escribinos por WhatsApp" queda
+   solo en el encabezado, la portada y el cierre.
+8. **Cierre:** la charla completa (mensaje, respuesta, día elegido, confirmación) y el aviso
+   "Auditoría agendada" sobre el borde; tres datos en píldoras. Avatar: `avatar-claro.png`
+   movido -6 % dentro del círculo (la A cursiva centrada por su caja se ve corrida).
+9. **Pie nuevo:** marca + secciones + contacto, estela de velocidad con los colores de la A que
+   cruza con el scroll, "Volver arriba". Secciones con id nuevo: `#resolvemos` y `#somos`.
+
+**Ojo al revisar:** en la PC del usuario Windows tiene apagados los efectos de animación
+(Configuración > Accesibilidad > Efectos visuales > Efectos de animación), y Chrome lo informa
+como `prefers-reduced-motion: reduce`: la página se ve quieta, completa y sin movimiento. Para
+ver el movimiento hay que prender esa opción.
+
 ## Próximo paso
 
-0. El usuario revisa en http://localhost:4400/ (`npx astro preview --port 4400`), corre
+0. El usuario revisa en http://localhost:4400/ (`npx astro build` y
+   `npx astro preview --port 4400`) con los efectos de animación de Windows prendidos, corre
    `/review-animations` si quiere, y confirma el merge de `rediseno-dinamico` a `main`.
 1. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`). Si
    cambia el titular de la portada, correr `npm run og` para rehacer la imagen.
@@ -135,11 +166,13 @@ en la cinta, rubros y no clientes; sin em-dash; sin rebote ni escala al tocar.
 | Imagen OG en JPEG, no PNG | Pesa 50 KB; WhatsApp a veces no muestra imágenes de más de 300 KB |
 | Rediseño: portada en fondo claro con el producto a la derecha, como minificando | Pedido del usuario. La marca pide fondo oscuro para el hook, pero en piezas de redes; en la web manda el pedido. El cierre sigue oscuro |
 | Rediseño: movimiento solo con CSS (intensidad 7), sin JavaScript | Todo sale con animaciones de CSS y `animation-timeline`; en Firefox la página se ve completa y quieta |
-| Logotipo en el encabezado, imagotipo en el pie y el cierre | La marca pide imagotipo desde 280 px de ancho; debajo va el logotipo. El zip de la agencia trae los mismos PNG que ya están en el repo, sin SVG |
+| Imagotipo en el encabezado (150-176 px) y en el pie (200-232 px) | Pedido del usuario (logo "menos básico"). Los 280 px de mínimo de la marca son sobre el lienzo de 1080 de redes, que en el celular se ve a un tercio; a este tamaño las capas se leen. El zip de la agencia trae los mismos PNG que ya están en el repo, sin SVG |
 | Dominio provisorio `accelerate-ai.example` | Open Graph pide URL completas. `.example` es un dominio reservado que no existe, y el build avisa mientras siga ahí |
 | Minificar el CSS con esbuild y no con Lightning CSS | Lightning CSS rompe `animation-timeline` al juntarlo en el atajo `animation` |
 | Sin modo oscuro | La marca tiene dos fondos fijos (claro y oscuro por sección); Taste lo pide, manda la marca |
-| Sin escala al presionar botones | La marca no la usa; el feedback es de color |
+| Botones que se agrandan con el mouse (`scale(1.05)`), solo con puntero fino | Pedido del usuario (2026-09-24), aunque la marca no usa escala. Al tocar sigue siendo de color |
+| Varios botones de WhatsApp, cada uno con su mensaje | Pedido del usuario, como minificando. Taste pide no repetir el CTA; manda el pedido. Cada mensaje dice de qué sección vino |
+| El panel de "Sistemas a medida" muestra cifras, con la nota "Datos de ejemplo" | Pedido del usuario (más profesional y llamativo). Las cifras suman bien entre sí |
 | Los puntos de "escribiendo" y la portada del celular avanzan con el scroll, no en loop | Nada queda girando fuera de la pantalla y el que lee maneja el ritmo |
 
 ## Skills
