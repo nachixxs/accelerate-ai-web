@@ -1,40 +1,76 @@
 ---
 // SPECS §4.2: 2-3 dolores concretos, contados como los cuenta el dueño.
+// Un interruptor "Hoy / Con un sistema" cambia cada dolor por cómo queda resuelto. Sin
+// JavaScript: son dos radios y la sección cambia con :has(). Hoy, los dolores están sueltos y
+// desalineados sobre el fondo; con un sistema se ordenan dentro de la card invertida (la única
+// de la sección). Sin prefers-reduced-motion el cambio es un fundido corto, sin desplazamientos.
 import MessagesSquare from '@lucide/astro/icons/messages-square';
 import NotebookPen from '@lucide/astro/icons/notebook-pen';
 import Calculator from '@lucide/astro/icons/calculator';
+import CircleCheck from '@lucide/astro/icons/circle-check';
 
 const dolores = [
 	{
 		icono: MessagesSquare,
 		frase: 'Me paso el día contestando lo mismo.',
 		detalle: 'Horarios, precios, si hay stock. Mientras tanto, lo que de verdad importa espera.',
+		solucion: 'Las preguntas de siempre se contestan solas.',
+		como: 'El sistema responde por WhatsApp a cualquier hora. Vos te quedás con las consultas que valen la pena.',
 	},
 	{
 		icono: NotebookPen,
 		frase: 'Los pedidos quedan anotados en tres lados.',
 		detalle: 'Un cuaderno, un chat y una planilla. En algún pase, siempre se pierde uno.',
+		solucion: 'Cada pedido queda en un solo lugar.',
+		como: 'Entra por WhatsApp y se carga en la planilla. Nadie lo pasa a mano.',
 	},
 	{
 		icono: Calculator,
 		frase: 'Cerrar la caja me lleva una hora.',
 		detalle: 'Y cuando no cierra, nadie sabe dónde está la diferencia.',
+		solucion: 'El cierre del día sale en minutos.',
+		como: 'Cada movimiento queda registrado, y si algo no cuadra ves dónde está la diferencia.',
 	},
 ];
 ---
 
-<section class="seccion" aria-labelledby="resolvemos-titulo">
-	<div class="contenedor resolvemos">
-		<h2 id="resolvemos-titulo" class="t-titular">¿Te suena alguna de estas?</h2>
+<section class="seccion resolvemos" aria-labelledby="resolvemos-titulo">
+	<div class="contenedor resolvemos__grilla">
+		<div class="resolvemos__intro">
+			<h2 id="resolvemos-titulo" class="t-titular">¿Te suena alguna de estas?</h2>
+			<p class="t-cuerpo">Mirá cómo cambia cada una con un sistema armado para tu negocio.</p>
 
-		<ul class="resolvemos__lista">
+			<fieldset class="interruptor">
+				<legend class="solo-lector">Ver los problemas</legend>
+				<span class="interruptor__marca" aria-hidden="true"></span>
+				<label>
+					<input type="radio" name="resolvemos" value="hoy" checked />
+					Hoy
+				</label>
+				<label>
+					<input type="radio" name="resolvemos" value="sistema" class="interruptor__sistema" />
+					Con un sistema
+				</label>
+			</fieldset>
+		</div>
+
+		<ul class="lista" aria-live="polite">
 			{
-				dolores.map(({ icono: Icono, frase, detalle }) => (
-					<li class="dolor">
-						<Icono size={32} stroke-width={1.75} class="dolor__icono" />
-						<div>
-							<p class="t-label dolor__frase">“{frase}”</p>
-							<p class="dolor__detalle">{detalle}</p>
+				dolores.map(({ icono: Icono, frase, detalle, solucion, como }, i) => (
+					<li class="dolor" style={`--i: ${i}`}>
+						<span class="dolor__iconos" aria-hidden="true">
+							<Icono size={28} stroke-width={1.75} class="hoy" />
+							<CircleCheck size={28} stroke-width={1.75} class="sistema" />
+						</span>
+						<div class="dolor__textos">
+							<div class="hoy">
+								<p class="t-label dolor__frase">“{frase}”</p>
+								<p class="dolor__detalle">{detalle}</p>
+							</div>
+							<div class="sistema">
+								<p class="t-label dolor__frase">{solucion}</p>
+								<p class="dolor__detalle">{como}</p>
+							</div>
 						</div>
 					</li>
 				))
@@ -44,9 +80,98 @@ const dolores = [
 </section>
 
 <style>
-	.resolvemos {
+	.resolvemos__grilla {
 		display: grid;
 		gap: var(--space-5);
+	}
+
+	.resolvemos__intro {
+		display: grid;
+		justify-items: start;
+		align-content: start;
+		gap: var(--space-3);
+	}
+
+	.resolvemos__intro .t-cuerpo {
+		max-width: 36ch;
+	}
+
+	/* --- El interruptor: dos radios con forma de píldora partida. La marca que se desliza es
+	   el fill #1f57c2 del estado activo de la marca. --- */
+	.interruptor {
+		position: relative;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		margin: var(--space-1) 0 0;
+		padding: 4px;
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius-pill);
+		background: var(--white);
+		box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+	}
+
+	.interruptor__marca {
+		grid-area: 1 / 1;
+		border-radius: var(--radius-pill);
+		background: var(--brand-primary-deep);
+		box-shadow: 0 6px 16px rgba(15, 36, 80, 0.28);
+	}
+
+	.interruptor label {
+		position: relative;
+		grid-row: 1;
+		grid-column: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 48px;
+		padding-inline: var(--space-3);
+		border-radius: var(--radius-pill);
+		color: var(--text-body-dark);
+		font-weight: var(--fw-semibold);
+		white-space: nowrap;
+		cursor: pointer;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	/* La marca comparte la primera celda con "Hoy": cada opción va en su columna, o la grilla
+	   las empuja a una tercera. */
+	.interruptor label:nth-of-type(2) {
+		grid-column: 2;
+	}
+
+	.interruptor input {
+		position: absolute;
+		inset: 0;
+		margin: 0;
+		opacity: 0;
+		cursor: pointer;
+	}
+
+	.interruptor label:has(input:checked) {
+		color: var(--white);
+	}
+
+	.interruptor label:not(:has(input:checked)):hover {
+		color: var(--brand-primary-deep);
+	}
+
+	.interruptor label:has(input:focus-visible) {
+		outline: 3px solid var(--brand-primary-deep);
+		outline-offset: 3px;
+	}
+
+	.resolvemos:has(.interruptor__sistema:checked) .interruptor__marca {
+		transform: translateX(100%);
+	}
+
+	/* --- La lista. Hoy: sin contenedor, cada dolor corrido un poco, como anotado a las
+	   apuradas. Con un sistema: todo alineado dentro de la card invertida. --- */
+	.lista {
+		display: grid;
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid transparent;
+		border-radius: var(--radius-card-lg);
 	}
 
 	.dolor {
@@ -57,12 +182,33 @@ const dolores = [
 	}
 
 	.dolor + .dolor {
-		border-top: 1px solid var(--border-light);
+		border-top: 1px dashed var(--slate-300);
 	}
 
-	.dolor__icono {
-		color: var(--brand-primary-deep);
+	.dolor:nth-child(2) {
+		translate: 12px 0;
+	}
+
+	.dolor:nth-child(3) {
+		translate: 4px 0;
+		rotate: -0.6deg;
+	}
+
+	/* Los dos estados de cada dolor ocupan la misma celda: el alto no cambia al pasar de uno a otro. */
+	.dolor__iconos,
+	.dolor__textos {
+		display: grid;
+	}
+
+	.dolor__iconos > :global(*),
+	.dolor__textos > * {
+		grid-area: 1 / 1;
+	}
+
+	.dolor__iconos {
+		align-self: start;
 		margin-top: 2px;
+		color: var(--brand-primary-deep);
 	}
 
 	.dolor__frase {
@@ -74,10 +220,150 @@ const dolores = [
 		margin-top: var(--space-1);
 	}
 
+	.lista :global(.sistema) {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	/* Con un sistema. */
+	.resolvemos:has(.interruptor__sistema:checked) {
+		.lista {
+			border-color: var(--border-dark);
+			background: var(--surface-card-dark);
+			box-shadow: var(--shadow-card);
+		}
+
+		.dolor {
+			translate: 0 0;
+			rotate: 0deg;
+		}
+
+		.dolor + .dolor {
+			border-top-color: var(--border-dark);
+			border-top-style: solid;
+		}
+
+		.dolor__iconos {
+			color: var(--brand-accent);
+		}
+
+		.dolor__frase {
+			color: var(--text-heading-light);
+		}
+
+		.dolor__detalle {
+			color: var(--text-body-light);
+		}
+
+		.lista :global(.hoy) {
+			opacity: 0;
+			visibility: hidden;
+		}
+
+		.lista :global(.sistema) {
+			opacity: 1;
+			visibility: visible;
+		}
+	}
+
 	@media (min-width: 1024px) {
-		.resolvemos {
+		.resolvemos__grilla {
 			grid-template-columns: 5fr 7fr;
-			align-items: start;
+			gap: var(--space-6);
+		}
+
+		.resolvemos__intro {
+			position: sticky;
+			top: 120px;
+		}
+
+		.lista {
+			padding: var(--space-3) var(--space-5);
+		}
+
+		.dolor:nth-child(2) {
+			translate: 40px 0;
+		}
+
+		.dolor:nth-child(3) {
+			translate: 16px 0;
+		}
+	}
+
+	/* --- Movimiento. Sin él, el cambio igual se ve: un fundido corto de color y opacidad. --- */
+	.lista,
+	.dolor,
+	.dolor__frase,
+	.dolor__detalle,
+	.dolor__iconos,
+	.interruptor label {
+		transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+	}
+
+	.lista :global(:is(.hoy, .sistema)) {
+		transition: opacity 0.2s, visibility 0s 0.2s;
+	}
+
+	.resolvemos:has(.interruptor__sistema:checked) .lista :global(.sistema),
+	.resolvemos:not(:has(.interruptor__sistema:checked)) .lista :global(.hoy) {
+		transition: opacity 0.2s, visibility 0s;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.interruptor__marca {
+			transition: transform 0.35s var(--curva-cajon);
+		}
+
+		/* La card aparece primero y los dolores se acomodan uno detrás de otro. */
+		.lista {
+			transition: background-color 0.45s var(--curva-salida), border-color 0.45s, box-shadow 0.45s;
+		}
+
+		.dolor {
+			transition: translate 0.55s var(--curva-salida), rotate 0.55s var(--curva-salida), border-color 0.3s;
+			transition-delay: calc(var(--i) * 60ms);
+		}
+
+		.dolor__frase,
+		.dolor__detalle,
+		.dolor__iconos {
+			transition: color 0.3s calc(var(--i) * 60ms);
+		}
+
+		/* El texto que se va se desenfoca y sube; el que llega baja a su lugar. El blur tapa el
+		   instante en que las dos frases se cruzan. */
+		.lista :global(:is(.hoy, .sistema)) {
+			transform: translateY(8px);
+			filter: blur(4px);
+			transition:
+				opacity 0.25s ease,
+				transform 0.4s var(--curva-salida),
+				filter 0.25s ease,
+				visibility 0s 0.25s;
+		}
+
+		.resolvemos:has(.interruptor__sistema:checked) .lista :global(.sistema),
+		.resolvemos:not(:has(.interruptor__sistema:checked)) .lista :global(.hoy) {
+			transform: none;
+			filter: none;
+			transition:
+				opacity 0.35s ease calc(80ms + var(--i) * 60ms),
+				transform 0.5s var(--curva-salida) calc(80ms + var(--i) * 60ms),
+				filter 0.35s ease calc(80ms + var(--i) * 60ms),
+				visibility 0s;
+		}
+
+		.resolvemos:has(.interruptor__sistema:checked) .lista :global(.hoy),
+		.resolvemos:not(:has(.interruptor__sistema:checked)) .lista :global(.sistema) {
+			transform: translateY(-8px);
+		}
+
+		@supports (animation-timeline: view()) {
+			.dolor {
+				animation: entrar-subiendo linear both;
+				animation-timeline: view();
+				animation-range: entry 10% entry 80%;
+			}
 		}
 	}
 </style>

@@ -55,7 +55,11 @@ h1, h2, h3 { color: var(--text-heading-dark); }
 /* --- Movimiento ---
    Todo el movimiento es CSS y se apaga con prefers-reduced-motion: sin él, la página se ve
    completa y quieta. Curva de salida suave, sin rebote (la marca no usa bounce). */
-:root { --curva-salida: cubic-bezier(0.16, 1, 0.3, 1); }
+/* Salida: entradas y llegadas. Cajón: algo que se desliza de un lado a otro (el interruptor). */
+:root {
+	--curva-salida: cubic-bezier(0.16, 1, 0.3, 1);
+	--curva-cajon: cubic-bezier(0.32, 0.72, 0, 1);
+}
 
 @keyframes entrar-subiendo {
 	from { opacity: 0; transform: translateY(24px); }
