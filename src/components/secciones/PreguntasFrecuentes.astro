@@ -1,5 +1,7 @@
 ---
 // SPECS §4.6: las objeciones típicas. <details> abre y cierra sin JavaScript.
+// En escritorio el título queda fijo a la izquierda mientras pasan las preguntas. La apertura
+// es suave con ::details-content e interpolate-size (Chrome); donde no hay soporte, abre de golpe.
 import ChevronDown from '@lucide/astro/icons/chevron-down';
 
 const preguntas = [
@@ -26,24 +28,27 @@ const preguntas = [
 ];
 ---
 
-<section class="seccion" aria-labelledby="preguntas-titulo">
-	<div class="contenedor">
-		<div class="preguntas">
+<section id="preguntas" class="seccion" aria-labelledby="preguntas-titulo">
+	<div class="contenedor preguntas">
+		<div class="preguntas__intro">
 			<h2 id="preguntas-titulo" class="t-titular">Preguntas frecuentes</h2>
+			<p class="t-cuerpo">Si la tuya no está, la charlamos en la auditoría.</p>
+		</div>
 
-			<div class="preguntas__lista">
-				{
-					preguntas.map(({ pregunta, respuesta }) => (
-						<details class="pregunta">
-							<summary class="t-label">
-								{pregunta}
-								<ChevronDown size={24} class="pregunta__flecha" />
-							</summary>
-							<p class="t-cuerpo">{respuesta}</p>
-						</details>
-					))
-				}
-			</div>
+		<div class="preguntas__lista">
+			{
+				preguntas.map(({ pregunta, respuesta }) => (
+					<details class="pregunta">
+						<summary class="t-label">
+							{pregunta}
+							<span class="pregunta__flecha" aria-hidden="true">
+								<ChevronDown size={20} stroke-width={2} />
+							</span>
+						</summary>
+						<p class="t-cuerpo">{respuesta}</p>
+					</details>
+				))
+			}
 		</div>
 	</div>
 </section>
@@ -52,11 +57,21 @@ const preguntas = [
 	.preguntas {
 		display: grid;
 		gap: var(--space-4);
-		max-width: 880px;
+	}
+
+	.preguntas__intro {
+		display: grid;
+		gap: var(--space-2);
+		align-content: start;
+	}
+
+	.preguntas__intro .t-cuerpo {
+		max-width: 30ch;
 	}
 
 	.pregunta {
 		border-bottom: 1px solid var(--border-light);
+		interpolate-size: allow-keywords;
 	}
 
 	.pregunta:first-child {
@@ -68,39 +83,104 @@ const preguntas = [
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-2);
-		min-height: 64px;
+		min-height: 72px;
 		padding-block: var(--space-2);
 		color: var(--text-heading-dark);
 		font-weight: var(--fw-semibold);
 		cursor: pointer;
 		list-style: none;
+		-webkit-tap-highlight-color: transparent;
 	}
 
 	summary::-webkit-details-marker {
 		display: none;
 	}
 
-	summary:hover {
+	summary:hover,
+	.pregunta[open] summary {
 		color: var(--brand-primary-deep);
 	}
 
+	/* La flecha va en un círculo: se lee como el control de la fila y marca el estado abierto. */
 	.pregunta__flecha {
+		display: grid;
 		flex: none;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius-pill);
 		color: var(--brand-primary-deep);
 	}
 
 	.pregunta[open] .pregunta__flecha {
+		border-color: var(--brand-primary-deep);
+		background: var(--brand-primary-deep);
+		color: var(--white);
+	}
+
+	.pregunta[open] .pregunta__flecha :global(svg) {
 		transform: rotate(180deg);
 	}
 
 	.pregunta p {
-		padding-bottom: var(--space-3);
+		padding-bottom: var(--space-4);
 	}
 
-	/* Único movimiento de la sección: la flecha gira al abrir, como confirmación. */
+	@media (min-width: 1024px) {
+		.preguntas {
+			grid-template-columns: 4fr 7fr;
+			gap: var(--space-6);
+			align-items: start;
+		}
+
+		.preguntas__intro {
+			position: sticky;
+			top: 120px;
+		}
+
+		/* La respuesta no pasa por debajo del círculo de la flecha. */
+		.pregunta p {
+			padding-right: var(--space-6);
+		}
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
+		summary {
+			transition: color 0.2s;
+		}
+
 		.pregunta__flecha {
-			transition: transform 0.2s;
+			transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+		}
+
+		.pregunta__flecha :global(svg) {
+			transition: transform 0.3s var(--curva-salida);
+		}
+
+		/* El alto se abre de 0 a auto; al cerrar, content-visibility espera a que termine. */
+		.pregunta::details-content {
+			block-size: 0;
+			overflow: clip;
+			transition:
+				block-size 0.35s var(--curva-salida),
+				content-visibility 0.35s allow-discrete;
+		}
+
+		.pregunta[open]::details-content {
+			block-size: auto;
+		}
+
+		.pregunta p {
+			opacity: 0;
+			transform: translateY(-6px);
+			transition: opacity 0.2s, transform 0.35s var(--curva-salida);
+		}
+
+		.pregunta[open] p {
+			opacity: 1;
+			transform: none;
+			transition-delay: 60ms;
 		}
 	}
 </style>
