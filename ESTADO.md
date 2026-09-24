@@ -4,8 +4,8 @@
 
 2026-09-23. Proyecto de Astro creado (plantilla mínima, Astro 7, TypeScript estricto) y
 commits en `main`. La base está terminada: las 7 secciones con un borrador de textos que falta
-revisar (`REVISION-TEXTOS.md`), vistas en 360 y 1280 px con `npm run capturas`. Sin repo en
-GitHub.
+revisar (`REVISION-TEXTOS.md`), vistas en 360 y 1280 px con `npm run capturas`. Pasó la
+revisión de UX y accesibilidad. Sin repo en GitHub.
 
 ## La base (terminada)
 
@@ -29,14 +29,25 @@ GitHub.
    Además chequea: sin scroll horizontal, botón dentro del margen y visible sin scroll, áreas
    táctiles de 44 px. Las capturas mostraron 5 errores de maquetación en escritorio, ya
    corregidos.
+7. ~~Revisión de UX y accesibilidad~~ con `web-design-guidelines`. Se corrigió:
+   - Con la letra del celular al 150 %, el botón de WhatsApp y el chip de la card quedaban
+     recortados (el `overflow: hidden` del glow tapa el scroll horizontal, así que no se
+     notaba). Ahora bajan de línea, y `npm run capturas` lo chequea en cada corrida.
+   - Portada y cierre quedaban fuera de `<main>`: ahora todo va adentro y el pie es un
+     componente aparte (`Pie.astro`), fuera de `<main>`.
+   - Favicon de Astro reemplazado por el isotipo (`favicon.png`) y el avatar
+     (`apple-touch-icon.png`); `theme-color` con el fondo de la portada.
+   - `text-wrap: balance` en `.t-label`, espacios que no se cortan en "45 minutos" y
+     "3 semanas", estado `:active` del botón en vez del resaltado gris de Android.
+   - Las capturas completas no cargaban las imágenes lazy (el logo del pie no salía).
+   Descartadas de la guía: Title Case, evitar la primera persona y `translate="no"`, porque
+   chocan con la marca o con el público.
 
 ## Próximo paso
 
-1. Revisión de UX y accesibilidad con `web-design-guidelines` (la pide `CLAUDE.md` antes de
-   dar algo por terminado).
-2. Etiquetas Open Graph y su imagen, para la vista previa al compartir el link (SPECS §9).
-3. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`).
-4. Hosting y dominio (pendientes 2 a 4), recién para publicar.
+1. Etiquetas Open Graph y su imagen, para la vista previa al compartir el link (SPECS §9).
+2. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`).
+3. Hosting y dominio (pendientes 2 a 4), recién para publicar.
 
 ## Decisiones tomadas (2026-09-23)
 
@@ -76,3 +87,4 @@ Instaladas globales: `design-taste-frontend` e `image-to-code` (de `leonxlnx/tas
 | 4 | Repo público o privado | Si es privado, GitHub Pages pide plan pago |
 | 5 | Los SVG del logo, si existen | Nada; los PNG alcanzan para la web |
 | 6 | Revisión de textos por Colo: las dudas están en `REVISION-TEXTOS.md` | El cierre |
+| 7 | En escritorio, el glow cian de "Sistemas a medida" se corta en línea recta donde empieza la sección (ya estaba así antes de la revisión) | Nada; es un detalle visual |

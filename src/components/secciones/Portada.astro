@@ -8,7 +8,7 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
 ---
 
-<header class="portada seccion--oscura con-glow">
+<section class="portada seccion--oscura con-glow" aria-labelledby="portada-titulo">
 	<Glow tono="azul" esquina="arriba-der" />
 	<Glow tono="cian" esquina="arriba-der" />
 
@@ -17,7 +17,7 @@ import Glow from '../Glow.astro';
 
 		<div class="portada__contenido">
 			<p class="t-eyebrow">Automatización para pymes</p>
-			<h1 class="t-hook">Tu equipo deja de <span class="texto-gradiente">copiar y pegar</span></h1>
+			<h1 id="portada-titulo" class="t-hook">Tu equipo deja de <span class="texto-gradiente">copiar y pegar</span></h1>
 			<p class="t-cuerpo portada__bajada">
 				Armamos sistemas a medida para negocios de cualquier rubro. Empezamos con una auditoría gratis
 				para encontrar dónde perdés más tiempo.
@@ -25,7 +25,7 @@ import Glow from '../Glow.astro';
 			<BotonWhatsApp />
 		</div>
 	</div>
-</header>
+</section>
 
 <style>
 	.portada__interior {

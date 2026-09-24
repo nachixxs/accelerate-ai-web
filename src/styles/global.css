@@ -12,6 +12,8 @@ h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
 img, svg { display: block; max-width: 100%; }
 h1, h2, h3 { color: var(--text-heading-dark); }
+/* tokens/ es copia de la marca y .t-label no trae balance: sin esto, los títulos de las cards dejan una palabra sola. */
+.t-label { text-wrap: balance; }
 
 :focus-visible { outline: 3px solid var(--brand-primary-deep); outline-offset: 3px; }
 

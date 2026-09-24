@@ -11,9 +11,12 @@ import { WHATSAPP_URL } from '../config';
 </a>
 
 <style>
-	/* 19px en 700 cuenta como texto grande para WCAG: blanco sobre #2971f2 pide 3:1 y da 4,4:1. */
+	/* 19px en 700 cuenta como texto grande para WCAG: blanco sobre #2971f2 pide 3:1 y da 4,4:1.
+	   Sin nowrap: con la letra del celular agrandada, el texto baja de línea en vez de quedar
+	   recortado por el overflow: hidden de la sección. */
 	.boton {
 		display: inline-flex;
+		max-width: 100%;
 		align-items: center;
 		gap: var(--space-1);
 		min-height: 56px;
@@ -23,14 +26,20 @@ import { WHATSAPP_URL } from '../config';
 		color: var(--white);
 		font-size: 1.1875rem;
 		font-weight: var(--fw-bold);
-		line-height: 1;
+		line-height: 1.2;
 		letter-spacing: -0.01em;
-		white-space: nowrap;
 		box-shadow: var(--shadow-boton);
+		-webkit-tap-highlight-color: transparent;
 		transition: background-color 0.2s;
 	}
 
-	.boton:hover {
+	.boton svg {
+		flex: none;
+	}
+
+	/* :active reemplaza el resaltado gris de Android, que es un rectángulo encima de la píldora. */
+	.boton:hover,
+	.boton:active {
 		background: var(--brand-primary-deep);
 		color: var(--white);
 	}

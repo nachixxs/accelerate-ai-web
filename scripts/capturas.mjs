@@ -1,5 +1,8 @@
 // Capturas de la web en celular (360 px) y escritorio (1280 px), más los chequeos que una
 // captura no muestra a simple vista. Uso: npm run capturas (compila antes). Salida en capturas/.
+// Los chequeos del botón se repiten con la letra al 150 %, como la ve quien usa letra grande en
+// el celular: las secciones con glow tienen overflow: hidden, así que lo que se sale no hace
+// scroll horizontal, queda recortado sin aviso.
 import { preview } from 'astro';
 import { chromium } from 'playwright';
 
@@ -19,10 +22,15 @@ for (const { nombre, width, height } of ANCHOS) {
 	await pagina.evaluate(() => document.fonts.ready);
 
 	await pagina.screenshot({ path: `capturas/${nombre}-primera-pantalla.png` });
+	// La captura completa no hace scroll: sin esto, las imágenes lazy (el logo del pie) no cargan.
+	await pagina.evaluate(() => Promise.all([...document.querySelectorAll('img[loading="lazy"]')].map((img) => {
+		img.loading = 'eager';
+		return img.decode();
+	})));
 	await pagina.screenshot({ path: `capturas/${nombre}-completa.png`, fullPage: true });
 
 	const medidas = await pagina.evaluate(() => {
-		const boton = document.querySelector('header a[href^="https://wa.me"]').getBoundingClientRect();
+		const boton = document.querySelector('.portada a[href^="https://wa.me"]').getBoundingClientRect();
 		const chicos = [...document.querySelectorAll('a, summary')]
 			.map((el) => ({ texto: el.textContent.trim().slice(0, 40), caja: el.getBoundingClientRect() }))
 			.filter(({ caja }) => caja.height < 44)
@@ -42,6 +50,17 @@ for (const { nombre, width, height } of ANCHOS) {
 		[medidas.botonAbajo <= height, `el botón de la portada se ve sin scroll (termina en ${medidas.botonAbajo} de ${height} px)`],
 		[medidas.chicos.length === 0, `áreas táctiles de 44 px o más${medidas.chicos.length ? ': ' + medidas.chicos.join(', ') : ''}`],
 	];
+
+	await pagina.evaluate(() => (document.documentElement.style.fontSize = '150%'));
+	await pagina.screenshot({ path: `capturas/${nombre}-texto-150-primera-pantalla.png` });
+	const grande = await pagina.evaluate(() => {
+		const derecha = (selector) => Math.round(Math.max(...[...document.querySelectorAll(selector)].map((el) => el.getBoundingClientRect().right)));
+		return { botones: derecha('a[href^="https://wa.me"]'), chip: derecha('.chip-montado'), card: derecha('.ejemplo--destacado') };
+	});
+	chequeos.push(
+		[grande.botones <= width - 16, `con letra al 150 %, los botones entran con el margen (terminan en ${grande.botones} px)`],
+		[grande.chip <= grande.card, `con letra al 150 %, el chip entra en su card (termina en ${grande.chip} de ${grande.card} px)`],
+	);
 
 	console.log(`\n${nombre}`);
 	for (const [ok, texto] of chequeos) {
