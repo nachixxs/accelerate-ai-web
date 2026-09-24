@@ -118,9 +118,10 @@ en verde:
 2. **Rubros como cinta transportadora:** una sola fila con los 19 rubros que corre lenta de
    izquierda a derecha (150 s por vuelta, unos 25 px/s) y se difumina en los dos costados de la
    pantalla (48 a 240 px de fundido). Sin deriva con el scroll, para que el ritmo sea parejo.
-   Pausa con checkbox y con el mouse encima, esta solo con puntero fino (en el celular un toque
-   la dejaba frenada). Rama `cinta-rubros` (2026-09-24); antes eran dos filas en sentidos
-   opuestos.
+   Sin botón de pausa (al usuario no le gustó): frena con el mouse encima, al tocarla en el
+   celular y al llegar con Tab (el marco es enfocable), que es lo que pide WCAG 2.2.2. **Corre
+   también con movimiento reducido** (ver Decisiones). Rama `cinta-rubros` (2026-09-24); antes
+   eran dos filas en sentidos opuestos.
 3. **Interruptor:** sin las filas torcidas (se veía roto); íconos en círculos, tachado que se
    dibuja, sello y un anillo que invita a tocarlo.
 4. **Mocks nuevos:** pedidos (chat → planilla que se escribe sola), turnos (el aviso de Sofía
@@ -175,6 +176,8 @@ ver el movimiento hay que prender esa opción.
 | Minificar el CSS con esbuild y no con Lightning CSS | Lightning CSS rompe `animation-timeline` al juntarlo en el atajo `animation` |
 | Sin modo oscuro | La marca tiene dos fondos fijos (claro y oscuro por sección); Taste lo pide, manda la marca |
 | Botones que se agrandan con el mouse (`scale(1.05)`), solo con puntero fino | Pedido del usuario (2026-09-24), aunque la marca no usa escala. Al tocar sigue siendo de color |
+| La cinta de rubros corre aunque el sistema pida movimiento reducido | Pedido del usuario (2026-09-24): con los efectos de animación de Windows apagados veía la lista quieta. Es la única excepción a la regla de `prefers-reduced-motion`; es lenta, lineal y se frena al tocarla, enfocarla o pasar el mouse |
+| Cinta sin botón de pausa | Pedido del usuario (2026-09-24): el botón quedaba feo. La pausa de WCAG 2.2.2 queda en el toque, el foco y el mouse |
 | Varios botones de WhatsApp, cada uno con su mensaje | Pedido del usuario, como minificando. Taste pide no repetir el CTA; manda el pedido. Cada mensaje dice de qué sección vino |
 | El panel de "Sistemas a medida" muestra cifras, con la nota "Datos de ejemplo" | Pedido del usuario (más profesional y llamativo). Las cifras suman bien entre sí |
 | Los puntos de "escribiendo" y la portada del celular avanzan con el scroll, no en loop | Nada queda girando fuera de la pantalla y el que lee maneja el ritmo |

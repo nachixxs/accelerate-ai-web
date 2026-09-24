@@ -2,9 +2,11 @@
 // Cinta de rubros debajo de la portada: responde "¿sirve para mi rubro?" antes de que lo
 // pregunten. Es la única cinta en movimiento de la página: todos los rubros en una sola fila
 // que corre lenta de izquierda a derecha, como una cinta transportadora, y se funde en los dos
-// costados de la pantalla. Sin JavaScript: la pausa es un checkbox (WCAG 2.2.2 pide poder frenar
-// lo que se mueve más de 5 segundos), también frena con el mouse encima y con
-// prefers-reduced-motion queda quieta y en varias líneas. No son clientes: son rubros donde se repiten las mismas tareas todos los días.
+// costados de la pantalla. Sin botón de pausa (al usuario no le gustó): WCAG 2.2.2 pide poder
+// frenar lo que se mueve más de 5 segundos, así que frena con el mouse encima, al tocarla en el
+// celular y al llegar con el teclado (la ventana es enfocable). Corre aunque el sistema pida
+// movimiento reducido: lo pidió el usuario (ver el comentario de la animación).
+// No son clientes: son rubros donde se repiten las mismas tareas todos los días.
 import Printer from '@lucide/astro/icons/printer';
 import UtensilsCrossed from '@lucide/astro/icons/utensils-crossed';
 import Wrench from '@lucide/astro/icons/wrench';
@@ -24,8 +26,6 @@ import Car from '@lucide/astro/icons/car';
 import Shirt from '@lucide/astro/icons/shirt';
 import Pill from '@lucide/astro/icons/pill';
 import GraduationCap from '@lucide/astro/icons/graduation-cap';
-import Pause from '@lucide/astro/icons/pause';
-import Play from '@lucide/astro/icons/play';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 const rubros = [
@@ -54,30 +54,28 @@ const rubros = [
 <section class="rubros" aria-labelledby="rubros-titulo">
 	<div class="contenedor rubros__cabecera">
 		<h2 id="rubros-titulo" class="rubros__titulo">Para cualquier negocio que repite tareas todos los días</h2>
-		<label class="rubros__pausa">
-			<input type="checkbox" />
-			<Pause size={16} class="rubros__icono-pausa" />
-			<Play size={16} class="rubros__icono-seguir" />
-			<span>Pausar</span>
-		</label>
 	</div>
 
-	<div class="rubros__ventana">
-		<div class="rubros__pista">
-			{
-				[false, true].map((copia) => (
-					<ul class="rubros__lista" aria-hidden={copia ? 'true' : undefined}>
-						{rubros.map(({ icono: Icono, nombre }) => (
-							<li>
-								<span class="rubros__icono">
-									<Icono size={20} stroke-width={1.75} />
-								</span>
-								{nombre}
-							</li>
-						))}
-					</ul>
-				))
-			}
+	<!-- El marco es enfocable para poder frenar la cinta sin botón: con Tab o con un toque en el
+	     celular. Va afuera de la ventana para que la máscara del fundido no borre el foco. -->
+	<div class="rubros__marco" tabindex="0" role="group" aria-label="Rubros">
+		<div class="rubros__ventana">
+			<div class="rubros__pista">
+				{
+					[false, true].map((copia) => (
+						<ul class="rubros__lista" aria-hidden={copia ? 'true' : undefined}>
+							{rubros.map(({ icono: Icono, nombre }) => (
+								<li>
+									<span class="rubros__icono">
+										<Icono size={20} stroke-width={1.75} />
+									</span>
+									{nombre}
+								</li>
+							))}
+						</ul>
+					))
+				}
+			</div>
 		</div>
 	</div>
 
@@ -98,11 +96,7 @@ const rubros = [
 	}
 
 	.rubros__cabecera {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-2);
-		margin-bottom: var(--space-3);
+		margin-bottom: var(--space-2);
 	}
 
 	.rubros__pie {
@@ -115,15 +109,65 @@ const rubros = [
 		font-weight: var(--fw-medium);
 	}
 
+	/* Los costados se funden con el fondo: los rubros aparecen y se van difuminados en vez de
+	   cortarse seco. El fundido crece con la pantalla (48 px en el celular, 240 px en la compu). */
 	.rubros__ventana {
-		display: grid;
-		gap: 12px;
+		--fundido: clamp(48px, 16vw, 240px);
 		overflow: hidden;
+		mask-image: linear-gradient(
+			90deg,
+			transparent,
+			#000 var(--fundido),
+			#000 calc(100% - var(--fundido)),
+			transparent
+		);
+	}
+
+	/* La cinta corre sola de izquierda a derecha: arranca corrida media pista (una copia de la
+	   lista) hacia la izquierda y vuelve a cero, donde la copia queda justo en el lugar del
+	   original y el salto no se ve. Lineal, porque es movimiento constante. 150 s por vuelta da
+	   unos 25 px por segundo: se lee cada rubro sin perseguirlo.
+	   Corre también con prefers-reduced-motion: con los efectos de animación de Windows apagados
+	   se veía una lista quieta, y el usuario eligió que se mueva siempre (2026-09-24). Es lenta,
+	   lineal y se puede frenar. */
+	@keyframes cinta {
+		from { transform: translateX(-50%); }
+		to { transform: translateX(0); }
 	}
 
 	.rubros__pista {
 		display: flex;
 		width: max-content;
+		animation: cinta 150s linear infinite;
+	}
+
+	/* Frena mientras el marco tiene el foco (Tab, o un toque en el celular: se retoma al tocar
+	   afuera) y mientras se mantiene apretada. */
+	.rubros__marco:focus .rubros__pista,
+	.rubros__marco:active .rubros__pista {
+		animation-play-state: paused;
+	}
+
+	/* El aire de arriba y abajo separa el anillo de foco de las fichas. */
+	.rubros__marco {
+		padding-block: 8px;
+	}
+
+	.rubros__marco:focus {
+		outline: none;
+	}
+
+	.rubros__marco:focus-visible {
+		outline: 3px solid var(--brand-primary-deep);
+		outline-offset: -3px;
+	}
+
+	/* Con el mouse encima frena para leer. Solo con puntero fino: en el celular, un toque dejaría
+	   el :hover pegado y la cinta frenada. */
+	@media (hover: hover) and (pointer: fine) {
+		.rubros__marco:hover .rubros__pista {
+			animation-play-state: paused;
+		}
 	}
 
 	.rubros__lista {
@@ -154,135 +198,5 @@ const rubros = [
 		border-radius: var(--radius-pill);
 		background: var(--blue-50);
 		color: var(--brand-primary-deep);
-	}
-
-	/* Botón de pausa: un checkbox con apariencia de botón, 44 px de alto. */
-	.rubros__pausa {
-		position: relative;
-		display: none;
-		align-items: center;
-		gap: 6px;
-		min-height: 44px;
-		padding-inline: var(--space-2);
-		border: 1px solid var(--border-light);
-		border-radius: var(--radius-pill);
-		background: var(--white);
-		color: var(--text-body-dark);
-		font-size: var(--type-meta-size);
-		font-weight: var(--fw-medium);
-		cursor: pointer;
-		flex: none;
-		transition: border-color 0.2s, color 0.2s;
-	}
-
-	@media (hover: hover) and (pointer: fine) {
-		.rubros__pausa:hover {
-			border-color: var(--brand-primary-deep);
-			color: var(--brand-primary-deep);
-		}
-	}
-
-	.rubros__pausa input {
-		position: absolute;
-		opacity: 0;
-		inset: 0;
-		margin: 0;
-		cursor: pointer;
-	}
-
-	.rubros__pausa:has(input:focus-visible) {
-		outline: 3px solid var(--brand-primary-deep);
-		outline-offset: 3px;
-	}
-
-	.rubros__pausa :global(.rubros__icono-seguir),
-	.rubros__pausa:has(input:checked) :global(.rubros__icono-pausa) {
-		display: none;
-	}
-
-	.rubros__pausa:has(input:checked) :global(.rubros__icono-seguir) {
-		display: block;
-	}
-
-	/* Sin movimiento: las dos filas se vuelven listas quietas en varias líneas, con el margen del
-	   resto de la página, y las copias se ocultan. */
-	.rubros__pista,
-	.rubros__lista {
-		flex-wrap: wrap;
-		width: auto;
-		row-gap: 12px;
-	}
-
-	.rubros__pista {
-		max-width: 1200px;
-		margin-inline: auto;
-		padding-inline: var(--space-2);
-	}
-
-	@media (min-width: 768px) {
-		.rubros__pista {
-			padding-inline: var(--space-4);
-		}
-	}
-
-	.rubros__lista[aria-hidden] {
-		display: none;
-	}
-
-	/* La cinta corre sola de izquierda a derecha: arranca corrida media pista (una copia de la
-	   lista) hacia la izquierda y vuelve a cero, donde la copia queda justo en el lugar del
-	   original y el salto no se ve. Lineal, porque es movimiento constante. 150 s por vuelta da
-	   unos 30 px por segundo: se lee cada rubro sin perseguirlo. */
-	@keyframes cinta {
-		from { transform: translateX(-50%); }
-		to { transform: translateX(0); }
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		/* Los costados se funden con el fondo: los rubros aparecen y se van difuminados en vez de
-		   cortarse seco. El fundido crece con la pantalla (48 px en el celular, 240 px en la compu). */
-		.rubros__ventana {
-			--fundido: clamp(48px, 16vw, 240px);
-			mask-image: linear-gradient(
-				90deg,
-				transparent,
-				#000 var(--fundido),
-				#000 calc(100% - var(--fundido)),
-				transparent
-			);
-		}
-
-		.rubros__pista,
-		.rubros__lista {
-			flex-wrap: nowrap;
-		}
-
-		.rubros__pista {
-			width: max-content;
-			max-width: none;
-			margin-inline: 0;
-			padding-inline: 0;
-			animation: cinta 150s linear infinite;
-		}
-
-		.rubros__lista[aria-hidden] {
-			display: flex;
-		}
-
-		.rubros__pausa {
-			display: inline-flex;
-		}
-
-		.rubros:has(input:checked) .rubros__pista {
-			animation-play-state: paused;
-		}
-	}
-
-	/* Con el mouse encima frena para leer. Solo con puntero fino: en el celular, un toque dejaría
-	   el :hover pegado y la cinta frenada. */
-	@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
-		.rubros__ventana:hover .rubros__pista {
-			animation-play-state: paused;
-		}
 	}
 </style>
