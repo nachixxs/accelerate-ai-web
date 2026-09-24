@@ -57,7 +57,7 @@ const pasos = [
 <style>
 	.proceso__titulo {
 		margin-top: var(--space-2);
-		max-width: 16ch;
+		max-width: 24ch;
 	}
 
 	.proceso {
@@ -112,8 +112,10 @@ const pasos = [
 			gap: var(--space-4);
 		}
 
+		/* align-content: start: sin esto, los pasos más cortos estiran sus filas y el texto baja. */
 		.paso {
 			grid-template-columns: 1fr;
+			align-content: start;
 			gap: var(--space-3);
 			padding-bottom: 0;
 		}

@@ -3,11 +3,11 @@
 ## Dónde estamos
 
 2026-09-23. Proyecto de Astro creado (plantilla mínima, Astro 7, TypeScript estricto) y
-commits en `main`. `npm run build` compila. Las 7 secciones están armadas con un borrador de
-textos que falta revisar (`REVISION-TEXTOS.md`). Todavía no se miró en un navegador. Sin repo
-en GitHub.
+commits en `main`. La base está terminada: las 7 secciones con un borrador de textos que falta
+revisar (`REVISION-TEXTOS.md`), vistas en 360 y 1280 px con `npm run capturas`. Sin repo en
+GitHub.
 
-## Próximo paso: la base
+## La base (terminada)
 
 1. ~~Nombre de la carpeta y del repo~~: `accelerate-ai-web`.
 2. ~~`npm create astro@latest`, `git init`, primer commit~~. Se generó en una carpeta
@@ -24,7 +24,19 @@ en GitHub.
    `src/components/secciones/`; el link de WhatsApp en `src/config.ts`. Íconos con
    `@lucide/astro` (SVG en el HTML, sin CDN ni JS). Borrador de textos escrito por Claude; las
    dudas para Colo, en `REVISION-TEXTOS.md`. Build sin JavaScript, contraste WCAG AA calculado.
-6. Playwright como dependencia de desarrollo, para capturas en 360 px y en escritorio.
+6. ~~Playwright y capturas~~. `npm run capturas` compila, levanta la vista previa y guarda en
+   `capturas/` (fuera de git) la primera pantalla y la página completa en 360 y 1280 px.
+   Además chequea: sin scroll horizontal, botón dentro del margen y visible sin scroll, áreas
+   táctiles de 44 px. Las capturas mostraron 5 errores de maquetación en escritorio, ya
+   corregidos.
+
+## Próximo paso
+
+1. Revisión de UX y accesibilidad con `web-design-guidelines` (la pide `CLAUDE.md` antes de
+   dar algo por terminado).
+2. Etiquetas Open Graph y su imagen, para la vista previa al compartir el link (SPECS §9).
+3. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`).
+4. Hosting y dominio (pendientes 2 a 4), recién para publicar.
 
 ## Decisiones tomadas (2026-09-23)
 

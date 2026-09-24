@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# capturas de Playwright (se regeneran con npm run capturas)
+capturas/

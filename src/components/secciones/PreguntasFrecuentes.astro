@@ -27,21 +27,23 @@ const preguntas = [
 ---
 
 <section class="seccion" aria-labelledby="preguntas-titulo">
-	<div class="contenedor preguntas">
-		<h2 id="preguntas-titulo" class="t-titular">Preguntas frecuentes</h2>
+	<div class="contenedor">
+		<div class="preguntas">
+			<h2 id="preguntas-titulo" class="t-titular">Preguntas frecuentes</h2>
 
-		<div class="preguntas__lista">
-			{
-				preguntas.map(({ pregunta, respuesta }) => (
-					<details class="pregunta">
-						<summary class="t-label">
-							{pregunta}
-							<ChevronDown size={24} class="pregunta__flecha" />
-						</summary>
-						<p class="t-cuerpo">{respuesta}</p>
-					</details>
-				))
-			}
+			<div class="preguntas__lista">
+				{
+					preguntas.map(({ pregunta, respuesta }) => (
+						<details class="pregunta">
+							<summary class="t-label">
+								{pregunta}
+								<ChevronDown size={24} class="pregunta__flecha" />
+							</summary>
+							<p class="t-cuerpo">{respuesta}</p>
+						</details>
+					))
+				}
+			</div>
 		</div>
 	</div>
 </section>

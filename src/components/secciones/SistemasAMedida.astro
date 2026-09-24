@@ -108,6 +108,7 @@ const IconoDestacado = destacado.icono;
 	}
 
 	.ejemplo--destacado .ejemplo__icono {
+		align-self: start;
 		color: var(--brand-accent);
 	}
 
@@ -135,9 +136,11 @@ const IconoDestacado = destacado.icono;
 			column-gap: var(--space-6);
 		}
 
+		/* Ícono arriba y texto abajo: la card es tan alta como los tres ejemplos de al lado. */
 		.ejemplo--destacado {
 			grid-row: span 3;
-			align-content: end;
+			grid-template-rows: 1fr auto auto;
+			align-content: stretch;
 			padding: var(--space-6) var(--space-5) var(--space-5);
 		}
 	}
