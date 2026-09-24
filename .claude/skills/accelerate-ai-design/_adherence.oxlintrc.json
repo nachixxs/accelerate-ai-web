@@ -1,0 +1,467 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/brand/**",
+              "components/core/**",
+              "components/layout/**",
+              "components/producto/**",
+              "ui_kits/plantilla-redes/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Archivo))/i]",
+        "message": "Font not provided by the design system. Available: Archivo."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|icon|size|onClick|style|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: children, icon, size, onClick, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:feed|compact)$/]",
+        "message": "<Button> size must be one of 'feed' | 'compact'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='CardInvertida'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|radius|padding|style|key|ref|className|style|children)$/]",
+        "message": "<CardInvertida> doesn't accept that prop. Declared props: children, radius, padding, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='CardInvertida'] > JSXAttribute[name.name='radius'] > Literal[value!=/^(?:lg|md)$/]",
+        "message": "<CardInvertida> radius must be one of 'lg' | 'md'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|tone|icon|montado|size|style|key|ref|className|style|children)$/]",
+        "message": "<Chip> doesn't accept that prop. Declared props: children, tone, icon, montado, size, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:claro|oscuro|acento)$/]",
+        "message": "<Chip> tone must be one of 'claro' | 'oscuro' | 'acento'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:feed|compact)$/]",
+        "message": "<Chip> size must be one of 'feed' | 'compact'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Eyebrow'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|fondo|style|key|ref|className|style|children)$/]",
+        "message": "<Eyebrow> doesn't accept that prop. Declared props: children, fondo, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Eyebrow'] > JSXAttribute[name.name='fondo'] > Literal[value!=/^(?:claro|oscuro)$/]",
+        "message": "<Eyebrow> fondo must be one of 'claro' | 'oscuro'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='FeedFrame'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|fondo|logo|piezaLogo|index|total|guias|scale|assetBase|style|key|ref|className|style|children)$/]",
+        "message": "<FeedFrame> doesn't accept that prop. Declared props: children, fondo, logo, piezaLogo, index, total, guias, scale, assetBase, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='FeedFrame'] > JSXAttribute[name.name='fondo'] > Literal[value!=/^(?:claro|oscuro)$/]",
+        "message": "<FeedFrame> fondo must be one of 'claro' | 'oscuro'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='FeedFrame'] > JSXAttribute[name.name='piezaLogo'] > Literal[value!=/^(?:isotipo|imagotipo|logotipo)$/]",
+        "message": "<FeedFrame> piezaLogo must be one of 'isotipo' | 'imagotipo' | 'logotipo'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Fuente'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|fondo|style|key|ref|className|style|children)$/]",
+        "message": "<Fuente> doesn't accept that prop. Declared props: children, fondo, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Fuente'] > JSXAttribute[name.name='fondo'] > Literal[value!=/^(?:claro|oscuro)$/]",
+        "message": "<Fuente> fondo must be one of 'claro' | 'oscuro'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Glow'] > JSXAttribute > JSXIdentifier[name!=/^(?:tone|fondo|corner|size|opacity|style|key|ref|className|style|children)$/]",
+        "message": "<Glow> doesn't accept that prop. Declared props: tone, fondo, corner, size, opacity, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Glow'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:azul|cian)$/]",
+        "message": "<Glow> tone must be one of 'azul' | 'cian'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Glow'] > JSXAttribute[name.name='fondo'] > Literal[value!=/^(?:oscuro|claro)$/]",
+        "message": "<Glow> fondo must be one of 'oscuro' | 'claro'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Glow'] > JSXAttribute[name.name='corner'] > Literal[value!=/^(?:top-left|top-right|bottom-left|bottom-right)$/]",
+        "message": "<Glow> corner must be one of 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='GradientText'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|as|style|key|ref|className|style|children)$/]",
+        "message": "<GradientText> doesn't accept that prop. Declared props: children, as, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Icon'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|size|color|style|key|ref|className|style|children)$/]",
+        "message": "<Icon> doesn't accept that prop. Declared props: name, size, color, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute > JSXIdentifier[name!=/^(?:pieza|fondo|width|assetBase|style|key|ref|className|style|children)$/]",
+        "message": "<Logo> doesn't accept that prop. Declared props: pieza, fondo, width, assetBase, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute[name.name='pieza'] > Literal[value!=/^(?:isotipo|imagotipo|logotipo)$/]",
+        "message": "<Logo> pieza must be one of 'isotipo' | 'imagotipo' | 'logotipo'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute[name.name='fondo'] > Literal[value!=/^(?:azul|claro)$/]",
+        "message": "<Logo> fondo must be one of 'azul' | 'claro'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Numeracion'] > JSXAttribute > JSXIdentifier[name!=/^(?:index|total|fondo|style|key|ref|className|style|children)$/]",
+        "message": "<Numeracion> doesn't accept that prop. Declared props: index, total, fondo, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Numeracion'] > JSXAttribute[name.name='fondo'] > Literal[value!=/^(?:claro|oscuro)$/]",
+        "message": "<Numeracion> fondo must be one of 'claro' | 'oscuro'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SafeZones'] > JSXAttribute > JSXIdentifier[name!=/^(?:formato|style|key|ref|className|style|children)$/]",
+        "message": "<SafeZones> doesn't accept that prop. Declared props: formato, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SafeZones'] > JSXAttribute[name.name='formato'] > Literal[value!=/^(?:feed|historia)$/]",
+        "message": "<SafeZones> formato must be one of 'feed' | 'historia'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StoryFrame'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|fondo|logo|piezaLogo|guias|scale|assetBase|style|key|ref|className|style|children)$/]",
+        "message": "<StoryFrame> doesn't accept that prop. Declared props: children, fondo, logo, piezaLogo, guias, scale, assetBase, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StoryFrame'] > JSXAttribute[name.name='fondo'] > Literal[value!=/^(?:claro|oscuro)$/]",
+        "message": "<StoryFrame> fondo must be one of 'claro' | 'oscuro'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StoryFrame'] > JSXAttribute[name.name='piezaLogo'] > Literal[value!=/^(?:isotipo|imagotipo|logotipo)$/]",
+        "message": "<StoryFrame> piezaLogo must be one of 'isotipo' | 'imagotipo' | 'logotipo'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='WhatsAppMensaje'] > JSXAttribute > JSXIdentifier[name!=/^(?:from|text|hora|key|ref|className|style|children)$/]",
+        "message": "<WhatsAppMensaje> doesn't accept that prop. Declared props: from, text, hora."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='WhatsAppMensaje'] > JSXAttribute[name.name='from'] > Literal[value!=/^(?:recibida|enviada)$/]",
+        "message": "<WhatsAppMensaje> from must be one of 'recibida' | 'enviada'."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "Button": {
+        "replaces": []
+      },
+      "CardInvertida": {
+        "replaces": []
+      },
+      "Chip": {
+        "replaces": []
+      },
+      "Eyebrow": {
+        "replaces": []
+      },
+      "FeedFrame": {
+        "replaces": []
+      },
+      "Fuente": {
+        "replaces": []
+      },
+      "Glow": {
+        "replaces": []
+      },
+      "GradientText": {
+        "replaces": []
+      },
+      "Icon": {
+        "replaces": []
+      },
+      "Logo": {
+        "replaces": []
+      },
+      "Numeracion": {
+        "replaces": []
+      },
+      "SafeZones": {
+        "replaces": []
+      },
+      "StoryFrame": {
+        "replaces": []
+      },
+      "WhatsAppMensaje": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--blue-100",
+      "--blue-200",
+      "--blue-300",
+      "--blue-400",
+      "--blue-50",
+      "--blue-500",
+      "--blue-600",
+      "--blue-700",
+      "--blue-800",
+      "--blue-900",
+      "--blue-950",
+      "--border-dark",
+      "--border-light",
+      "--brand-accent",
+      "--brand-primary",
+      "--brand-primary-deep",
+      "--cyan-200",
+      "--cyan-300",
+      "--cyan-400",
+      "--cyan-500",
+      "--cyan-600",
+      "--feed-h",
+      "--feed-margin-top",
+      "--feed-margin-x",
+      "--feed-number-bottom",
+      "--feed-unsafe-bottom",
+      "--feed-w",
+      "--font-core",
+      "--fw-black",
+      "--fw-bold",
+      "--fw-medium",
+      "--fw-regular",
+      "--fw-semibold",
+      "--glow-azul",
+      "--glow-blur",
+      "--glow-cian",
+      "--glow-claro-azul",
+      "--glow-claro-cian",
+      "--gradient-text",
+      "--mark-back",
+      "--mark-back-on-dark",
+      "--mark-front",
+      "--mark-front-on-dark",
+      "--mark-mid",
+      "--mark-mid-on-dark",
+      "--max-words-cuerpo",
+      "--max-words-hook",
+      "--max-words-titular",
+      "--navy-700",
+      "--navy-800",
+      "--navy-850",
+      "--navy-900",
+      "--navy-950",
+      "--off-white",
+      "--radius-badge",
+      "--radius-card",
+      "--radius-card-lg",
+      "--radius-input",
+      "--radius-pill",
+      "--shadow-boton",
+      "--shadow-card",
+      "--shadow-elevada",
+      "--slate-100",
+      "--slate-200",
+      "--slate-300",
+      "--slate-400",
+      "--slate-500",
+      "--space-1",
+      "--space-2",
+      "--space-3",
+      "--space-4",
+      "--space-5",
+      "--space-6",
+      "--space-7",
+      "--space-8",
+      "--story-h",
+      "--story-safe-bottom",
+      "--story-safe-top",
+      "--story-unsafe-bottom",
+      "--story-unsafe-top",
+      "--story-w",
+      "--surface-alt",
+      "--surface-card-dark",
+      "--surface-dark",
+      "--surface-page",
+      "--text-body-dark",
+      "--text-body-light",
+      "--text-heading-dark",
+      "--text-heading-light",
+      "--text-muted-dark",
+      "--text-muted-light",
+      "--type-cuerpo-lh",
+      "--type-cuerpo-size",
+      "--type-cuerpo-weight",
+      "--type-eyebrow-ls",
+      "--type-eyebrow-size",
+      "--type-eyebrow-weight",
+      "--type-gigante-lh",
+      "--type-gigante-ls",
+      "--type-gigante-size",
+      "--type-gigante-weight",
+      "--type-hook-lh",
+      "--type-hook-ls",
+      "--type-hook-size",
+      "--type-hook-weight",
+      "--type-label-lh",
+      "--type-label-size",
+      "--type-label-weight",
+      "--type-meta-size",
+      "--type-meta-weight",
+      "--type-titular-lh",
+      "--type-titular-ls",
+      "--type-titular-size",
+      "--type-titular-weight",
+      "--white"
+    ],
+    "tokenKinds": {
+      "--font-core": "font",
+      "--blue-50": "color",
+      "--blue-100": "color",
+      "--blue-200": "color",
+      "--blue-300": "color",
+      "--blue-400": "color",
+      "--blue-500": "color",
+      "--blue-600": "color",
+      "--blue-700": "color",
+      "--blue-800": "color",
+      "--blue-900": "color",
+      "--blue-950": "color",
+      "--cyan-200": "color",
+      "--cyan-300": "color",
+      "--cyan-400": "color",
+      "--cyan-500": "color",
+      "--cyan-600": "color",
+      "--navy-950": "color",
+      "--navy-900": "color",
+      "--navy-850": "color",
+      "--navy-800": "color",
+      "--navy-700": "color",
+      "--slate-500": "color",
+      "--slate-400": "color",
+      "--slate-300": "color",
+      "--slate-200": "color",
+      "--slate-100": "color",
+      "--white": "color",
+      "--off-white": "color",
+      "--brand-primary": "color",
+      "--brand-primary-deep": "color",
+      "--brand-accent": "color",
+      "--surface-dark": "color",
+      "--surface-page": "color",
+      "--surface-alt": "color",
+      "--surface-card-dark": "color",
+      "--text-heading-dark": "font",
+      "--text-body-dark": "font",
+      "--text-muted-dark": "font",
+      "--text-heading-light": "font",
+      "--text-body-light": "font",
+      "--text-muted-light": "font",
+      "--border-light": "color",
+      "--border-dark": "color",
+      "--mark-front": "color",
+      "--mark-mid": "color",
+      "--mark-back": "color",
+      "--mark-front-on-dark": "color",
+      "--mark-mid-on-dark": "color",
+      "--mark-back-on-dark": "color",
+      "--fw-regular": "font",
+      "--fw-medium": "font",
+      "--fw-semibold": "font",
+      "--fw-bold": "font",
+      "--fw-black": "font",
+      "--type-hook-size": "font",
+      "--type-hook-weight": "font",
+      "--type-hook-lh": "font",
+      "--type-hook-ls": "font",
+      "--type-titular-size": "font",
+      "--type-titular-weight": "font",
+      "--type-titular-lh": "font",
+      "--type-titular-ls": "font",
+      "--type-gigante-size": "font",
+      "--type-gigante-weight": "font",
+      "--type-gigante-lh": "font",
+      "--type-gigante-ls": "font",
+      "--type-label-size": "font",
+      "--type-label-weight": "font",
+      "--type-label-lh": "font",
+      "--type-cuerpo-size": "font",
+      "--type-cuerpo-weight": "font",
+      "--type-cuerpo-lh": "font",
+      "--type-eyebrow-size": "font",
+      "--type-eyebrow-weight": "font",
+      "--type-eyebrow-ls": "font",
+      "--type-meta-size": "font",
+      "--type-meta-weight": "font",
+      "--max-words-hook": "other",
+      "--max-words-titular": "other",
+      "--max-words-cuerpo": "other",
+      "--radius-input": "radius",
+      "--radius-badge": "radius",
+      "--radius-card": "radius",
+      "--radius-card-lg": "radius",
+      "--radius-pill": "radius",
+      "--shadow-card": "shadow",
+      "--shadow-elevada": "shadow",
+      "--shadow-boton": "shadow",
+      "--glow-blur": "other",
+      "--glow-azul": "other",
+      "--glow-cian": "other",
+      "--glow-claro-azul": "other",
+      "--glow-claro-cian": "other",
+      "--gradient-text": "other",
+      "--feed-w": "spacing",
+      "--feed-h": "spacing",
+      "--feed-margin-x": "spacing",
+      "--feed-margin-top": "spacing",
+      "--feed-unsafe-bottom": "spacing",
+      "--feed-number-bottom": "spacing",
+      "--story-w": "spacing",
+      "--story-h": "spacing",
+      "--story-unsafe-top": "spacing",
+      "--story-unsafe-bottom": "spacing",
+      "--story-safe-top": "spacing",
+      "--story-safe-bottom": "spacing",
+      "--space-1": "spacing",
+      "--space-2": "spacing",
+      "--space-3": "spacing",
+      "--space-4": "spacing",
+      "--space-5": "spacing",
+      "--space-6": "spacing",
+      "--space-7": "spacing",
+      "--space-8": "spacing"
+    },
+    "fontFamilies": [
+      "Archivo"
+    ]
+  }
+}

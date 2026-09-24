@@ -1,0 +1,14 @@
+:root{
+/* feed — carrusel y placa */
+--feed-w:1080px;--feed-h:1350px;
+--feed-margin-x:90px;--feed-margin-top:90px;--feed-unsafe-bottom:120px;
+--feed-number-bottom:150px;
+
+/* historia y reel */
+--story-w:1080px;--story-h:1920px;
+--story-unsafe-top:250px;--story-unsafe-bottom:250px; /* 1670 → 1920 */
+--story-safe-top:250px;--story-safe-bottom:1670px;
+
+/* ritmo interno */
+--space-1:8px;--space-2:16px;--space-3:24px;--space-4:32px;--space-5:48px;--space-6:64px;--space-7:90px;--space-8:120px;
+}

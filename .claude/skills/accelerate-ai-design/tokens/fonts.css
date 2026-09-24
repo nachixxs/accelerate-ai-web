@@ -1,0 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap");
+/* Archivo is the ONLY family in the system. Weights 400/500/600/700/800.
+   No local binaries were provided, so the family is loaded from Google Fonts.
+   Drop .woff2 files in assets/fonts/ and replace this import with @font-face
+   rules if you need offline / self-hosted rendering. */
+:root{--font-core:"Archivo","Archivo Fallback",system-ui,sans-serif}

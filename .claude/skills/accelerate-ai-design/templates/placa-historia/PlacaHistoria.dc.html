@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Placa de historia 1080×1920" description="Lienzo de historia o reel con la zona útil 250-1670 respetada y guías conmutables." -->
+<helmet><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap"><script src="./ds-base.js"></script><style>body{margin:0;background:#eef1f5}</style></helmet>
+<div style="display:flex;justify-content:center;padding:40px 0;font-family:Archivo,system-ui,sans-serif">
+<section data-screen-label="Historia" style="position:relative;width:1080px;height:1920px;flex:none;overflow:hidden;background:#0b1220">
+<div style="position:absolute;width:1150px;height:828px;bottom:-380px;left:-414px;border-radius:50%;background:radial-gradient(closest-side,rgba(41,113,242,.5),rgba(41,113,242,0));filter:blur(90px);transform:rotate(22deg) scale(1,.82);pointer-events:none"></div>
+<div style="position:absolute;width:820px;height:590px;bottom:-270px;left:-296px;border-radius:50%;background:radial-gradient(closest-side,rgba(34,211,238,.2),rgba(34,211,238,0));filter:blur(90px);transform:rotate(22deg) scale(1,.82);pointer-events:none"></div>
+<div style="position:absolute;top:290px;left:90px"><x-import component-from-global-scope="AccelerateAiDesignSystem_5ea60e.Logo" pieza="imagotipo" fondo="claro" asset-base="../../" hint-size="320px,52px"></x-import></div>
+<div style="position:absolute;left:90px;top:470px;font-size:24px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#22d3ee">[eyebrow · mayúsculas]</div>
+<h1 style="position:absolute;left:90px;right:120px;top:560px;margin:0;font-size:104px;font-weight:800;line-height:1.05;letter-spacing:-.02em;color:#fff;text-wrap:pretty">[Hook de hasta ocho palabras]</h1>
+<p style="position:absolute;left:90px;right:220px;top:1010px;margin:0;font-size:32px;font-weight:400;line-height:1.4;color:#c4cee0;text-wrap:pretty">[Cuerpo de hasta veinticuatro palabras, en lenguaje llano y con el resultado adelante.]</p>
+<span style="position:absolute;left:90px;top:1390px;display:inline-flex;align-items:center;gap:20px;background:#2971f2;color:#fff;font-size:40px;font-weight:600;line-height:1;letter-spacing:-.01em;padding:32px 56px;border-radius:999px;box-shadow:0 18px 40px rgba(15,36,80,.45)">{{ cta }}<span style="display:block;width:40px;height:40px;background:#fff;-webkit-mask-image:url(https://cdn.jsdelivr.net/npm/lucide-static@1.47.0/icons/message-circle.svg);mask-image:url(https://cdn.jsdelivr.net/npm/lucide-static@1.47.0/icons/message-circle.svg);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat"></span></span>
+<sc-if value="{{ guias }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;pointer-events:none">
+<div style="position:absolute;top:0;bottom:0;left:90px;border-left:1px dashed rgba(34,211,238,.9)"></div>
+<div style="position:absolute;top:0;bottom:0;right:90px;border-right:1px dashed rgba(34,211,238,.9)"></div>
+<div style="position:absolute;left:0;right:0;top:0;height:250px;background:rgba(41,113,242,.14);border-bottom:1px solid rgba(34,211,238,.9)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:250px;background:rgba(41,113,242,.14);border-top:1px solid rgba(34,211,238,.9)"></div>
+<div style="position:absolute;left:104px;top:200px;font-size:20px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#0eb9d6">zona insegura · 0 → 250</div>
+<div style="position:absolute;left:104px;bottom:230px;font-size:20px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#0eb9d6">zona insegura · 1670 → 1920</div>
+</div></sc-if>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1080,&quot;height&quot;:1920},&quot;guias&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Revisión&quot;},&quot;cta&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Escribinos por WhatsApp&quot;,&quot;Agendá una llamada&quot;],&quot;default&quot;:&quot;Agendá una llamada&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contenido&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      guias: !!this.props.guias,
+      cta: this.props.cta ?? "Agendá una llamada",
+    };
+  }
+}
+</script>
+</body>
+</html>

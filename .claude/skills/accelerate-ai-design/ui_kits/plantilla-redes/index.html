@@ -1,0 +1,67 @@
+<!-- @dsCard group="Plantilla redes" viewport="1080x1420" name="Carrusel de 5 — plantilla base" subtitle="Los cinco layouts en serie, con navegación y guías conmutables" -->
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Accelerate.ai · plantilla de redes</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>*{box-sizing:border-box}body{margin:0;background:#eef1f5;font-family:var(--font-core);display:flex;flex-direction:column;align-items:center;gap:22px;padding:26px 0 40px}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn{font-family:inherit;font-size:14px;font-weight:600;padding:11px 20px;border-radius:999px;border:1px solid var(--border-light);background:#fff;color:var(--text-body-dark);cursor:pointer}
+.btn[data-on="true"]{background:var(--brand-primary-deep);border-color:var(--brand-primary-deep);color:#fff}
+.btn:hover{border-color:var(--brand-primary-deep);color:var(--brand-primary-deep)}
+.btn[data-on="true"]:hover{color:#fff}
+.dots{display:flex;gap:8px;align-items:center;margin:0 6px}
+.dot{width:12px;height:12px;border-radius:999px;border:none;background:var(--slate-300);cursor:pointer;padding:0}
+.dot[data-on="true"]{background:var(--brand-primary-deep);width:30px}
+.meta{font-size:13px;font-weight:500;color:var(--text-muted-dark);max-width:1080px;text-align:center;line-height:1.5}
+.stage{width:1080px;display:flex;justify-content:center}
+a{color:var(--brand-primary-deep)}a:hover{color:var(--brand-primary)}</style></head><body>
+<div id="root"></div>
+<script type="text/babel">
+const NS = window.AccelerateAiDesignSystem_5ea60e;
+const { LayoutHook, LayoutPunto, LayoutProducto, LayoutCifra, LayoutCta } = NS;
+const SERIE = [
+  { key: "A", label: "A · Hook", C: LayoutHook },
+  { key: "B", label: "B · Punto", C: LayoutPunto },
+  { key: "C", label: "C · Producto", C: LayoutProducto },
+  { key: "D", label: "D · Cifra", C: LayoutCifra },
+  { key: "E", label: "E · CTA", C: LayoutCta },
+];
+function App() {
+  const [i, setI] = React.useState(0);
+  const [guias, setGuias] = React.useState(false);
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") setI((v) => Math.min(v + 1, SERIE.length - 1));
+      if (e.key === "ArrowLeft") setI((v) => Math.max(v - 1, 0));
+      if (e.key.toLowerCase() === "g") setGuias((v) => !v);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  const S = SERIE[i];
+  return (
+    <React.Fragment>
+      <div className="bar">
+        <button className="btn" onClick={() => setI(Math.max(i - 1, 0))}>← Anterior</button>
+        <div className="dots">
+          {SERIE.map((s, n) => (
+            <button key={s.key} className="dot" data-on={n === i} title={s.label} onClick={() => setI(n)} />
+          ))}
+        </div>
+        <button className="btn" onClick={() => setI(Math.min(i + 1, SERIE.length - 1))}>Siguiente →</button>
+        <button className="btn" data-on={guias} onClick={() => setGuias(!guias)}>Guías de zona segura</button>
+      </div>
+      <div className="meta">
+        <strong>{S.label}</strong> · slide {i + 1} de 5 · 1080×1350 · flechas ← → para navegar, G para las guías.
+        Todo el texto es placeholder marcado entre corchetes: el contenido se escribe encima, el layout no se toca.
+      </div>
+      <div className="stage">
+        <S.C index={i + 1} total={5} guias={guias} assetBase="../../" />
+      </div>
+    </React.Fragment>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script></body></html>

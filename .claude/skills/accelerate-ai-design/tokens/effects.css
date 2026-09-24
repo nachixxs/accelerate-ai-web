@@ -1,0 +1,21 @@
+:root{
+/* radios */
+--radius-input:8px;--radius-badge:12px;--radius-card:22px;--radius-card-lg:28px;--radius-pill:999px;
+
+/* sombras — tinte navy, nunca gris neutro */
+--shadow-card:0 24px 60px rgba(15,23,42,.14);
+--shadow-elevada:0 16px 36px rgba(15,23,42,.16);
+--shadow-boton:0 18px 40px rgba(15,36,80,.45);
+
+/* glows: elipse irregular, layer blur 90, siempre desde una esquina y a
+   medias fuera del frame. Nunca centrada, nunca simétrica. */
+--glow-blur:90px;/* @kind other */
+--glow-azul:radial-gradient(closest-side,rgba(41,113,242,.5),rgba(41,113,242,0)); /* @kind other */
+--glow-cian:radial-gradient(closest-side,rgba(34,211,238,.2),rgba(34,211,238,0)); /* @kind other */
+--glow-claro-azul:radial-gradient(closest-side,rgba(41,113,242,.16),rgba(41,113,242,0)); /* @kind other */
+--glow-claro-cian:radial-gradient(closest-side,rgba(34,211,238,.16),rgba(34,211,238,0)); /* @kind other */
+
+/* gradiente de texto — el recurso más distintivo. 1-2 apariciones por carrusel. */
+--gradient-text:linear-gradient(90deg,#2971f2,#22d3ee); /* @kind other */
+}
+.grad-text{background:var(--gradient-text);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
