@@ -1,0 +1,213 @@
+---
+// Cinta de rubros debajo de la portada: responde "¿sirve para mi rubro?" antes de que lo
+// pregunten. Es la única cinta en movimiento de la página. Sin JavaScript: la pausa es un
+// checkbox (WCAG 2.2.2 pide poder frenar lo que se mueve más de 5 segundos), también frena
+// con el mouse encima y con prefers-reduced-motion queda quieta y en varias líneas.
+// No son clientes: son rubros donde se repiten las mismas tareas todos los días.
+import Printer from '@lucide/astro/icons/printer';
+import UtensilsCrossed from '@lucide/astro/icons/utensils-crossed';
+import Wrench from '@lucide/astro/icons/wrench';
+import Store from '@lucide/astro/icons/store';
+import Stethoscope from '@lucide/astro/icons/stethoscope';
+import Truck from '@lucide/astro/icons/truck';
+import Building2 from '@lucide/astro/icons/building-2';
+import Calculator from '@lucide/astro/icons/calculator';
+import Dumbbell from '@lucide/astro/icons/dumbbell';
+import Scissors from '@lucide/astro/icons/scissors';
+import Pause from '@lucide/astro/icons/pause';
+import Play from '@lucide/astro/icons/play';
+
+const rubros = [
+	{ icono: Printer, nombre: 'Imprentas' },
+	{ icono: UtensilsCrossed, nombre: 'Gastronomía' },
+	{ icono: Wrench, nombre: 'Talleres' },
+	{ icono: Store, nombre: 'Comercios' },
+	{ icono: Stethoscope, nombre: 'Consultorios' },
+	{ icono: Truck, nombre: 'Distribuidoras' },
+	{ icono: Building2, nombre: 'Inmobiliarias' },
+	{ icono: Calculator, nombre: 'Estudios contables' },
+	{ icono: Dumbbell, nombre: 'Gimnasios' },
+	{ icono: Scissors, nombre: 'Peluquerías' },
+];
+---
+
+<section class="rubros" aria-labelledby="rubros-titulo">
+	<div class="contenedor rubros__cabecera">
+		<h2 id="rubros-titulo" class="rubros__titulo">Para cualquier negocio que repite tareas todos los días</h2>
+		<label class="rubros__pausa">
+			<input type="checkbox" />
+			<Pause size={16} class="rubros__icono-pausa" />
+			<Play size={16} class="rubros__icono-seguir" />
+			<span>Pausar</span>
+		</label>
+	</div>
+
+	<div class="rubros__ventana">
+		<div class="rubros__pista">
+			{
+				[false, true].map((copia) => (
+					<ul class="rubros__lista" aria-hidden={copia ? 'true' : undefined}>
+						{rubros.map(({ icono: Icono, nombre }) => (
+							<li>
+								<Icono size={22} stroke-width={1.75} />
+								{nombre}
+							</li>
+						))}
+					</ul>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.rubros {
+		padding-block: var(--space-4) var(--space-5);
+		border-block: 1px solid var(--border-light);
+		background: var(--white);
+	}
+
+	.rubros__cabecera {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.rubros__titulo {
+		color: var(--text-muted-dark);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-medium);
+	}
+
+	/* Bordes que se funden con el fondo: la cinta entra y sale en vez de cortarse seco. */
+	.rubros__ventana {
+		overflow: hidden;
+		mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+	}
+
+	.rubros__pista {
+		display: flex;
+		width: max-content;
+	}
+
+	.rubros__lista {
+		display: flex;
+		gap: var(--space-2);
+		padding-right: var(--space-2);
+	}
+
+	.rubros__lista li {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		padding: 12px 20px;
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius-pill);
+		background: var(--surface-alt);
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-semibold);
+		white-space: nowrap;
+	}
+
+	.rubros__lista :global(svg) {
+		color: var(--brand-primary-deep);
+	}
+
+	/* Botón de pausa: un checkbox con apariencia de botón, 44 px de alto. */
+	.rubros__pausa {
+		position: relative;
+		display: none;
+		align-items: center;
+		gap: 6px;
+		min-height: 44px;
+		padding-inline: var(--space-2);
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius-pill);
+		background: var(--white);
+		color: var(--text-body-dark);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-medium);
+		cursor: pointer;
+	}
+
+	.rubros__pausa:hover {
+		border-color: var(--brand-primary-deep);
+		color: var(--brand-primary-deep);
+	}
+
+	.rubros__pausa input {
+		position: absolute;
+		opacity: 0;
+		inset: 0;
+		margin: 0;
+		cursor: pointer;
+	}
+
+	.rubros__pausa:has(input:focus-visible) {
+		outline: 3px solid var(--brand-primary-deep);
+		outline-offset: 3px;
+	}
+
+	.rubros__pausa :global(.rubros__icono-seguir),
+	.rubros__pausa:has(input:checked) :global(.rubros__icono-pausa) {
+		display: none;
+	}
+
+	.rubros__pausa:has(input:checked) :global(.rubros__icono-seguir) {
+		display: block;
+	}
+
+	/* Sin movimiento: la cinta se vuelve una lista quieta en varias líneas y la copia se oculta. */
+	.rubros__pista,
+	.rubros__lista {
+		flex-wrap: wrap;
+		width: auto;
+		row-gap: var(--space-1);
+	}
+
+	.rubros__lista[aria-hidden] {
+		display: none;
+	}
+
+	.rubros__ventana {
+		mask-image: none;
+	}
+
+	@keyframes cinta {
+		to {
+			transform: translateX(-50%);
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.rubros__ventana {
+			mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+		}
+
+		.rubros__pista,
+		.rubros__lista {
+			flex-wrap: nowrap;
+		}
+
+		.rubros__pista {
+			width: max-content;
+			animation: cinta 40s linear infinite;
+		}
+
+		.rubros__lista[aria-hidden] {
+			display: flex;
+		}
+
+		.rubros__pausa {
+			display: inline-flex;
+		}
+
+		.rubros:has(input:checked) .rubros__pista,
+		.rubros__ventana:hover .rubros__pista {
+			animation-play-state: paused;
+		}
+	}
+</style>

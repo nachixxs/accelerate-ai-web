@@ -1,0 +1,86 @@
+---
+// Burbuja de chat de WhatsApp, port de la Burbuja de components/producto/WhatsAppMock.jsx.
+// Va siempre sobre la card oscura. El tilde de enviado es el único vector dibujado a mano que
+// permite la marca: es producto, no interfaz.
+interface Props {
+	de: 'recibida' | 'enviada';
+	hora: string;
+	// La última burbuja de un mock sale del borde de la card (regla de profundidad).
+	sangra?: boolean;
+	class?: string;
+	style?: string;
+}
+
+const { de, hora, sangra = false, class: clase, style } = Astro.props;
+---
+
+<div class:list={['burbuja', `burbuja--${de}`, { 'burbuja--sangra': sangra }, clase]} style={style}>
+	<p><slot /></p>
+	<span class="burbuja__meta">
+		{hora}
+		{
+			de === 'enviada' && (
+				<svg width="18" height="12" viewBox="0 0 22 14" fill="none" aria-hidden="true">
+					<path d="M1 8.2 4.6 12 12.4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+					<path d="M8.6 8.2 12.2 12 20 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+			)
+		}
+	</span>
+</div>
+
+<style>
+	.burbuja {
+		max-width: 82%;
+		padding: 10px 14px 8px;
+		border-radius: 18px;
+		font-size: 0.9375rem;
+		line-height: 1.4;
+	}
+
+	.burbuja--recibida {
+		align-self: flex-start;
+		border-bottom-left-radius: 6px;
+		background: var(--navy-800);
+		color: var(--text-body-light);
+	}
+
+	.burbuja--enviada {
+		align-self: flex-end;
+		border-bottom-right-radius: 6px;
+		background: var(--brand-primary-deep);
+		color: #eaf1ff;
+	}
+
+	.burbuja--sangra {
+		box-shadow: var(--shadow-elevada);
+	}
+
+	.burbuja--enviada.burbuja--sangra {
+		margin-right: -28px;
+	}
+
+	.burbuja--recibida.burbuja--sangra {
+		margin-left: -28px;
+	}
+
+	.burbuja__meta {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 6px;
+		margin-top: 4px;
+		font-size: 0.75rem;
+		font-weight: var(--fw-medium);
+		color: var(--text-muted-light);
+	}
+
+	.burbuja--enviada .burbuja__meta {
+		/* Sólido y no con alpha: la marca no atenúa texto con transparencia. 4,9:1 sobre #1f57c2. */
+		color: #cddcf7;
+	}
+
+	.burbuja--enviada svg {
+		color: var(--cyan-300);
+	}
+</style>

@@ -1,0 +1,187 @@
+---
+// Encabezado fijo: logo, links a las secciones y el botón de WhatsApp.
+// Fondo sólido, sin vidrio ni blur (la marca los prohíbe fuera de los glows). La sombra y la
+// barra de progreso de lectura se mueven con el scroll, con CSS y sin JavaScript.
+// El botón de acá usa el azul profundo: #2971f2 queda para el botón principal de cada sección.
+import { Image } from 'astro:assets';
+import MessageCircle from '@lucide/astro/icons/message-circle';
+import logotipo from '../assets/identidad/logotipo-azul.png';
+import { WHATSAPP_URL } from '../config';
+
+const links = [
+	{ href: '#sistemas', texto: 'Qué armamos' },
+	{ href: '#proceso', texto: 'Cómo trabajamos' },
+	{ href: '#preguntas', texto: 'Preguntas' },
+];
+---
+
+<header class="encabezado">
+	<div class="contenedor encabezado__interior">
+		<a href="#inicio" class="encabezado__logo">
+			<Image src={logotipo} alt="Accelerate.ai" width={148} loading="eager" />
+		</a>
+
+		<nav aria-label="Secciones" class="encabezado__nav">
+			<ul>
+				{links.map(({ href, texto }) => <li><a href={href}>{texto}</a></li>)}
+			</ul>
+		</nav>
+
+		<a class="encabezado__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
+			<MessageCircle size={20} />
+			<span class="encabezado__cta-texto">Escribinos por WhatsApp</span>
+		</a>
+	</div>
+	<div class="encabezado__progreso" aria-hidden="true"></div>
+</header>
+
+<style>
+	.encabezado {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		background: var(--surface-alt);
+		border-bottom: 1px solid transparent;
+	}
+
+	.encabezado__interior {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		height: 72px;
+	}
+
+	.encabezado__logo {
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+	}
+
+	.encabezado__logo img {
+		width: 132px;
+		height: auto;
+	}
+
+	/* En el celular no hay lugar para los links: la página es corta y se recorre con el pulgar. */
+	.encabezado__nav {
+		display: none;
+	}
+
+	.encabezado__nav ul {
+		display: flex;
+		gap: var(--space-1);
+	}
+
+	.encabezado__nav a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		padding-inline: var(--space-2);
+		border-radius: var(--radius-pill);
+		color: var(--text-body-dark);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-medium);
+		transition: color 0.2s, background-color 0.2s;
+	}
+
+	.encabezado__nav a:hover {
+		color: var(--brand-primary-deep);
+		background: var(--blue-50);
+	}
+
+	.encabezado__cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-1);
+		min-width: 44px;
+		min-height: 44px;
+		padding-inline: 12px;
+		border-radius: var(--radius-pill);
+		background: var(--brand-primary-deep);
+		color: var(--white);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+		-webkit-tap-highlight-color: transparent;
+		transition: background-color 0.2s;
+	}
+
+	.encabezado__cta:hover,
+	.encabezado__cta:active {
+		background: var(--blue-800);
+		color: var(--white);
+	}
+
+	.encabezado__cta :global(svg) {
+		flex: none;
+	}
+
+	/* En el celular el botón es solo el ícono; el texto queda para el lector de pantalla. */
+	@media (max-width: 639px) {
+		.encabezado__cta-texto {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
+		}
+	}
+
+	@media (min-width: 640px) {
+		.encabezado__logo img {
+			width: 148px;
+		}
+
+		.encabezado__cta {
+			padding-inline: var(--space-3);
+		}
+	}
+
+	@media (min-width: 960px) {
+		.encabezado__nav {
+			display: block;
+		}
+	}
+
+	/* Barra de lectura: se llena de izquierda a derecha a medida que bajás. */
+	.encabezado__progreso {
+		position: absolute;
+		left: 0;
+		bottom: -1px;
+		width: 100%;
+		height: 3px;
+		background: var(--brand-accent);
+		transform-origin: left;
+		transform: scaleX(0);
+	}
+
+	@keyframes encabezado-despega {
+		to {
+			border-bottom-color: var(--border-light);
+			box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+		}
+	}
+
+	@keyframes progreso-lectura {
+		to {
+			transform: scaleX(1);
+		}
+	}
+
+	@supports (animation-timeline: scroll()) {
+		.encabezado {
+			animation: encabezado-despega linear both;
+			animation-timeline: scroll();
+			animation-range: 0 120px;
+		}
+
+		@media (prefers-reduced-motion: no-preference) {
+			.encabezado__progreso {
+				animation: progreso-lectura linear both;
+				animation-timeline: scroll();
+			}
+		}
+	}
+</style>

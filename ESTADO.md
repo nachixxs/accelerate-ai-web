@@ -8,6 +8,10 @@ revisar (`REVISION-TEXTOS.md`), vistas en 360 y 1280 px con `npm run capturas`. 
 revisión de UX y accesibilidad y tiene las etiquetas Open Graph con su imagen, con un dominio
 provisorio. Sin repo en GitHub.
 
+**En curso: rediseño dinámico** en la rama `rediseno-dinamico` (ver la sección de abajo). El
+usuario vio la base "súper plana" y pidió una página como https://minificando.ai/: linda,
+profesional, con mucho movimiento y visuales reales del producto (panel, línea de tiempo).
+
 ## La base (terminada)
 
 1. ~~Nombre de la carpeta y del repo~~: `accelerate-ai-web`.
@@ -50,8 +54,61 @@ provisorio. Sin repo en GitHub.
    en una columna central de 600 px por si WhatsApp recorta la vista previa a un cuadrado.
    `npm run capturas` chequea que las etiquetas estén y que la imagen esté publicada.
 
+## Rediseño dinámico (en curso, rama `rediseno-dinamico`)
+
+Referencia: minificando.ai (Astro, modo claro, panel del producto en la portada, cinta de
+logos, línea de tiempo de "tu día", calendario, reseñas, video). De ahí se toma la estructura y
+la riqueza visual; los colores, la tipografía y los efectos siguen siendo los de la marca.
+
+**Hecho (sin revisar a fondo todavía):**
+- `global.css`: utilidades de movimiento. `.entrada` (entrada al cargar, en cascada con
+  `--orden`) y `.revelar` (aparición con el scroll con `animation-timeline: view()`, sin
+  JavaScript). Todo apagado con `prefers-reduced-motion`. Más `.solo-lector`,
+  `scroll-margin-top` para el encabezado fijo y `.encabezado-seccion`.
+- `Encabezado.astro`: fijo, logotipo azul, links a `#sistemas` `#proceso` `#preguntas`, botón
+  de WhatsApp en azul profundo (solo ícono en el celular), sombra y barra de lectura atadas al
+  scroll.
+- `mocks/Burbuja.astro`: burbuja de WhatsApp, port del `WhatsAppMock` de la marca, con el tilde.
+- `Portada.astro` rehecha: fondo claro, texto a la izquierda y el producto a la derecha (panel
+  "Pedidos de hoy" en card oscura, chat de WhatsApp montado encima, chip "Cargado sin que nadie
+  lo tipee" sobre el borde). La historia (llega el pedido, "escribiendo…", el sistema confirma,
+  el pedido aparece arriba de la planilla) corre al cargar en escritorio y avanza con el scroll
+  en el celular. Vista en 1280 y 360 px: bien.
+- `Rubros.astro`: cinta de rubros con botón de pausa (checkbox, sin JS). **Escrita pero todavía
+  no está en `index.astro` ni se probó.**
+
+**Falta, en este orden:**
+1. Sumar `Rubros` a `index.astro` y probarla.
+2. `QueResolvemos`: interruptor "Hoy / Con un sistema" (radios + `:has()`) que transforma cada
+   dolor en su solución.
+3. `SistemasAMedida` con `id="sistemas"`, en fondo oscuro: grilla bento con un mock por
+   ejemplo (chat de pedidos con el chip "Ya funciona en una imprenta", calendario de turnos con
+   aviso de recordatorio, ticket de cierre de caja, gráfico de barras que crece con el scroll).
+   Mantener las clases `.chip-montado` y `.ejemplo--destacado`, que usa `capturas.mjs`.
+4. `ComoTrabajamos` con `id="proceso"`: línea de tiempo vertical (alternada en escritorio)
+   con la línea que se llena con el scroll (`view-timeline`) y un mini visual por paso.
+5. `QuienesSomos`: el "momento de escala" de la marca, "Nacho y Colo" gigante, con los nombres
+   deslizándose con el scroll.
+6. `PreguntasFrecuentes` con `id="preguntas"`: título fijo a la izquierda en escritorio y
+   apertura suave (`::details-content` + `interpolate-size`).
+7. `Cierre`: el mensaje real que se manda por WhatsApp como burbuja, con la respuesta
+   apareciendo con el scroll; imagotipo claro grande en el pie.
+8. Pasar las skills: `emil-design-eng`, `find-animation-opportunities`, `review-animations`,
+   `impeccable`, `design-taste-frontend` (checklist final) y `web-design-guidelines`.
+9. Actualizar `capturas.mjs`: la captura completa con `reducedMotion: 'reduce'` (si no, lo que
+   se revela con el scroll sale invisible) y chequeos para lo nuevo.
+10. `npm run capturas`, mirar todo en 360 y 1280, ESTADO.md, commit y merge a `main` con
+    confirmación del usuario.
+
+**Reglas de la marca que cuidar en el rediseño:** `#2971f2` solo en el botón principal; en
+el fondo claro, una sola card invertida por sección (por eso Sistemas va en fondo oscuro);
+un solo glow sobre claro; sin vidrio ni blur fuera de los glows; texto sin alpha; nada de
+números sin fuente (los mocks usan datos de ejemplo, sin métricas); en la cinta, rubros y no
+clientes; sin em-dash (lo pide Taste).
+
 ## Próximo paso
 
+0. Terminar el rediseño dinámico (sección de arriba).
 1. Los textos corregidos por Colo y los links de las redes (`REVISION-TEXTOS.md`). Si
    cambia el titular de la portada, correr `npm run og` para rehacer la imagen.
 2. Hosting y dominio (pendientes 2 a 4), recién para publicar. Al tener el dominio, cambiar
@@ -73,6 +130,9 @@ provisorio. Sin repo en GitHub.
 | Escala web por roles del sistema, con `clamp()` 360→1280 px; cuerpo con lh 1.5 | En 360 px el cuerpo de redes dividido por 3 quedaría en 11 px; la web tiene párrafos más largos |
 | Imagen OG compuesta en código (plantilla Astro + Playwright), no en Canva | Usa la fuente, los tokens, el glow y el logo reales, y se regenera con un comando si cambia el texto |
 | Imagen OG en JPEG, no PNG | Pesa 50 KB; WhatsApp a veces no muestra imágenes de más de 300 KB |
+| Rediseño: portada en fondo claro con el producto a la derecha, como minificando | Pedido del usuario. La marca pide fondo oscuro para el hook, pero en piezas de redes; en la web manda el pedido. El cierre sigue oscuro |
+| Rediseño: movimiento solo con CSS (intensidad 7), sin JavaScript | Todo sale con animaciones de CSS y `animation-timeline`; en Firefox la página se ve completa y quieta |
+| Logotipo en el encabezado, imagotipo en el pie y el cierre | La marca pide imagotipo desde 280 px de ancho; debajo va el logotipo. El zip de la agencia trae los mismos PNG que ya están en el repo, sin SVG |
 | Dominio provisorio `accelerate-ai.example` | Open Graph pide URL completas. `.example` es un dominio reservado que no existe, y el build avisa mientras siga ahí |
 
 ## Skills
@@ -80,6 +140,10 @@ provisorio. Sin repo en GitHub.
 Instaladas globales: `design-taste-frontend` e `image-to-code` (de `leonxlnx/taste-skill`),
 `playwright-cli` (de `microsoft/playwright-cli`) y `web-design-guidelines` (de
 `vercel-labs/agent-skills`). `frontend-design` ya estaba. Cómo se usa cada una: `CLAUDE.md`.
+Sumadas el 2026-09-23 para el rediseño: `emil-design-eng`, `find-animation-opportunities` y
+`review-animations` (de `emilkowalski/skills`) e `impeccable` (de `pbakaus/impeccable`).
+`image-to-code` pide generar imágenes antes de codear; acá no aplica (la marca no usa fotos ni
+ilustraciones): se usaron capturas de minificando como referencia.
 
 **Descartadas:**
 
