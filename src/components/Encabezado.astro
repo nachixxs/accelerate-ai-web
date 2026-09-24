@@ -7,7 +7,7 @@
 // pero en un lienzo de 1080 px: una pieza de redes se ve en el celular a un tercio de su tamaño,
 // así que 280 px del lienzo son unos 95 px en pantalla. A 150-176 px las capas se leen.
 import { Image } from 'astro:assets';
-import MessageCircle from '@lucide/astro/icons/message-circle';
+import Icono from './Icono.astro';
 import imagotipo from '../assets/identidad/imagotipo-azul.png';
 import { WHATSAPP_URL } from '../config';
 
@@ -33,7 +33,7 @@ const links = [
 
 		<a class="encabezado__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
 			<span class="encabezado__cta-cara">
-				<MessageCircle size={20} />
+				<Icono nombre="si:whatsapp" size={20} />
 				<span class="encabezado__cta-texto">Escribinos por WhatsApp</span>
 			</span>
 		</a>

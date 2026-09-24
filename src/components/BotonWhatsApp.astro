@@ -7,8 +7,7 @@
 // - link: texto con flecha, para cerrar una sección sin sumar otro botón.
 // Cada uno lleva su propio texto y su propio mensaje de WhatsApp según la sección, como
 // minificando. Con el mouse encima se agrandan un poco (pedido del usuario, 2026-09-24).
-import ArrowRight from '@lucide/astro/icons/arrow-right';
-import MessageCircle from '@lucide/astro/icons/message-circle';
+import Icono from './Icono.astro';
 import { whatsappUrl } from '../config';
 
 interface Props {
@@ -23,7 +22,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 
 <a class:list={['boton', `boton--${variante}`, clase]} href={whatsappUrl(mensaje)} target="_blank" rel="noopener">
 	{texto}
-	{variante === 'principal' ? <MessageCircle size={24} class="boton__icono" /> : <ArrowRight size={20} stroke-width={2} class="boton__icono" />}
+	{variante === 'principal' ? <Icono nombre="si:whatsapp" size={24} class="boton__icono" /> : <Icono nombre="arrow-right-bold" size={20} class="boton__icono" />}
 </a>
 
 <style>

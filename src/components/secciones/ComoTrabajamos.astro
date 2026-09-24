@@ -6,11 +6,7 @@
 // marca se enciende cuando la punta la alcanza, a media pantalla. Sin JavaScript: la línea usa
 // el view-timeline de la lista y cada marca su propio view(). Sin movimiento, todo queda
 // encendido. Cada paso lleva un visual chico; la propuesta es la única card invertida.
-import Search from '@lucide/astro/icons/search';
-import FileText from '@lucide/astro/icons/file-text';
-import Hammer from '@lucide/astro/icons/hammer';
-import LifeBuoy from '@lucide/astro/icons/life-buoy';
-import Flag from '@lucide/astro/icons/flag';
+import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 ---
 
@@ -23,7 +19,7 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 		<ol class="linea">
 			<li class="paso">
-				<span class="paso__marca"><Search size={22} stroke-width={1.75} /></span>
+				<span class="paso__marca"><Icono nombre="magnifying-glass-duotone" size={22} /></span>
 				<div class="paso__texto">
 					<h3 class="t-label">Auditoría gratis</h3>
 					<p>Una charla de 30 a 45&nbsp;minutos sobre cómo se mueve tu negocio. Salimos con un problema concreto para resolver.</p>
@@ -37,7 +33,7 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 			</li>
 
 			<li class="paso">
-				<span class="paso__marca"><FileText size={22} stroke-width={1.75} /></span>
+				<span class="paso__marca"><Icono nombre="file-text-duotone" size={22} /></span>
 				<div class="paso__texto">
 					<h3 class="t-label">Propuesta con dos números</h3>
 					<p>Lo que cuesta armarlo y lo que cuesta por mes, con la fecha de entrega.</p>
@@ -53,13 +49,13 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 			</li>
 
 			<li class="paso">
-				<span class="paso__marca"><Hammer size={22} stroke-width={1.75} /></span>
+				<span class="paso__marca"><Icono nombre="hammer-duotone" size={22} /></span>
 				<div class="paso__texto">
 					<h3 class="t-label">Construcción en 1 a 3&nbsp;semanas</h3>
 					<p>A mitad de camino te mostramos cómo va, para ajustar antes de terminar.</p>
 				</div>
 				<div class="paso__visual visual-semanas" aria-hidden="true">
-					<span class="visual-semanas__demo"><Flag size={14} stroke-width={2} /> Demo</span>
+					<span class="visual-semanas__demo"><Icono nombre="flag-duotone" size={14} /> Demo</span>
 					<span class="visual-semanas__tramo">Semana 1</span>
 					<span class="visual-semanas__tramo">Semana 2</span>
 					<span class="visual-semanas__tramo">Semana 3</span>
@@ -67,7 +63,7 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 			</li>
 
 			<li class="paso">
-				<span class="paso__marca"><LifeBuoy size={22} stroke-width={1.75} /></span>
+				<span class="paso__marca"><Icono nombre="lifebuoy-duotone" size={22} /></span>
 				<div class="paso__texto">
 					<h3 class="t-label">Soporte todos los meses</h3>
 					<p>Arreglamos lo que falle y mejoramos el sistema a medida que tu negocio cambia.</p>

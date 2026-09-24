@@ -5,8 +5,7 @@
 // la otra: el chat de WhatsApp arriba, una línea por la que baja el pedido y la planilla de
 // pedidos abajo, con el chip montado sobre su borde. Al cargar, la historia corre una vez en
 // unos 4 segundos: llega el mensaje, el sistema contesta, el pedido baja y aparece en la planilla.
-import Check from '@lucide/astro/icons/check';
-import Zap from '@lucide/astro/icons/zap';
+import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
 import Burbuja from '../mocks/Burbuja.astro';
@@ -68,7 +67,7 @@ const ESTADOS = { nuevo: 'Nuevo', produccion: 'En producción', listo: 'Listo' }
 
 			<div class="panel">
 				<span class="chip-portada">
-					<Zap size={16} />
+					<Icono nombre="lightning-duotone" size={16} />
 					Cargado sin que nadie lo tipee
 				</span>
 				<div class="panel__barra">
@@ -93,7 +92,7 @@ const ESTADOS = { nuevo: 'Nuevo', produccion: 'En producción', listo: 'Listo' }
 								</span>
 								<span>{entrega}</span>
 								<span class={`estado estado--${estado}`}>
-									{estado === 'listo' && <Check size={14} stroke-width={2.5} />}
+									{estado === 'listo' && <Icono nombre="check-bold" size={14} />}
 									{ESTADOS[estado as keyof typeof ESTADOS]}
 								</span>
 							</div>

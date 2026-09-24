@@ -9,10 +9,7 @@
 // El avatar es el de la marca para recorte circular (avatar-claro): la A ya viene centrada.
 // El isotipo suelto carga las capas de velocidad a la izquierda y en un círculo se ve corrido.
 import { Image } from 'astro:assets';
-import CalendarCheck from '@lucide/astro/icons/calendar-check';
-import ClipboardCheck from '@lucide/astro/icons/clipboard-check';
-import Clock from '@lucide/astro/icons/clock';
-import Gift from '@lucide/astro/icons/gift';
+import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
 import Burbuja from '../mocks/Burbuja.astro';
@@ -20,9 +17,9 @@ import avatar from '../../assets/identidad/avatar-claro.png';
 import { WHATSAPP_MENSAJE } from '../../config';
 
 const datos = [
-	{ icono: Clock, texto: '30 a 45 minutos' },
-	{ icono: Gift, texto: 'Gratis' },
-	{ icono: ClipboardCheck, texto: 'Sin preparar nada' },
+	{ icono: 'clock-duotone', texto: '30 a 45 minutos' },
+	{ icono: 'gift-duotone', texto: 'Gratis' },
+	{ icono: 'clipboard-text-duotone', texto: 'Sin preparar nada' },
 ];
 ---
 
@@ -36,9 +33,9 @@ const datos = [
 			<p class="t-cuerpo">Una charla para encontrar el proceso que más tiempo te hace perder.</p>
 			<ul class="cierre__datos">
 				{
-					datos.map(({ icono: Icono, texto }, i) => (
+					datos.map(({ icono, texto }, i) => (
 						<li style={`--i: ${i}`}>
-							<Icono size={18} stroke-width={2} />
+							<Icono nombre={icono} size={18} />
 							{texto}
 						</li>
 					))
@@ -85,7 +82,7 @@ const datos = [
 
 			<div class="agendada">
 				<span class="agendada__icono">
-					<CalendarCheck size={20} stroke-width={2} />
+					<Icono nombre="calendar-check-duotone" size={20} />
 				</span>
 				<span>
 					<strong>Auditoría agendada</strong>

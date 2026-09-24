@@ -3,7 +3,7 @@
 // montado sobre su borde de abajo (regla de profundidad de la marca), el recordatorio que salió
 // para el turno resaltado: el del martes a las 10:30. Datos de ejemplo.
 // Se anima con el timeline --celda de la card que lo contiene.
-import BellRing from '@lucide/astro/icons/bell-ring';
+import Icono from '../Icono.astro';
 
 const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'];
 // Un turno por celda: la hora si está reservado, null si está libre. Filas = franjas del día.
@@ -42,7 +42,7 @@ let orden = 0;
 	</div>
 
 	<div class="aviso">
-		<span class="aviso__icono"><BellRing size={16} /></span>
+		<span class="aviso__icono"><Icono nombre="bell-ringing-duotone" size={16} /></span>
 		<span class="aviso__texto">
 			<strong>Recordatorio enviado</strong>
 			Sofía, te esperamos mañana a las 10:30.

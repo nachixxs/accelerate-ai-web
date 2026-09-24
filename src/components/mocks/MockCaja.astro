@@ -2,7 +2,7 @@
 // Mock de "Cajas y cierres diarios sin cuadernos": el ticket del cierre del día, que se
 // "imprime" de arriba hacia abajo con el scroll. Montos de ejemplo, no son métricas.
 // Se anima con el timeline --celda de la card que lo contiene.
-import CircleCheck from '@lucide/astro/icons/circle-check';
+import Icono from '../Icono.astro';
 
 const movimientos = [
 	{ medio: 'Efectivo', monto: '$ 184.300' },
@@ -38,7 +38,7 @@ const movimientos = [
 		<div class="ticket__cierre">
 			<span>Diferencia $ 0</span>
 			<span class="ticket__sello">
-				<CircleCheck size={16} />
+				<Icono nombre="check-circle-duotone" size={16} />
 				Cierra
 			</span>
 		</div>

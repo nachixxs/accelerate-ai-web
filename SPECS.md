@@ -60,7 +60,7 @@ piezas de redes, así que se toma una parte y otra no:
 | Colores, radios, sombras, glows y gradiente de texto (`tokens/`) | La escala tipográfica: la del sistema es fija para un lienzo de 1080 px; la web necesita una que se achique en el celular |
 | Tipografía Archivo, sin otra familia | Los layouts de feed e historia no aplican; las secciones de la web son propias |
 | Logos de `assets/identidad/` | Los componentes vienen en React (`.jsx`); se reescriben como componentes `.astro` |
-| Las reglas de voz, CTA, íconos (solo Lucide) y color (el azul `#2971f2` una sola vez, sin violeta) | |
+| Las reglas de voz, CTA y color (el azul `#2971f2` una sola vez, sin violeta) | Los íconos: Phosphor dúo en vez de Lucide, y el logo real de WhatsApp (pedido del usuario, 2026-09-24) |
 
 Los logos son PNG, no SVG. Alcanzan para el header de la web; si aparecen los SVG originales,
 se cambian.

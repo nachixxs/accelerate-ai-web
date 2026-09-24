@@ -14,13 +14,15 @@
     "og": "node scripts/og.mjs"
   },
   "dependencies": {
-    "@lucide/astro": "^1.47.0",
     "astro": "^7.3.4"
   },
   "allowScripts": {
     "esbuild": true
   },
   "devDependencies": {
+    "@iconify-json/ph": "^1.2.2",
+    "@iconify-json/simple-icons": "^1.2.97",
+    "@iconify/utils": "^3.1.7",
     "playwright": "^1.63.0"
   }
 }

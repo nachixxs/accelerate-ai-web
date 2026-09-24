@@ -7,47 +7,29 @@
 // celular y al llegar con el teclado (la ventana es enfocable). Corre aunque el sistema pida
 // movimiento reducido: lo pidió el usuario (ver el comentario de la animación).
 // No son clientes: son rubros donde se repiten las mismas tareas todos los días.
-import Printer from '@lucide/astro/icons/printer';
-import UtensilsCrossed from '@lucide/astro/icons/utensils-crossed';
-import Wrench from '@lucide/astro/icons/wrench';
-import Store from '@lucide/astro/icons/store';
-import Stethoscope from '@lucide/astro/icons/stethoscope';
-import Truck from '@lucide/astro/icons/truck';
-import Building from '@lucide/astro/icons/building';
-import Calculator from '@lucide/astro/icons/calculator';
-import Dumbbell from '@lucide/astro/icons/dumbbell';
-import Scissors from '@lucide/astro/icons/scissors';
-import PawPrint from '@lucide/astro/icons/paw-print';
-import Hammer from '@lucide/astro/icons/hammer';
-import Plane from '@lucide/astro/icons/plane';
-import Glasses from '@lucide/astro/icons/glasses';
-import BookOpen from '@lucide/astro/icons/book-open';
-import Car from '@lucide/astro/icons/car';
-import Shirt from '@lucide/astro/icons/shirt';
-import Pill from '@lucide/astro/icons/pill';
-import GraduationCap from '@lucide/astro/icons/graduation-cap';
+import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 const rubros = [
-	{ icono: Printer, nombre: 'Imprentas' },
-	{ icono: UtensilsCrossed, nombre: 'Gastronomía' },
-	{ icono: Wrench, nombre: 'Talleres' },
-	{ icono: Store, nombre: 'Comercios' },
-	{ icono: Stethoscope, nombre: 'Consultorios' },
-	{ icono: Truck, nombre: 'Distribuidoras' },
-	{ icono: Building, nombre: 'Inmobiliarias' },
-	{ icono: Calculator, nombre: 'Estudios contables' },
-	{ icono: Dumbbell, nombre: 'Gimnasios' },
-	{ icono: Scissors, nombre: 'Peluquerías' },
-	{ icono: PawPrint, nombre: 'Veterinarias' },
-	{ icono: Hammer, nombre: 'Ferreterías' },
-	{ icono: Plane, nombre: 'Agencias de viaje' },
-	{ icono: Glasses, nombre: 'Ópticas' },
-	{ icono: BookOpen, nombre: 'Librerías' },
-	{ icono: Car, nombre: 'Lavaderos de autos' },
-	{ icono: Shirt, nombre: 'Indumentaria' },
-	{ icono: Pill, nombre: 'Farmacias' },
-	{ icono: GraduationCap, nombre: 'Institutos' },
+	{ icono: 'printer-duotone', nombre: 'Imprentas' },
+	{ icono: 'fork-knife-duotone', nombre: 'Gastronomía' },
+	{ icono: 'wrench-duotone', nombre: 'Talleres' },
+	{ icono: 'storefront-duotone', nombre: 'Comercios' },
+	{ icono: 'stethoscope-duotone', nombre: 'Consultorios' },
+	{ icono: 'truck-duotone', nombre: 'Distribuidoras' },
+	{ icono: 'buildings-duotone', nombre: 'Inmobiliarias' },
+	{ icono: 'calculator-duotone', nombre: 'Estudios contables' },
+	{ icono: 'barbell-duotone', nombre: 'Gimnasios' },
+	{ icono: 'scissors-duotone', nombre: 'Peluquerías' },
+	{ icono: 'paw-print-duotone', nombre: 'Veterinarias' },
+	{ icono: 'hammer-duotone', nombre: 'Ferreterías' },
+	{ icono: 'airplane-tilt-duotone', nombre: 'Agencias de viaje' },
+	{ icono: 'eyeglasses-duotone', nombre: 'Ópticas' },
+	{ icono: 'book-open-duotone', nombre: 'Librerías' },
+	{ icono: 'car-duotone', nombre: 'Lavaderos de autos' },
+	{ icono: 't-shirt-duotone', nombre: 'Indumentaria' },
+	{ icono: 'pill-duotone', nombre: 'Farmacias' },
+	{ icono: 'graduation-cap-duotone', nombre: 'Institutos' },
 ];
 ---
 
@@ -64,10 +46,10 @@ const rubros = [
 				{
 					[false, true].map((copia) => (
 						<ul class="rubros__lista" aria-hidden={copia ? 'true' : undefined}>
-							{rubros.map(({ icono: Icono, nombre }) => (
+							{rubros.map(({ icono, nombre }) => (
 								<li>
 									<span class="rubros__icono">
-										<Icono size={20} stroke-width={1.75} />
+										<Icono nombre={icono} size={20} />
 									</span>
 									{nombre}
 								</li>

@@ -30,7 +30,7 @@ Tailwind, sin librerías de UI y sin JavaScript en el navegador** salvo que `SPE
 - Espaciado en múltiplos de 8 px.
 - Contraste WCAG AA en todo el texto.
 - Animación mínima y con motivo; respetar `prefers-reduced-motion`.
-- Íconos solo de Lucide. Sin emoji.
+- Íconos de Phosphor en su variante dúo (flechas y chevron en negrita), con `src/components/Icono.astro`. El único logo de marca es el de WhatsApp (`si:whatsapp`). Sin emoji.
 - Copy en voseo rioplatense, sentence case, sin "potenciado por IA" ni "transformación digital".
 - CTA: "Escribinos por WhatsApp" → `https://wa.me/5492625634845?text=...`.
 

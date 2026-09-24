@@ -8,15 +8,13 @@
 import { Image } from 'astro:assets';
 // El contacto, como en minificando: una línea discreta por canal (ícono, canal y dato), no un
 // número grande. WhatsApp primero porque es el canal principal; después el mail de cada socio.
-import ArrowUp from '@lucide/astro/icons/arrow-up';
-import Mail from '@lucide/astro/icons/mail';
-import MessageCircle from '@lucide/astro/icons/message-circle';
+import Icono from './Icono.astro';
 import imagotipo from '../assets/identidad/imagotipo-claro.png';
 import { EMAILS, WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 
 const contactos = [
-	{ icono: MessageCircle, canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
-	...EMAILS.map(({ nombre, email }) => ({ icono: Mail, canal: nombre, dato: email, href: `mailto:${email}`, externo: false })),
+	{ icono: 'si:whatsapp', canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
+	...EMAILS.map(({ nombre, email }) => ({ icono: 'envelope-simple-duotone', canal: nombre, dato: email, href: `mailto:${email}`, externo: false })),
 ];
 
 const anio = new Date().getFullYear();
@@ -51,11 +49,11 @@ const links = [
 				<h2 class="pie__titulo">Contacto</h2>
 				<ul class="pie__contactos">
 					{
-						contactos.map(({ icono: Icono, canal, dato, href, externo }) => (
+						contactos.map(({ icono, canal, dato, href, externo }) => (
 							<li>
 								<a class="pie__contacto" href={href} target={externo ? '_blank' : undefined} rel={externo ? 'noopener' : undefined}>
 									<span class="pie__contacto-icono">
-										<Icono size={18} stroke-width={1.75} />
+										<Icono nombre={icono} size={18} />
 									</span>
 									<span class="pie__contacto-texto">
 										<span class="pie__contacto-canal">{canal}</span>
@@ -74,7 +72,7 @@ const links = [
 			<p class="pie__legal">© {anio} Accelerate.ai. Todos los derechos reservados.</p>
 			<a class="pie__arriba" href="#inicio">
 				Volver arriba
-				<ArrowUp size={18} stroke-width={2} />
+				<Icono nombre="arrow-up-bold" size={18} />
 			</a>
 		</div>
 	</div>
