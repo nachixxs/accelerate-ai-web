@@ -29,12 +29,12 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 
 <div
 	class="stock"
-	role="img"
+	role="group"
 	aria-label="Ejemplo con datos inventados: el stock de cuatro productos con su nivel y su mínimo. La tinta negra y los anillos quedaron bajo el mínimo y dicen reponer, y ya está armado el pedido sugerido al proveedor con esos dos productos."
 >
 	<div class="stock__barra">
 		<strong>Stock</strong>
-		<span class="stock__buscar">
+		<span class="stock__buscar" aria-hidden="true">
 			<Icono nombre="magnifying-glass-duotone" size={14} />
 			Buscar producto
 		</span>
@@ -58,7 +58,7 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 							<span class="producto__ok">Al día</span>
 						)}
 					</span>
-					<span class="producto__nivel" style={`--nivel: ${nivel.toFixed(3)}; --marca: ${(marca * 100).toFixed(1)}%`}>
+					<span class="producto__nivel" aria-hidden="true" style={`--nivel: ${nivel.toFixed(3)}; --marca: ${(marca * 100).toFixed(1)}%`}>
 						<span class="producto__relleno" />
 						<span class="producto__minimo" />
 					</span>
@@ -101,10 +101,15 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 			const nuevo = Number(boton.dataset.nuevo);
 			const desde = Number(cifra.dataset.valor ?? 0);
 			const pedido = document.querySelector<HTMLElement>(`.pedido li[data-idx="${fila.dataset.idx}"]`);
+			const teniaFoco = document.activeElement === boton;
 
 			fila.classList.remove('producto--bajo');
 			relleno.style.scale = `${boton.dataset.factor} 1`;
-			boton.replaceWith(Object.assign(document.createElement('span'), { className: 'producto__ok', textContent: 'Al día' }));
+			const ok = Object.assign(document.createElement('span'), { className: 'producto__ok', textContent: 'Al día' });
+			// El botón desaparece: si tenía el foco del teclado, que no se pierda en <body>.
+			if (teniaFoco) ok.tabIndex = -1;
+			boton.replaceWith(ok);
+			if (teniaFoco) ok.focus({ preventScroll: true });
 			pedido?.classList.add('pedido__item--repuesto');
 			cifra.dataset.valor = String(nuevo);
 
