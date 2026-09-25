@@ -237,7 +237,6 @@ const auditoria = [
 
 	.linea::after {
 		background: var(--brand-primary-deep);
-		transform-origin: top;
 	}
 
 	/* El punto que viaja con la punta del relleno: el mismo truco que .linea::after (una caja del
@@ -592,8 +591,13 @@ const auditoria = [
 	}
 
 	/* --- Movimiento --- */
+	/* Recorte de arriba a abajo y no scaleY: con scaleY el mask-image de arriba (el desvanecido del
+	   final) se escalaba junto con la caja, así que la punta del relleno siempre se apagaba un 20%
+	   y quedaba despegada del punto. Con clip-path la caja no cambia de tamaño: el mask solo se ve
+	   cerca del final real del riel, y el borde recortado coincide con el punto en todo el recorrido. */
 	@keyframes proceso-llenar {
-		from { transform: scaleY(0); }
+		from { clip-path: inset(0 0 100% 0); }
+		to { clip-path: inset(0); }
 	}
 
 	@keyframes proceso-apagada {
@@ -877,6 +881,14 @@ const auditoria = [
 			.pantalla--4 .soporte__pedido { animation-range: cover 8% cover 20%; }
 			.pantalla--4 .soporte__respuesta { animation-range: cover 22% cover 34%; }
 			.pantalla--4 .soporte__mejora { animation-range: cover 36% cover 46%; }
+
+			/* Con la tarjeta fija el marco (::before) no se mueve: si la pantalla sube 4px en
+			   hover queda un doble borde abajo. Acá solo cambia el borde. */
+			@media (hover: hover) and (pointer: fine) {
+				.pantalla:hover {
+					translate: none;
+				}
+			}
 		}
 	}
 
