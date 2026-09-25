@@ -78,9 +78,8 @@ async function revisarAncho({ nombre, width, height }) {
 	const interruptor = await pagina
 		.waitForFunction(() => {
 			const visible = (el) => getComputedStyle(el).visibility === 'visible';
-			const sistema = document.querySelector('.lista--sistema');
-			const recorte = getComputedStyle(sistema).clipPath;
-			return visible(sistema) && !visible(document.querySelector('.lista--hoy')) && /inset\(0(px)? 0(px)?/.test(recorte);
+			const caras = (cual) => [...document.querySelectorAll(`.lista .cara--${cual}`)];
+			return caras('sistema').every((c) => visible(c) && /^inset\(0(px)? 0(px)?/.test(getComputedStyle(c).clipPath)) && !caras('hoy').some(visible);
 		}, null, { timeout: 2000 })
 		.then(() => true, () => false);
 	await pagina.close();

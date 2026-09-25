@@ -1,16 +1,15 @@
 ---
 // SPECS §4.2: 2-3 dolores concretos, contados como los cuenta el dueño.
-// Un interruptor "Hoy / Con un sistema" cambia cada dolor por cómo queda resuelto. Funciona como
-// un antes y después: la card invertida con las soluciones (la única de la sección) barre por
-// encima de los dolores, de izquierda a derecha, y los dolores se tachan. Cada punto de la
-// pantalla está siempre en su versión clara o en la oscura: el contraste no baja a mitad de
-// camino.
-// Todo depende de --p (0 = hoy, 1 = con un sistema). Con un clic o con las flechas, --p va de
-// una punta a la otra con una transición de CSS (dos radios y :has(), sin JavaScript). Con el
-// script de abajo la perilla además se arrastra, con el mouse o el dedo, y --p sigue al puntero
-// (pedido del usuario, 2026-09-25); al soltar se acomoda del lado más cercano.
-// Las dos capas tienen las dos versiones de cada fila (la otra oculta): así las filas miden lo
-// mismo en las dos y el barrido no se corre.
+// Un interruptor "Hoy / Con un sistema" cambia cada dolor por cómo queda resuelto. Cada fila tiene
+// dos caras en la misma celda: la de hoy (suelta sobre el fondo, con divisiones punteadas) y la
+// resuelta (oscura). Al cambiar, cada dolor se tacha y después su cara oscura lo barre entero, en
+// 350 ms: la card invertida (la única de la sección) se arma fila por fila. Ningún texto queda
+// cortado a mitad de camino, y cada punto de la pantalla está siempre en su versión clara o en
+// la oscura: el contraste no baja nunca.
+// Con un clic o con las flechas, todo sale de los radios y :has(), sin JavaScript. Con el script
+// de abajo la perilla además se arrastra (pedido del usuario, 2026-09-25): la tachadura sigue al
+// puntero y cada fila se da vuelta cuando la perilla pasa su punto (--t). Al soltar se acomoda
+// del lado más cercano, o hacia el que la tiraste.
 import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
@@ -38,7 +37,8 @@ const dolores = [
 	},
 ];
 
-const capas = ['hoy', 'sistema'] as const;
+// El punto de la perilla (de 0 a 1) en el que se da vuelta cada fila.
+const punto = (i: number) => 0.3 + i * 0.25;
 ---
 
 <section id="resolvemos" class="seccion resolvemos" aria-labelledby="resolvemos-titulo">
@@ -62,16 +62,16 @@ const capas = ['hoy', 'sistema'] as const;
 			</fieldset>
 		</div>
 
-		<div class="comparar" aria-live="polite">
+		<ul class="lista" aria-live="polite">
 			{
-				capas.map((capa) => (
-					<ul class={`lista lista--${capa}`}>
-						{dolores.map(({ icono, frase, detalle, solucion, como }, i) => (
-							<li class="dolor" style={`--i: ${i}`}>
-								<span class="dolor__icono" aria-hidden="true">
-									<Icono nombre={capa === 'hoy' ? icono : 'check-circle-duotone'} size={28} />
+				dolores.map(({ icono, frase, detalle, solucion, como }, i) => (
+					<li class="dolor" style={`--i: ${i}; --t: ${punto(i)}`} data-punto={punto(i)}>
+						{(['hoy', 'sistema'] as const).map((cara) => (
+							<div class={`cara cara--${cara}`}>
+								<span class="cara__icono" aria-hidden="true">
+									<Icono nombre={cara === 'hoy' ? icono : 'check-circle-duotone'} size={28} />
 								</span>
-								<div class="dolor__textos">
+								<div class="cara__textos">
 									<div class="hoy">
 										<p class="t-label dolor__frase">
 											<span class="tachado">“{frase}”</span>
@@ -83,13 +83,12 @@ const capas = ['hoy', 'sistema'] as const;
 										<p class="dolor__detalle">{como}</p>
 									</div>
 								</div>
-							</li>
+							</div>
 						))}
-					</ul>
+					</li>
 				))
 			}
-			<span class="comparar__borde" aria-hidden="true"></span>
-		</div>
+		</ul>
 
 		<div class="resolvemos__pie">
 			<BotonWhatsApp
@@ -102,13 +101,15 @@ const capas = ['hoy', 'sistema'] as const;
 </section>
 
 <script>
-	// La perilla se arrastra: --p sigue al puntero y, al soltar, el radio queda del lado más
-	// cercano (o del lado hacia el que la tiraste, si fue un tirón rápido). Un clic sin arrastrar
-	// lo resuelve el label, como sin JavaScript.
+	// La perilla se arrastra: --p (de 0 a 1) sigue al puntero y cada fila se da vuelta cuando la
+	// perilla pasa su punto. Al soltar, el radio queda del lado más cercano (o hacia el que la
+	// tiraste, si fue un tirón rápido). Un clic sin arrastrar lo resuelve el label, como sin
+	// JavaScript.
 	const seccion = document.querySelector<HTMLElement>('.resolvemos');
 	if (seccion) {
 		const interruptor = seccion.querySelector<HTMLElement>('.interruptor')!;
 		const [hoy, sistema] = seccion.querySelectorAll<HTMLInputElement>('.interruptor input');
+		const filas = [...seccion.querySelectorAll<HTMLElement>('.dolor')];
 		let arrastre: { x: number; p: number; ancho: number; id: number; t: number; v: number } | null = null;
 		let moviendo = false;
 
@@ -121,7 +122,7 @@ const capas = ['hoy', 'sistema'] as const;
 			arrastre = {
 				x: evento.clientX,
 				p: sistema.checked ? 1 : 0,
-				ancho: interruptor.offsetWidth / 2,
+				ancho: interruptor.offsetWidth / 2 - 4,
 				id: evento.pointerId,
 				t: evento.timeStamp,
 				v: 0,
@@ -142,6 +143,7 @@ const capas = ['hoy', 'sistema'] as const;
 			arrastre.v = evento.movementX / Math.max(1, evento.timeStamp - arrastre.t);
 			arrastre.t = evento.timeStamp;
 			seccion.style.setProperty('--p', String(p));
+			filas.forEach((fila) => fila.classList.toggle('dolor--vuelta', p >= Number(fila.dataset.punto)));
 			elegir(p > 0.5);
 		});
 
@@ -152,6 +154,7 @@ const capas = ['hoy', 'sistema'] as const;
 				if (Math.abs(arrastre.v) > 0.11) elegir(arrastre.v > 0);
 				seccion.classList.remove('resolvemos--arrastrando');
 				seccion.style.removeProperty('--p');
+				filas.forEach((fila) => fila.classList.remove('dolor--vuelta'));
 				// El clic que sigue a un arrastre no tiene que volver a cambiar el radio.
 				interruptor.addEventListener('click', (clic) => clic.preventDefault(), { capture: true, once: true });
 			}
@@ -165,9 +168,22 @@ const capas = ['hoy', 'sistema'] as const;
 </script>
 
 <style>
-	/* --p: cuánto del cambio se ve, de 0 (hoy) a 1 (con un sistema). Registrada para que se pueda
-	   animar con una transición. */
+	/* --p: dónde está la perilla, de 0 (hoy) a 1 (con un sistema). --vuelta: cuánto de la cara
+	   oscura cubre la fila. --tachar: cuánto de la frase está tachado. Registradas para que se
+	   puedan animar con transiciones. */
 	@property --p {
+		syntax: '<number>';
+		inherits: true;
+		initial-value: 0;
+	}
+
+	@property --vuelta {
+		syntax: '<number>';
+		inherits: true;
+		initial-value: 0;
+	}
+
+	@property --tachar {
 		syntax: '<number>';
 		inherits: true;
 		initial-value: 0;
@@ -175,15 +191,14 @@ const capas = ['hoy', 'sistema'] as const;
 
 	.resolvemos {
 		--p: 0;
-		--duracion: 0.45s;
-		transition: --p var(--duracion) var(--curva-cajon);
+		transition: --p 0.35s var(--curva-cajon);
 	}
 
 	.resolvemos:has(.interruptor__sistema:checked) {
 		--p: 1;
 	}
 
-	/* Mientras arrastrás, --p va pegado al puntero. */
+	/* Mientras arrastrás, la perilla va pegada al puntero. */
 	.resolvemos--arrastrando {
 		transition: none;
 	}
@@ -204,7 +219,7 @@ const capas = ['hoy', 'sistema'] as const;
 		max-width: 36ch;
 	}
 
-	/* --- El interruptor: dos radios con forma de píldora partida. La marca que se desliza es
+	/* --- El interruptor: dos radios con forma de píldora partida. La perilla que se desliza es
 	   el fill #1f57c2 del estado activo de la marca. touch-action: el dedo que se desliza de
 	   costado arrastra la perilla; el que sube o baja, la página. --- */
 	.interruptor {
@@ -228,6 +243,12 @@ const capas = ['hoy', 'sistema'] as const;
 		background: var(--brand-primary-deep);
 		box-shadow: 0 6px 16px rgba(15, 36, 80, 0.28);
 		transform: translateX(calc(var(--p) * 100%));
+		transition: scale 0.15s var(--curva-salida);
+	}
+
+	/* Agarrada, la perilla crece un poco: se siente que la tenés en la mano. */
+	.resolvemos--arrastrando .interruptor__marca {
+		scale: 1.04;
 	}
 
 	.resolvemos--arrastrando .interruptor,
@@ -252,9 +273,8 @@ const capas = ['hoy', 'sistema'] as const;
 		-webkit-tap-highlight-color: transparent;
 	}
 
-	/* El texto es blanco justo donde está la perilla y oscuro donde no: a mitad de un arrastre,
-	   una palabra puede quedar mitad y mitad. Cada label mide lo mismo que la perilla, así que el
-	   corte cae en --p × 100 % de su ancho. */
+	/* El texto es blanco justo donde está la perilla y oscuro donde no. Cada label mide lo mismo
+	   que la perilla, así que el corte cae en --p × 100 % de su ancho. */
 	.interruptor label {
 		--tinta: var(--text-body-dark);
 		background: linear-gradient(90deg, var(--tinta) calc(var(--p) * 100%), var(--white) 0);
@@ -264,6 +284,7 @@ const capas = ['hoy', 'sistema'] as const;
 	}
 
 	.interruptor label:nth-of-type(2) {
+		grid-column: 2;
 		background-image: linear-gradient(90deg, var(--white) calc(var(--p) * 100%), var(--tinta) 0);
 	}
 
@@ -273,12 +294,6 @@ const capas = ['hoy', 'sistema'] as const;
 		.interruptor label {
 			padding-inline: var(--space-3);
 		}
-	}
-
-	/* La marca comparte la primera celda con "Hoy": cada opción va en su columna, o la grilla
-	   las empuja a una tercera. */
-	.interruptor label:nth-of-type(2) {
-		grid-column: 2;
 	}
 
 	.interruptor input {
@@ -304,44 +319,104 @@ const capas = ['hoy', 'sistema'] as const;
 	.interruptor :global(.interruptor__chispa) {
 		color: var(--brand-primary-deep);
 		transform: rotate(calc(var(--p) * 72deg));
+		transition: color 0.15s ease;
 	}
 
 	.resolvemos:has(.interruptor__sistema:checked) .interruptor :global(.interruptor__chispa) {
 		color: var(--white);
 	}
 
-	/* --- Las dos capas, una encima de la otra. --- */
-	.comparar {
+	/* --- La lista: cada fila con sus dos caras, una encima de la otra. --- */
+	.lista {
 		position: relative;
 		display: grid;
-		container-type: inline-size;
 	}
 
-	.lista {
-		grid-area: 1 / 1;
-		display: grid;
-		padding: var(--space-2) var(--space-3);
-		border: 1px solid transparent;
+	/* La sombra de la card, en una capa que solo cambia de opacidad: se enciende cuando la card
+	   está entera. */
+	.lista::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
 		border-radius: var(--radius-card-lg);
+		box-shadow: var(--shadow-card);
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	.resolvemos:where(:has(.interruptor__sistema:checked)) .lista::before {
+		opacity: 1;
+		transition-delay: 0.5s;
 	}
 
 	.dolor {
+		--vuelta: 0;
+		--tachar: 0;
+		display: grid;
+		transition:
+			--tachar 0.2s var(--curva-salida) calc(var(--i) * 90ms),
+			--vuelta 0.35s var(--curva-salida) calc(150ms + var(--i) * 90ms);
+	}
+
+	.resolvemos:where(:has(.interruptor__sistema:checked)) .dolor {
+		--vuelta: 1;
+		--tachar: 1;
+	}
+
+	/* Al volver a hoy, la tachadura se borra después de que la fila se dio vuelta. */
+	.resolvemos:where(:not(:has(.interruptor__sistema:checked))) .dolor {
+		transition:
+			--tachar 0.2s var(--curva-salida) calc(350ms + var(--i) * 90ms),
+			--vuelta 0.35s var(--curva-salida) calc(var(--i) * 90ms);
+	}
+
+	/* Las reglas de los radios van en :where() para pesar menos que las del arrastre, que tienen
+	   que ganarles aunque el radio ya haya cambiado a mitad de camino. */
+	/* Arrastrando: la tachadura sigue a la perilla (llega entera justo al punto de la fila) y la
+	   fila se da vuelta al pasarlo. */
+	.resolvemos.resolvemos--arrastrando .dolor {
+		--tachar: clamp(0, (var(--p) - var(--t) + 0.2) * 5, 1);
+		--vuelta: 0;
+		transition: --vuelta 0.35s var(--curva-salida);
+	}
+
+	.resolvemos.resolvemos--arrastrando .dolor.dolor--vuelta {
+		--vuelta: 1;
+	}
+
+	.cara {
+		grid-area: 1 / 1;
 		display: grid;
 		grid-template-columns: auto 1fr;
 		gap: var(--space-2);
-		padding-block: var(--space-3);
+		padding: var(--space-3);
 	}
 
-	/* Las dos versiones de cada fila ocupan la misma celda: la fila mide lo que la más alta. */
-	.dolor__textos {
+	.dolor:first-child .cara {
+		padding-top: var(--space-4);
+	}
+
+	.dolor:last-child .cara {
+		padding-bottom: var(--space-4);
+	}
+
+	/* Las dos versiones del texto ocupan la misma celda en las dos caras: las filas miden lo
+	   mismo en las dos y la cara oscura cae justo encima de la clara. */
+	.cara__textos {
 		display: grid;
 	}
 
-	.dolor__textos > * {
+	.cara__textos > * {
 		grid-area: 1 / 1;
 	}
 
-	.dolor__icono {
+	.cara--hoy .sistema,
+	.cara--sistema .hoy {
+		visibility: hidden;
+	}
+
+	.cara__icono {
 		display: grid;
 		align-self: start;
 		place-items: center;
@@ -362,84 +437,70 @@ const capas = ['hoy', 'sistema'] as const;
 	}
 
 	/* Hoy: sin contenedor, con divisiones punteadas, como anotado a las apuradas. */
-	.lista--hoy .dolor + .dolor {
+	.dolor + .dolor .cara--hoy {
 		border-top: 1px dashed var(--slate-300);
 	}
 
-	.lista--hoy .sistema,
-	.lista--sistema .hoy {
-		visibility: hidden;
-	}
-
-	/* La tachadura: una línea de fondo que crece con --p, un dolor detrás de otro;
-	   box-decoration-break la repite en cada renglón de la frase. */
+	/* La tachadura: una línea de fondo; box-decoration-break la repite en cada renglón. */
 	.tachado {
-		--tachado: clamp(0, var(--p) * 2.2 - var(--i) * 0.4, 1);
-		background: linear-gradient(var(--brand-primary-deep), var(--brand-primary-deep)) no-repeat 0 58% / calc(var(--tachado) * 100%) 2px;
+		background: linear-gradient(var(--brand-primary-deep), var(--brand-primary-deep)) no-repeat 0 58% / calc(var(--tachar) * 100%) 2px;
 		-webkit-box-decoration-break: clone;
 		box-decoration-break: clone;
 	}
 
-	/* Con un sistema: la card invertida, todo alineado. Barre desde la izquierda: el recorte se
-	   come desde la derecha lo que todavía no llegó. */
-	.lista--sistema {
-		border-color: var(--border-dark);
+	/* Resuelto: la cara oscura barre la fila de izquierda a derecha. Las filas juntas forman la
+	   card invertida: la primera lleva las esquinas de arriba y la última las de abajo. */
+	.cara--sistema {
 		background: var(--surface-card-dark);
-		clip-path: inset(0 calc((1 - var(--p)) * 100%) 0 0);
+		clip-path: inset(0 calc((1 - var(--vuelta)) * 100%) 0 0);
 	}
 
-	.lista--sistema .dolor + .dolor {
-		border-top: 1px solid var(--border-dark);
+	.dolor:first-child .cara--sistema {
+		border-radius: var(--radius-card-lg) var(--radius-card-lg) 0 0;
 	}
 
-	.lista--sistema .dolor__icono {
+	.dolor:last-child .cara--sistema {
+		border-radius: 0 0 var(--radius-card-lg) var(--radius-card-lg);
+	}
+
+	.dolor + .dolor .cara--sistema {
+		box-shadow: inset 0 1px var(--border-dark);
+	}
+
+	.cara--sistema .cara__icono {
 		border-style: solid;
 		border-color: var(--border-dark);
 		background: var(--blue-950);
 		color: var(--brand-accent);
 	}
 
-	.lista--sistema .dolor__frase {
+	.cara--sistema .dolor__frase {
 		color: var(--text-heading-light);
 	}
 
-	.lista--sistema .dolor__detalle {
+	.cara--sistema .dolor__detalle {
 		color: var(--text-body-light);
 	}
 
-	/* La línea del barrido: cian, en el borde de la card que avanza. Se ve solo a mitad de camino. */
-	.comparar__borde {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: -1px;
-		width: 2px;
-		border-radius: 2px;
-		background: var(--cyan-400);
-		opacity: clamp(0, min(var(--p), 1 - var(--p)) * 16, 1);
-		transform: translateX(calc(var(--p) * 100cqw));
-		pointer-events: none;
-	}
-
-	/* Para los lectores de pantalla (y el foco) existe una sola capa: la elegida. La otra se
-	   oculta cuando termina el barrido; mientras arrastrás, se ven las dos. */
-	.lista--sistema {
+	/* Para los lectores de pantalla (y el foco) existe una sola cara por fila: la elegida. La otra
+	   se oculta cuando terminó de darse vuelta; mientras arrastrás, se ven las dos. */
+	.cara--sistema {
 		visibility: hidden;
-		transition: visibility 0s var(--duracion);
+		transition: visibility 0s 0.8s;
 	}
 
-	.resolvemos:has(.interruptor__sistema:checked) .lista--sistema,
-	.resolvemos--arrastrando .lista--sistema {
+	.resolvemos:where(:has(.interruptor__sistema:checked)) .cara--sistema,
+	.resolvemos--arrastrando .cara--sistema {
 		visibility: visible;
 		transition: none;
 	}
 
-	.resolvemos:has(.interruptor__sistema:checked) .lista--hoy {
+	.resolvemos:where(:has(.interruptor__sistema:checked)) .cara--hoy {
 		visibility: hidden;
-		transition: visibility 0s var(--duracion);
+		transition: visibility 0s 0.8s;
 	}
 
-	.resolvemos.resolvemos--arrastrando .lista--hoy {
+	.resolvemos.resolvemos--arrastrando .cara--hoy {
 		visibility: visible;
 		transition: none;
 	}
@@ -460,19 +521,13 @@ const capas = ['hoy', 'sistema'] as const;
 			top: 120px;
 		}
 
-		.lista {
-			padding: var(--space-3) var(--space-5);
+		.cara {
+			padding-inline: var(--space-5);
 		}
 	}
 
-	/* --- Movimiento. El barrido es un recorte y no un desplazamiento: queda también con
-	   movimiento reducido, más corto. --- */
-	@media (prefers-reduced-motion: reduce) {
-		.resolvemos {
-			--duracion: 0.25s;
-		}
-	}
-
+	/* --- Movimiento. El cambio es un recorte y no un desplazamiento: queda también con
+	   movimiento reducido. --- */
 	/* Dos anillos que se abren y se apagan. */
 	@keyframes invita {
 		0%, 50% { box-shadow: 0 0 0 0 var(--blue-200); opacity: 0; }
