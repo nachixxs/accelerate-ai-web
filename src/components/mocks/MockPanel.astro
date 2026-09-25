@@ -365,11 +365,15 @@ const movimientos = [
 		padding: 16px 16px 40px;
 	}
 
+	/* Con letra grande el título puede pisarle el lugar al período: si no entran los dos en la
+	   fila, el período baja de línea entero en vez de apretarse hasta que el texto no entre en
+	   la píldora (min-width: 0 en .periodo lo dejaba encoger más allá de su contenido). */
 	.contenido__barra {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
-		gap: 12px;
+		gap: 8px 12px;
 	}
 
 	/* "Datos de ejemplo" va arriba, junto al título: abajo lo taparía el aviso montado. */
@@ -394,7 +398,7 @@ const movimientos = [
 		position: relative;
 		display: inline-grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		min-width: 0;
+		margin-left: auto;
 		padding: 3px;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-pill);
