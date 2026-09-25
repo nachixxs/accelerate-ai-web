@@ -4,32 +4,37 @@
 // aparece "Reponer" y, montado sobre el borde, el pedido sugerido al proveedor: papel claro sobre
 // la card oscura (la regla de profundidad de la marca). Son datos de ejemplo.
 // El estado de base es el final: sin soporte o con movimiento reducido, se ve completo y quieto.
-// Se anima con el timeline --celda de la card que lo contiene.
+// Se anima con el timeline --celda de la card que lo contiene. Con JavaScript, las unidades
+// cuentan al verse y "Reponer" llena la barra, cuenta el nuevo stock y tacha el ítem del pedido.
 import Icono from '../Icono.astro';
 
-// Tope de la barra: el doble del mínimo, o las unidades si son más.
+// Tope de la barra: el doble del mínimo, o las unidades si son más. Reponer siempre sube al
+// doble del mínimo, que (por construcción) es el tope de un producto bajo mínimo: la barra
+// repuesta queda siempre llena (factor = 1 / nivel, para compensar el nivel de hoy).
 const productos = [
-	{ nombre: 'Cartulina A4 250\u00a0g', rubro: 'Papel', unidades: 1240, minimo: 500 },
+	{ nombre: 'Cartulina A4 250 g', rubro: 'Papel', unidades: 1240, minimo: 500 },
 	{ nombre: 'Tinta negra XL', rubro: 'Insumos', unidades: 3, minimo: 6 },
 	{ nombre: 'Vinilo blanco mate', rubro: 'Rollos', unidades: 18, minimo: 8 },
 	{ nombre: 'Anillos 12 mm', rubro: 'Encuadernación', unidades: 40, minimo: 50 },
-].map((p) => {
+].map((p, i) => {
 	const tope = Math.max(p.minimo * 2, p.unidades * 1.15);
-	return { ...p, nivel: Math.min(p.unidades / tope, 1), marca: p.minimo / tope, bajo: p.unidades < p.minimo };
+	const nivel = Math.min(p.unidades / tope, 1);
+	const bajo = p.unidades < p.minimo;
+	return { ...p, i, nivel, marca: p.minimo / tope, bajo, repuesto: p.minimo * 2, factor: bajo ? (1 / nivel).toFixed(3) : '1' };
 });
 
 // El pedido sugerido: lo que quedó bajo el mínimo, hasta el doble del mínimo.
-const pedido = productos.filter((p) => p.bajo).map((p) => ({ nombre: p.nombre, cantidad: p.minimo * 2 }));
+const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => ({ i, nombre, cantidad: repuesto }));
 ---
 
 <div
 	class="stock"
-	role="img"
+	role="group"
 	aria-label="Ejemplo con datos inventados: el stock de cuatro productos con su nivel y su mínimo. La tinta negra y los anillos quedaron bajo el mínimo y dicen reponer, y ya está armado el pedido sugerido al proveedor con esos dos productos."
 >
 	<div class="stock__barra">
 		<strong>Stock</strong>
-		<span class="stock__buscar">
+		<span class="stock__buscar" aria-hidden="true">
 			<Icono nombre="magnifying-glass-duotone" size={14} />
 			Buscar producto
 		</span>
@@ -37,28 +42,28 @@ const pedido = productos.filter((p) => p.bajo).map((p) => ({ nombre: p.nombre, c
 
 	<ul class="stock__lista">
 		{
-			productos.map(({ nombre, rubro, unidades, minimo, nivel, marca, bajo }, i) => (
-				<li class:list={['producto', { 'producto--bajo': bajo }]} style={`--i: ${i}`}>
+			productos.map(({ nombre, rubro, unidades, minimo, nivel, marca, bajo, repuesto, factor, i }) => (
+				<li class:list={['producto', { 'producto--bajo': bajo }]} style={`--i: ${i}`} data-idx={i}>
 					<span class="producto__nombre">
 						{nombre}
 						<small>{rubro}</small>
 					</span>
 					<span class="producto__estado">
 						{bajo ? (
-							<span class="producto__reponer">
+							<button type="button" class="producto__reponer" data-nuevo={repuesto} data-factor={factor} aria-label={`Reponer ${nombre}`}>
 								<Icono nombre="warning-duotone" size={14} />
 								Reponer
-							</span>
+							</button>
 						) : (
 							<span class="producto__ok">Al día</span>
 						)}
 					</span>
-					<span class="producto__nivel" style={`--nivel: ${nivel.toFixed(3)}; --marca: ${(marca * 100).toFixed(1)}%`}>
+					<span class="producto__nivel" aria-hidden="true" style={`--nivel: ${nivel.toFixed(3)}; --marca: ${(marca * 100).toFixed(1)}%`}>
 						<span class="producto__relleno" />
 						<span class="producto__minimo" />
 					</span>
 					<span class="producto__unidades">
-						{unidades.toLocaleString('es-AR')} <small>/ mín. {minimo.toLocaleString('es-AR')}</small>
+						<span class="producto__cifra" data-valor={unidades}>{unidades.toLocaleString('es-AR')}</span> <small>/ mín. {minimo.toLocaleString('es-AR')}</small>
 					</span>
 				</li>
 			))
@@ -73,11 +78,46 @@ const pedido = productos.filter((p) => p.bajo).map((p) => ({ nombre: p.nombre, c
 			Pedido sugerido
 		</span>
 		<ul>
-			{pedido.map(({ nombre, cantidad }) => <li><span>{nombre}</span><span>×&nbsp;{cantidad}</span></li>)}
+			{pedido.map(({ i, nombre, cantidad }) => <li data-idx={i}><span>{nombre}</span><span>×&nbsp;{cantidad}</span></li>)}
 		</ul>
 		<span class="pedido__proveedor">Proveedor: Insumos del Sur</span>
 	</div>
 </div>
+
+<script>
+	import { contarAlVer, unidades, movimientoReducido, contar } from '../../scripts/contar';
+
+	contarAlVer([...document.querySelectorAll<HTMLElement>('.producto__cifra')], unidades);
+
+	// Reponer: llena la barra (con `scale`, no `transform`, que ya anima el scroll), cuenta las
+	// unidades hasta el nuevo stock, pasa el estado a "Al día" y tacha el ítem en el pedido.
+	document.querySelectorAll<HTMLButtonElement>('.producto__reponer').forEach((boton) => {
+		boton.addEventListener('click', () => {
+			const fila = boton.closest<HTMLLIElement>('.producto');
+			const relleno = fila?.querySelector<HTMLElement>('.producto__relleno');
+			const cifra = fila?.querySelector<HTMLElement>('.producto__cifra');
+			if (!fila || !relleno || !cifra) return;
+
+			const nuevo = Number(boton.dataset.nuevo);
+			const desde = Number(cifra.dataset.valor ?? 0);
+			const pedido = document.querySelector<HTMLElement>(`.pedido li[data-idx="${fila.dataset.idx}"]`);
+			const teniaFoco = document.activeElement === boton;
+
+			fila.classList.remove('producto--bajo');
+			relleno.style.scale = `${boton.dataset.factor} 1`;
+			const ok = Object.assign(document.createElement('span'), { className: 'producto__ok', textContent: 'Al día' });
+			// El botón desaparece: si tenía el foco del teclado, que no se pierda en <body>.
+			if (teniaFoco) ok.tabIndex = -1;
+			boton.replaceWith(ok);
+			if (teniaFoco) ok.focus({ preventScroll: true });
+			pedido?.classList.add('pedido__item--repuesto');
+			cifra.dataset.valor = String(nuevo);
+
+			if (movimientoReducido()) cifra.textContent = unidades(nuevo);
+			else contar(cifra, desde, nuevo, unidades);
+		});
+	});
+</script>
 
 <style>
 	.stock {
@@ -168,9 +208,24 @@ const pedido = productos.filter((p) => p.bajo).map((p) => ({ nombre: p.nombre, c
 		color: var(--text-muted-light);
 	}
 
+	/* Botón real: sin bordes de navegador, con el área táctil de 44 px en un pseudo-elemento
+	   (el pill se ve chico a propósito). Cian, nunca el azul del CTA de WhatsApp. */
 	.producto__reponer {
+		position: relative;
+		border: 0;
+		font: inherit;
+		cursor: pointer;
 		background: var(--cyan-300);
 		color: var(--navy-950);
+	}
+
+	.producto__reponer::before {
+		content: '';
+		position: absolute;
+		inset: 50%;
+		width: 44px;
+		height: 44px;
+		translate: -50% -50%;
 	}
 
 	.producto__nivel {
@@ -187,6 +242,8 @@ const pedido = productos.filter((p) => p.bajo).map((p) => ({ nombre: p.nombre, c
 		background: var(--blue-400);
 		transform-origin: left;
 		transform: scaleX(var(--nivel));
+		/* `scale` es una propiedad aparte de `transform`: no pisa la animación de scroll de abajo. */
+		transition: scale 0.5s var(--curva-salida);
 	}
 
 	.producto--bajo .producto__relleno {
@@ -260,11 +317,21 @@ const pedido = productos.filter((p) => p.bajo).map((p) => ({ nombre: p.nombre, c
 		justify-content: space-between;
 		gap: 12px;
 		font-variant-numeric: tabular-nums;
+		transition: opacity 0.3s var(--curva-salida);
 	}
 
 	.pedido li span:last-child {
 		color: var(--text-heading-dark);
 		font-weight: var(--fw-semibold);
+	}
+
+	/* El ítem repuesto se tacha en el pedido, en vez de desarmar la lista. */
+	.pedido li.pedido__item--repuesto {
+		opacity: 0.6;
+	}
+
+	.pedido li.pedido__item--repuesto span {
+		text-decoration: line-through;
 	}
 
 	.pedido__proveedor {
@@ -318,6 +385,14 @@ const pedido = productos.filter((p) => p.bajo).map((p) => ({ nombre: p.nombre, c
 				animation-timeline: --celda;
 				animation-range: cover 50% cover 60%;
 			}
+		}
+	}
+
+	/* Con movimiento reducido, el clic en "Reponer" salta directo al estado final. */
+	@media (prefers-reduced-motion: reduce) {
+		.producto__relleno,
+		.pedido li {
+			transition: none;
 		}
 	}
 </style>
