@@ -133,15 +133,66 @@ const links = [
 			background: var(--blue-800);
 		}
 
-		@media (prefers-reduced-motion: no-preference) {
-			.encabezado__cta:hover .encabezado__cta-cara {
-				transform: scale(1.05);
-			}
+		/* Como los botones de las secciones (BotonWhatsApp.astro): se despega, lo cruza un brillo
+		   por debajo del texto y el logo se balancea. Corre también con movimiento reducido
+		   (pedido del usuario, 2026-09-25). */
+		.encabezado__cta-cara {
+			position: relative;
+			isolation: isolate;
+			overflow: hidden;
+			transition:
+				background-color 0.2s,
+				transform 0.25s var(--curva-salida);
+		}
 
+		.encabezado__cta-cara::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: -1;
+			background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+			transform: translateX(-100%);
+			pointer-events: none;
+		}
+
+		.encabezado__cta:hover .encabezado__cta-cara {
+			transform: translateY(-2px) scale(1.05);
+		}
+
+		.encabezado__cta:hover .encabezado__cta-cara::before {
+			animation: cta-brillo 0.7s ease-in-out;
+		}
+
+		.encabezado__cta:hover :global(svg) {
+			animation: cta-globo 0.6s ease-in-out;
+		}
+
+		@media (prefers-reduced-motion: no-preference) {
 			/* El logo arranca un poco hacia adelante, como la A. */
 			.encabezado__logo:hover img {
 				transform: translateX(4px);
 			}
+		}
+	}
+
+	@keyframes cta-brillo {
+		from {
+			transform: translateX(-100%);
+		}
+		to {
+			transform: translateX(100%);
+		}
+	}
+
+	@keyframes cta-globo {
+		20% {
+			transform: rotate(-14deg);
+		}
+		45% {
+			transform: rotate(10deg);
+		}
+		70% {
+			transform: rotate(-5deg);
 		}
 	}
 

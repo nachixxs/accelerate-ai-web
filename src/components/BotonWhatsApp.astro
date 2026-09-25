@@ -6,7 +6,8 @@
 // - contorno: borde y texto, para no competir con una card que ya pesa.
 // - link: texto con flecha, para cerrar una sección sin sumar otro botón.
 // Cada uno lleva su propio texto y su propio mensaje de WhatsApp según la sección, como
-// minificando. Con el mouse encima se agrandan un poco (pedido del usuario, 2026-09-24).
+// minificando. Con el mouse encima se despegan, los cruza un brillo y el ícono se mueve
+// (pedido del usuario, 2026-09-24 y 2026-09-25).
 import Icono from './Icono.astro';
 import { whatsappUrl } from '../config';
 
@@ -148,31 +149,94 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		}
 	}
 
-	/* Con el mouse encima, el botón se agranda y la flecha o el globo se adelantan. */
-	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+	/* Con el mouse encima, el botón se despega (crece un 5 % y sube 2 px), un brillo lo cruza una
+	   vez y el ícono responde: la flecha sale por la derecha y vuelve a entrar, y el logo de
+	   WhatsApp se balancea como una notificación. Corre aunque el sistema pida movimiento
+	   reducido (pedido del usuario, 2026-09-25): lo dispara quien pasa el mouse, dura menos de un
+	   segundo y no se repite solo. El crecimiento es transición, así al salir vuelve desde donde
+	   esté; el brillo y el ícono son keyframes de una sola pasada, que no tienen vuelta. */
+	@keyframes boton-brillo {
+		from {
+			transform: translateX(-100%);
+		}
+		to {
+			transform: translateX(100%);
+		}
+	}
+
+	@keyframes flecha-vuelve {
+		45% {
+			transform: translateX(150%);
+			opacity: 0;
+		}
+		46% {
+			transform: translateX(-150%);
+			opacity: 0;
+		}
+	}
+
+	@keyframes globo-suena {
+		20% {
+			transform: rotate(-14deg);
+		}
+		45% {
+			transform: rotate(10deg);
+		}
+		70% {
+			transform: rotate(-5deg);
+		}
+	}
+
+	@media (hover: hover) and (pointer: fine) {
 		.boton {
 			transition:
 				background-color 0.2s,
 				border-color 0.2s,
 				color 0.2s,
-				box-shadow 0.2s,
-				transform 0.2s var(--curva-salida);
-		}
-
-		.boton :global(.boton__icono) {
-			transition: transform 0.2s var(--curva-salida);
+				box-shadow 0.25s var(--curva-salida),
+				transform 0.25s var(--curva-salida);
 		}
 
 		.boton:hover {
-			transform: scale(1.05);
+			transform: translateY(-2px) scale(1.05);
+		}
+
+		.boton--principal:hover {
+			box-shadow: 0 24px 48px rgba(15, 36, 80, 0.5);
 		}
 
 		.boton:hover :global(.boton__icono) {
-			transform: translateX(3px);
+			animation: flecha-vuelve 0.5s var(--curva-salida);
 		}
 
 		.boton--principal:hover :global(.boton__icono) {
-			transform: rotate(-10deg);
+			animation: globo-suena 0.6s ease-in-out;
+		}
+
+		/* El brillo va debajo del texto: isolation hace que el z-index -1 quede arriba del fondo
+		   del botón y abajo de las letras. Solo en los que tienen relleno; en el contorno y el
+		   link no se vería. */
+		.boton--principal,
+		.boton--secundario {
+			position: relative;
+			isolation: isolate;
+			overflow: hidden;
+		}
+
+		.boton--principal::before,
+		.boton--secundario::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: -1;
+			background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+			transform: translateX(-100%);
+			pointer-events: none;
+		}
+
+		.boton--principal:hover::before,
+		.boton--secundario:hover::before {
+			animation: boton-brillo 0.7s ease-in-out;
 		}
 	}
 
