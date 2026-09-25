@@ -630,41 +630,44 @@ const auditoria = [
 		100% { opacity: 0; scale: 1.7; }
 	}
 
-	@media (prefers-reduced-motion: no-preference) {
-		@supports (animation-timeline: view()) {
-			/* La punta del relleno va a media pantalla. */
-			.linea::after {
-				animation: proceso-llenar linear both;
-				animation-timeline: --proceso;
-				animation-range: cover 50vh cover calc(100% - 50vh);
-			}
+	/* Excepción pedida por el usuario (2026-09-25), como la cinta de rubros: el riel, el punto y
+	   las marcas corren también con movimiento reducido. Todo queda atado al scroll (lo maneja
+	   quien baja, nada se mueve solo), así que no es la animación que reduced-motion busca evitar.
+	   La tarjeta fija de escritorio y el texto activo no entran acá: siguen solo con
+	   no-preference, más abajo. */
+	@supports (animation-timeline: view()) {
+		/* La punta del relleno va a media pantalla. */
+		.linea::after {
+			animation: proceso-llenar linear both;
+			animation-timeline: --proceso;
+			animation-range: cover 50vh cover calc(100% - 50vh);
+		}
 
-			.linea__punto {
-				animation: proceso-punto-viaja linear both;
-				animation-timeline: --proceso;
-				animation-range: cover 50vh cover calc(100% - 50vh);
-			}
+		.linea__punto {
+			animation: proceso-punto-viaja linear both;
+			animation-timeline: --proceso;
+			animation-range: cover 50vh cover calc(100% - 50vh);
+		}
 
-			/* Cada marca está apagada hasta que la punta la alcanza (fill backwards: antes del
-			   tramo, apagada; después, la de base, encendida). */
-			.paso__marca::before {
-				animation: proceso-apagada linear backwards;
-				animation-timeline: view();
-				animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
-			}
+		/* Cada marca está apagada hasta que la punta la alcanza (fill backwards: antes del
+		   tramo, apagada; después, la de base, encendida). */
+		.paso__marca::before {
+			animation: proceso-apagada linear backwards;
+			animation-timeline: view();
+			animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
+		}
 
-			.paso__marca :global(svg) {
-				animation: proceso-icono-apagado linear backwards;
-				animation-timeline: view();
-				animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
-			}
+		.paso__marca :global(svg) {
+			animation: proceso-icono-apagado linear backwards;
+			animation-timeline: view();
+			animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
+		}
 
-			/* El pulso del anillo, en la misma marca en la que la punta enciende el ícono. */
-			.paso__marca::after {
-				animation: proceso-anillo var(--curva-salida) both;
-				animation-timeline: view();
-				animation-range: cover calc(50vh - 8px) cover calc(50vh + 40px);
-			}
+		/* El pulso del anillo, en la misma marca en la que la punta enciende el ícono. */
+		.paso__marca::after {
+			animation: proceso-anillo var(--curva-salida) both;
+			animation-timeline: view();
+			animation-range: cover calc(50vh - 8px) cover calc(50vh + 40px);
 		}
 	}
 
