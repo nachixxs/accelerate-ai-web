@@ -1,15 +1,12 @@
 ---
-// Encabezado: la cápsula que se despega (concepto A, elegido por el usuario el 2026-09-25).
-// Arriba de todo es una fila liviana sobre la portada, sin botón: el de la portada ya está a la
-// vista. Al bajar 96 px aparece detrás una cápsula blanca que flota (borde fino y sombra teñida
-// de navy, sin vidrio ni blur). El botón navy entra cuando el de la portada sale de la pantalla,
-// así nunca hay dos iguales a la vista. La sección en la que estás queda marcada, y la barra de
-// lectura vive adentro de la cápsula. Todo con animaciones atadas al scroll, sin JavaScript;
-// donde no hay soporte (Firefox) la cápsula y el botón se ven siempre, quietos.
+// Encabezado: la cápsula (concepto A, elegido por el usuario el 2026-09-25). Una cápsula blanca
+// que flota sobre la página desde arriba de todo (borde fino y sombra teñida de navy, sin vidrio
+// ni blur) y baja 4 px al empezar el scroll. La sección en la que estás queda marcada.
+// El botón de WhatsApp está siempre (pedido del usuario, 2026-09-25): de contorno mientras se ve
+// un botón principal (el de la portada o el del cierre) y lleno de #2971f2 cuando no se ve
+// ninguno, así nunca hay dos azules llenos a la vista. Lo decide el script de abajo; sin
+// JavaScript queda de contorno.
 // En el celular y la tablet, un "Menú" abre un popover con las 5 secciones numeradas y el botón.
-// El único JavaScript de la página son las 3 líneas del final: cierran el menú al tocar un link
-// (SPECS §8).
-// El botón de acá es navy: #2971f2 queda para el botón principal de cada sección.
 import { Image } from 'astro:assets';
 import Icono from './Icono.astro';
 import imagotipo from '../assets/identidad/imagotipo-azul.png';
@@ -29,9 +26,7 @@ const links = [
 <header class="encabezado">
 	<div class="contenedor">
 		<div class="capsula">
-			<span class="capsula__fondo" aria-hidden="true">
-				<span class="capsula__progreso"></span>
-			</span>
+			<span class="capsula__fondo" aria-hidden="true"></span>
 
 			<a href="#inicio" class="capsula__logo">
 				<Image src={imagotipo} alt="Accelerate.ai" width={352} loading="eager" />
@@ -103,9 +98,22 @@ const links = [
 </div>
 
 
-<script is:inline>
-	const menu = document.getElementById('menu');
+<script>
+	// El popover no se cierra solo al tocar un link a la misma página.
+	const menu = document.getElementById('menu')!;
 	menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => menu.hidePopover()));
+
+	// El botón se llena de azul cuando no hay ningún botón principal a la vista.
+	const cta = document.querySelector('.capsula__cta')!;
+	const aLaVista = new Set<Element>();
+	const observador = new IntersectionObserver((entradas) => {
+		for (const { target, isIntersecting } of entradas) {
+			if (isIntersecting) aLaVista.add(target);
+			else aLaVista.delete(target);
+		}
+		cta.classList.toggle('capsula__cta--lleno', aLaVista.size === 0);
+	});
+	document.querySelectorAll('main .boton--principal').forEach((boton) => observador.observe(boton));
 </script>
 
 <style>
@@ -128,9 +136,8 @@ const links = [
 		pointer-events: auto;
 	}
 
-	/* La cápsula blanca: una capa aparte, así lo que aparece con el scroll es solo opacidad y
-	   escala (sin repintar borde ni sombra en cada cuadro). Es más ancha que el contenido: el
-	   logo y el botón quedan alineados con el resto de la página arriba de todo. */
+	/* La cápsula blanca: una capa aparte del contenido. Es más ancha que el contenido: el logo y
+	   el botón quedan alineados con el resto de la página. */
 	.capsula__fondo {
 		position: absolute;
 		inset: 0 -8px;
@@ -139,18 +146,6 @@ const links = [
 		border-radius: var(--radius-pill);
 		background: var(--white);
 		box-shadow: 0 12px 32px rgba(15, 36, 80, 0.1), 0 2px 6px rgba(15, 23, 42, 0.04);
-		overflow: clip;
-	}
-
-	/* Barra de lectura, adentro de la cápsula: se llena de izquierda a derecha a medida que bajás. */
-	.capsula__progreso {
-		position: absolute;
-		left: 0;
-		bottom: 0;
-		width: 100%;
-		height: 3px;
-		background: var(--brand-primary-deep);
-		transform-origin: left;
 	}
 
 	.capsula__logo {
@@ -223,11 +218,12 @@ const links = [
 		padding-right: 4px;
 	}
 
-	/* --- El botón: navy, con el logo de WhatsApp en cian. En el celular es solo el ícono. --- */
+	/* --- El botón: de contorno mientras se ve un botón principal, lleno de #2971f2 cuando no.
+	   En el celular es solo el ícono. --- */
 	.capsula__cta {
 		display: inline-flex;
 		border-radius: var(--radius-pill);
-		color: var(--white);
+		color: var(--brand-primary-deep);
 		-webkit-tap-highlight-color: transparent;
 	}
 
@@ -241,24 +237,38 @@ const links = [
 		gap: var(--space-1);
 		min-width: 48px;
 		min-height: 48px;
+		border: 1.5px solid var(--brand-primary-deep);
 		border-radius: inherit;
-		background: var(--navy-950);
+		background: var(--white);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
-		transition: background-color 0.2s, transform 0.25s var(--curva-salida);
+		transition:
+			background-color 0.3s ease,
+			border-color 0.3s ease,
+			color 0.3s ease,
+			transform 0.25s var(--curva-salida);
 	}
 
 	.capsula__cta :global(svg) {
 		flex: none;
-		color: var(--cyan-300);
 	}
 
-	.capsula__cta:hover {
+	.capsula__cta--lleno {
 		color: var(--white);
 	}
 
+	.capsula__cta--lleno .capsula__cta-cara {
+		border-color: var(--brand-primary);
+		background: var(--brand-primary);
+	}
+
 	.capsula__cta:active .capsula__cta-cara {
-		background: var(--navy-800);
+		background: var(--blue-50);
+	}
+
+	.capsula__cta--lleno:active .capsula__cta-cara {
+		border-color: var(--brand-primary-deep);
+		background: var(--brand-primary-deep);
 	}
 
 	/* --- El botón del menú: pastilla blanca con borde; "Cerrar" en navy. --- */
@@ -364,13 +374,10 @@ const links = [
 		min-height: 56px;
 		margin: 8px 8px 0;
 		border-radius: var(--radius-pill);
-		background: var(--navy-950);
+		background: var(--brand-primary);
 		color: var(--white);
 		font-weight: var(--fw-bold);
-	}
-
-	.menu__cta :global(svg) {
-		color: var(--cyan-300);
+		box-shadow: var(--shadow-boton);
 	}
 
 	.menu__nota {
@@ -449,9 +456,22 @@ const links = [
 			pointer-events: none;
 		}
 
+		.capsula__cta:hover {
+			color: var(--brand-primary-deep);
+		}
+
 		.capsula__cta:hover .capsula__cta-cara {
-			background: var(--navy-800);
+			background: var(--blue-50);
 			transform: translateY(-2px) scale(1.04);
+		}
+
+		.capsula__cta--lleno:hover {
+			color: var(--white);
+		}
+
+		.capsula__cta--lleno:hover .capsula__cta-cara {
+			border-color: var(--brand-primary-deep);
+			background: var(--brand-primary-deep);
 		}
 
 		.capsula__cta:hover .capsula__cta-cara::before {
@@ -489,24 +509,8 @@ const links = [
 	}
 
 	/* --- Lo atado al scroll --- */
-	@keyframes encabezado-despega {
-		from { opacity: 0; transform: scale(0.98); }
-	}
-
 	@keyframes encabezado-flota {
 		to { transform: translateY(4px); }
-	}
-
-	@keyframes encabezado-lectura {
-		from { transform: scaleX(0); }
-	}
-
-	@keyframes encabezado-cta-entra {
-		from { opacity: 0; visibility: hidden; transform: translateY(-8px) scale(0.9); }
-	}
-
-	@keyframes encabezado-cta-aparece {
-		from { opacity: 0; visibility: hidden; }
 	}
 
 	/* La sección en pantalla: pastilla, punto y texto en azul. */
@@ -523,21 +527,6 @@ const links = [
 	}
 
 	@supports (animation-timeline: scroll()) {
-		/* La cápsula aparece en los primeros 96 px de scroll. Es un cambio de estado y no un
-		   desplazamiento: queda también con movimiento reducido. */
-		.capsula__fondo {
-			animation: encabezado-despega linear both;
-			animation-timeline: scroll();
-			animation-range: 0 96px;
-		}
-
-		/* El botón entra cuando el de la portada termina de salir por arriba. */
-		.capsula__cta {
-			animation: encabezado-cta-entra linear both;
-			animation-timeline: --cta-portada;
-			animation-range: exit 40% exit 100%;
-		}
-
 		.capsula__nav a {
 			animation: encabezado-activo linear none;
 			animation-timeline: var(--timeline);
@@ -561,17 +550,6 @@ const links = [
 				animation: encabezado-flota linear both;
 				animation-timeline: scroll();
 				animation-range: 0 96px;
-			}
-
-			.capsula__progreso {
-				animation: encabezado-lectura linear both;
-				animation-timeline: scroll();
-			}
-		}
-
-		@media (prefers-reduced-motion: reduce) {
-			.capsula__cta {
-				animation-name: encabezado-cta-aparece;
 			}
 		}
 	}

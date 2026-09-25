@@ -29,11 +29,10 @@ html { scroll-padding-top: 96px; }
 /* Sin la espera del doble toque para zoom en lo que se toca. */
 :is(a, button, label, summary) { touch-action: manipulation; }
 
-/* Timelines que usa el encabezado: el botón de la portada (su botón entra cuando este sale) y
-   las secciones (marca en cuál estás). timeline-scope los deja ver desde fuera de cada sección.
+/* Timelines que usa el encabezado: las secciones (marca en cuál estás). timeline-scope los deja ver desde fuera de cada sección.
    El inset de arriba corre la línea que cuenta: una sección está "activa" desde que su borde de
    arriba pasa el 40 % de la pantalla hasta que su borde de abajo pasa ese mismo punto. */
-body { timeline-scope: --cta-portada, --s-resolvemos, --s-sistemas, --s-proceso, --s-somos, --s-preguntas; }
+body { timeline-scope: --s-resolvemos, --s-sistemas, --s-proceso, --s-somos, --s-preguntas; }
 #resolvemos { view-timeline: --s-resolvemos block; }
 #sistemas { view-timeline: --s-sistemas block; }
 #proceso { view-timeline: --s-proceso block; }
