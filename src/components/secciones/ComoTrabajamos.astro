@@ -476,6 +476,10 @@ const auditoria = [
 	}
 
 	.semanas__tramo {
+		/* Sin min-width: 0 un ítem de grilla no baja de su ancho de contenido (aunque la columna
+		   sea 1fr): con la letra más grande, "Semana 3" sin poder bajar de línea empujaba la
+		   grilla entera y aparecía scroll horizontal. */
+		min-width: 0;
 		padding: 8px 2px;
 		border-radius: 8px;
 		background: var(--blue-100);
@@ -483,7 +487,6 @@ const auditoria = [
 		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
 		text-align: center;
-		white-space: nowrap;
 	}
 
 	.semanas__tramo:nth-of-type(2) { border-radius: var(--radius-pill) 8px 8px var(--radius-pill); }
