@@ -144,8 +144,11 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 			color: var(--text-heading-light);
 		}
 
+		/* Mismo azul que en reposo (el brillante no llega a AA en texto chico sobre fondo claro):
+		   el hover se nota por el subrayado y porque la flecha se adelanta (regla general de arriba). */
 		.boton--link:hover {
-			color: var(--brand-primary);
+			text-decoration: underline;
+			text-underline-offset: 3px;
 		}
 
 		:global(.seccion--oscura) .boton--link:hover {

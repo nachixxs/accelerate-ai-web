@@ -62,20 +62,26 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		overflow-x: clip;
 	}
 
+	/* minmax(0, 1fr) en vez de la columna implícita "auto": sin esto, el nowrap del nombre fija
+	   el ancho de la columna a su max-content y el rol -que vive en la misma columna- lo hereda
+	   y se corta contra el overflow-x: clip de arriba (con letra grande o zoom de texto). */
 	.persona {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-2);
 	}
 
 	/* La escala gigante de la marca (200 en el lienzo de 1080), llevada a la web: 68 → 163 px.
-	   El tope lo pone "y Gabriel" en 360 px: a 68 px ocupa unos 290 de los 328 disponibles. */
+	   El tope lo pone "y Gabriel" en 360 px: a 68 px ocupa unos 290 de los 328 disponibles.
+	   Sin nowrap: si no entra (zoom de texto grande), baja de línea en vez de cortarse. */
 	.persona__nombre {
+		min-width: 0;
 		color: var(--text-heading-dark);
 		font-size: clamp(4.25rem, 1.8rem + 10.5vw, 10.25rem);
 		font-weight: var(--fw-black);
 		line-height: 0.9;
 		letter-spacing: -0.04em;
-		white-space: nowrap;
+		overflow-wrap: anywhere;
 	}
 
 	.persona__y {
@@ -96,13 +102,13 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		}
 
 		.persona {
-			grid-template-columns: auto 1fr;
+			grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
 			align-items: end;
 			column-gap: var(--space-5);
 		}
 
 		.persona:nth-child(2) {
-			grid-template-columns: 1fr auto;
+			grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
 		}
 
 		.persona:nth-child(2) .persona__nombre {
