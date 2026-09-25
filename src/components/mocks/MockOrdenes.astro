@@ -63,6 +63,11 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		</span>
 	</div>
 
+	<p class="ordenes__pista">
+		<Icono nombre="arrows-out-cardinal-duotone" size={14} />
+		Arrastrá una orden entre columnas
+	</p>
+
 	<div class="columnas">
 		{
 			columnas.map(({ nombre, clase, antes, despues, ordenes, hueco }, c) => (
@@ -141,6 +146,87 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 	</span>
 </div>
 
+<script>
+	// Arrastrar una orden a otra columna: solo con mouse (los dedos siguen haciendo scroll). La
+	// card sigue al puntero con `translate`, no `transform`, para no pisar la animación de scroll
+	// de la orden que cruza. Recién arrastra después de 4 px, así un clic simple no hace nada.
+	const tablero = document.querySelector<HTMLElement>('.ordenes');
+	if (tablero) {
+		const columnas = [...tablero.querySelectorAll<HTMLElement>('.columna')];
+		const cartas = [...tablero.querySelectorAll<HTMLElement>('.orden:not(.orden--cruza)')];
+
+		const columnaBajo = (x: number, y: number) =>
+			document.elementFromPoint(x, y)?.closest<HTMLElement>('.columna') ?? null;
+
+		const sumarContador = (columna: HTMLElement, delta: number) => {
+			const cuenta = columna.querySelector<HTMLElement>('.cuenta__despues');
+			if (cuenta) cuenta.textContent = String(Number(cuenta.textContent) + delta);
+		};
+
+		cartas.forEach((carta) => {
+			let bajado = false;
+			let arrastrando = false;
+			let x0 = 0;
+			let y0 = 0;
+
+			carta.addEventListener('pointerdown', (evento) => {
+				if (evento.pointerType !== 'mouse') return;
+				bajado = true;
+				x0 = evento.clientX;
+				y0 = evento.clientY;
+			});
+
+			carta.addEventListener('pointermove', (evento) => {
+				if (!bajado) return;
+				const dx = evento.clientX - x0;
+				const dy = evento.clientY - y0;
+				if (!arrastrando) {
+					if (Math.hypot(dx, dy) < 4) return;
+					arrastrando = true;
+					carta.setPointerCapture(evento.pointerId);
+					carta.classList.add('orden--arrastrando');
+					carta.style.transition = 'none';
+					carta.style.rotate = '2deg';
+					carta.style.scale = '1.04';
+				}
+				carta.style.translate = `${dx}px ${dy}px`;
+				const destino = columnaBajo(evento.clientX, evento.clientY);
+				columnas.forEach((columna) => columna.classList.toggle('columna--destino', columna === destino));
+			});
+
+			const soltar = (evento: PointerEvent) => {
+				bajado = false;
+				columnas.forEach((columna) => columna.classList.remove('columna--destino'));
+				if (!arrastrando) return;
+				arrastrando = false;
+
+				const origen = carta.parentElement as HTMLElement;
+				const destino = columnaBajo(evento.clientX, evento.clientY);
+				const antes = carta.getBoundingClientRect();
+				if (destino && destino !== origen) {
+					destino.insertBefore(carta, destino.querySelector('.hueco'));
+					sumarContador(origen, -1);
+					sumarContador(destino, 1);
+				}
+				const despues = carta.getBoundingClientRect();
+
+				carta.classList.remove('orden--arrastrando');
+				carta.style.translate = `${antes.left - despues.left}px ${antes.top - despues.top}px`;
+				carta.getBoundingClientRect(); // fuerza el reflujo antes de volver a animar
+				carta.style.transition = '';
+				requestAnimationFrame(() => {
+					carta.style.translate = '0px 0px';
+					carta.style.rotate = '0deg';
+					carta.style.scale = '1';
+				});
+			};
+
+			carta.addEventListener('pointerup', soltar);
+			carta.addEventListener('pointercancel', soltar);
+		});
+	}
+</script>
+
 <style>
 	.ordenes {
 		--separacion: 12px;
@@ -155,6 +241,9 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		color: var(--text-body-light);
 		font-size: 0.875rem;
 		line-height: 1.35;
+		cursor: default;
+		user-select: none;
+		-webkit-user-select: none;
 	}
 
 	.ordenes__barra {
@@ -184,6 +273,22 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		border-radius: var(--radius-pill);
 		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
+	}
+
+	/* La pista de arrastre: solo tiene sentido donde hay mouse. */
+	.ordenes__pista {
+		display: none;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.ordenes__pista {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			margin: -4px 0 0;
+			color: var(--text-muted-light);
+			font-size: 0.8125rem;
+		}
 	}
 
 	/* --- Las columnas: dos en el celular (las de la orden que cruza), cuatro desde tablet. --- */
@@ -260,6 +365,11 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		border: 1px solid var(--border-dark);
 		border-radius: 14px;
 		background: var(--navy-850);
+		transition:
+			translate 0.2s var(--curva-salida),
+			rotate 0.2s var(--curva-salida),
+			scale 0.2s var(--curva-salida),
+			box-shadow 0.2s var(--curva-salida);
 	}
 
 	.orden__arriba,
@@ -351,6 +461,34 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		z-index: 1;
 		border-color: var(--blue-800);
 		box-shadow: var(--shadow-elevada-oscura);
+	}
+
+	/* Arrastrar una orden: solo donde hay mouse, con lo que reacciona en cursor grab/grabbing. La
+	   columna bajo el puntero se marca; al soltar, .orden--arrastrando ya se sacó y la carta cae
+	   en su lugar con la misma transición de translate/rotate/scale. */
+	@media (hover: hover) and (pointer: fine) {
+		.orden:not(.orden--cruza) {
+			cursor: grab;
+		}
+
+		.orden:not(.orden--cruza):not(.orden--arrastrando):hover {
+			translate: 0 -4px;
+			box-shadow: var(--shadow-elevada-oscura);
+		}
+
+		.orden--arrastrando {
+			position: relative;
+			z-index: 5;
+			cursor: grabbing;
+			box-shadow: var(--shadow-elevada-oscura);
+			pointer-events: none;
+		}
+
+		:where(.columna--destino) {
+			outline: 2px dashed var(--cyan-400);
+			outline-offset: 6px;
+			border-radius: 14px;
+		}
 	}
 
 	/* El chip cierra el mock, montado sobre el borde de abajo: va en el flujo con un margen
