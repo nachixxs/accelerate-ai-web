@@ -3,7 +3,10 @@
 // caja, clientes, presupuestos), no un producto cerrado. Tres cifras que cuentan hacia arriba, la
 // curva de ventas de la semana y los últimos movimientos, donde entra uno nuevo arriba.
 // Son datos de ejemplo, y lo dice el propio tablero: no son resultados de un cliente.
-// Es una imagen (role="img"), no una app para explorar: sin links, tooltips ni foco.
+// Para los lectores de pantalla es una imagen (role="img"): sin links ni foco. Con el mouse
+// reacciona como una app (pedido del usuario, 2026-09-25): la pastilla de los módulos se desliza
+// hasta el que señalás, y en el gráfico una guía sigue al cursor (o al dedo) y marca el día y el
+// monto. El gráfico lo mueve el script del final; sin JavaScript queda marcado el pico.
 // En escritorio la historia corre una vez al cargar, en unos 3 segundos. En el celular el tablero
 // queda debajo del botón y avanza con el scroll, con su propio timeline (--tablero).
 import Icono from '../Icono.astro';
@@ -38,6 +41,13 @@ const puntos = semana.map(({ miles }, i) => `${x(i)},${y(miles).toFixed(1)}`);
 const linea = `M${puntos.join(' L')}`;
 const area = `${linea} L${x(6)},${ALTO} L${x(0)},${ALTO} Z`;
 const pico = semana.reduce((max, d, i) => (d.miles > semana[max].miles ? i : max), 0);
+// Cada día en % del lienzo, para el marcador que sigue al cursor.
+const dias = semana.map(({ dia, miles }, i) => ({
+	dia,
+	monto: `$ ${Math.round(miles * 1000).toLocaleString('es-AR')}`,
+	x: +((x(i) / ANCHO) * 100).toFixed(2),
+	y: +((y(miles) / ALTO) * 100).toFixed(2),
+}));
 
 const cifras = [
 	{ nombre: 'Ventas', fin: 1284500, desde: 1000000, formato: 'millones', variacion: '+12 % vs. semana pasada' },
@@ -94,8 +104,8 @@ const movimientos = [
 						<small>Datos de ejemplo</small>
 					</span>
 					<span class="periodo">
-						<span class="periodo__activo">Semana</span>
-						<span>Mes</span>
+						<span class="periodo__opcion periodo__opcion--activa">Semana</span>
+						<span class="periodo__opcion">Mes</span>
 					</span>
 				</div>
 
@@ -113,7 +123,7 @@ const movimientos = [
 					}
 				</dl>
 
-				<div class="grafico">
+				<div class="grafico" data-dias={JSON.stringify(dias)} data-pico={pico}>
 					<div class="grafico__lienzo">
 						<svg viewBox={`0 0 ${ANCHO} ${ALTO}`} preserveAspectRatio="none" aria-hidden="true">
 							<defs>
@@ -125,15 +135,14 @@ const movimientos = [
 							<path class="grafico__area" d={area} fill="url(#tablero-area)" />
 							<path class="grafico__linea" d={linea} pathLength="1" fill="none" vector-effect="non-scaling-stroke" />
 						</svg>
-						<span
-							class="grafico__pico"
-							style={`left: ${(x(pico) / ANCHO) * 100}%; top: ${(y(semana[pico].miles) / ALTO) * 100}%`}
-						>
-							<span class="grafico__etiqueta">{semana[pico].dia} $ {Math.round(semana[pico].miles * 1000).toLocaleString('es-AR')}</span>
+						<span class="grafico__guia" style={`transform: translateX(${dias[pico].x}%)`}></span>
+						<span class="grafico__marcador" style={`transform: translate(${dias[pico].x}%, ${dias[pico].y}%)`}>
+							<span class="grafico__pico"></span>
+							<span class="grafico__etiqueta">{dias[pico].dia} {dias[pico].monto}</span>
 						</span>
 					</div>
 					<div class="grafico__dias">
-						{semana.map(({ dia }, i) => <span class:list={{ 'grafico__dia--pico': i === pico }}>{dia}</span>)}
+						{semana.map(({ dia }, i) => <span class:list={{ 'grafico__dia--marcado': i === pico }}>{dia}</span>)}
 					</div>
 				</div>
 
@@ -170,6 +179,55 @@ const movimientos = [
 		</span>
 	</div>
 </div>
+
+<script>
+	// El gráfico sigue al cursor (o al dedo): la guía y el punto van al día más cercano y la
+	// etiqueta dice cuánto se vendió. Al salir vuelve al pico de la semana.
+	const grafico = document.querySelector<HTMLElement>('.tablero .grafico');
+	if (grafico) {
+		const dias: { dia: string; monto: string; x: number; y: number }[] = JSON.parse(grafico.dataset.dias!);
+		const pico = Number(grafico.dataset.pico);
+		const lienzo = grafico.querySelector('.grafico__lienzo')!;
+		const guia = grafico.querySelector<HTMLElement>('.grafico__guia')!;
+		const marcador = grafico.querySelector<HTMLElement>('.grafico__marcador')!;
+		const etiqueta = grafico.querySelector('.grafico__etiqueta')!;
+		const rotulos = grafico.querySelectorAll('.grafico__dias span');
+		let actual = pico;
+		let volver = 0;
+
+		const marcar = (i: number) => {
+			if (i === actual) return;
+			actual = i;
+			const { dia, monto, x, y } = dias[i];
+			marcador.style.transform = `translate(${x}%, ${y}%)`;
+			guia.style.transform = `translateX(${x}%)`;
+			etiqueta.textContent = `${dia} ${monto}`;
+			marcador.classList.toggle('grafico__marcador--derecha', i < 3);
+			rotulos.forEach((rotulo, j) => rotulo.classList.toggle('grafico__dia--marcado', j === i));
+		};
+
+		const seguir = (evento: PointerEvent) => {
+			clearTimeout(volver);
+			const { left, width } = lienzo.getBoundingClientRect();
+			const i = Math.floor(((evento.clientX - left) / width) * dias.length);
+			marcar(Math.min(dias.length - 1, Math.max(0, i)));
+			grafico.classList.add('grafico--activo');
+		};
+
+		const soltar = () => {
+			grafico.classList.remove('grafico--activo');
+			marcar(pico);
+		};
+
+		grafico.addEventListener('pointerdown', seguir);
+		grafico.addEventListener('pointermove', seguir);
+		// Con el mouse vuelve al salir; con el dedo, un rato después de soltar.
+		grafico.addEventListener('pointerleave', (evento) => {
+			if (evento.pointerType === 'mouse') soltar();
+			else volver = window.setTimeout(soltar, 1500);
+		});
+	}
+</script>
 
 <style>
 	@property --v {
@@ -286,11 +344,12 @@ const movimientos = [
 		line-height: 1;
 	}
 
+	/* Abajo queda aire para el aviso montado sobre el borde: no tapa el último movimiento. */
 	.ventana__contenido {
 		display: grid;
 		gap: 16px;
 		min-width: 0;
-		padding: 16px;
+		padding: 16px 16px 40px;
 	}
 
 	.contenido__barra {
@@ -317,8 +376,11 @@ const movimientos = [
 	}
 
 	/* El selector de período: decorativo, el activo con el azul profundo (el de la marca es del botón). */
+	/* Las dos opciones miden lo mismo: la pastilla se desliza a "Mes" con el mouse. */
 	.periodo {
-		display: inline-flex;
+		position: relative;
+		display: inline-grid;
+		grid-template-columns: 1fr 1fr;
 		padding: 3px;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-pill);
@@ -327,13 +389,26 @@ const movimientos = [
 		font-weight: var(--fw-semibold);
 	}
 
-	.periodo > span {
-		padding: 4px 10px;
+	.periodo::before {
+		content: '';
+		position: absolute;
+		top: 3px;
+		bottom: 3px;
+		left: 3px;
+		width: calc(50% - 3px);
 		border-radius: var(--radius-pill);
+		background: var(--brand-primary-deep);
+		transition: transform 0.25s var(--curva-salida);
 	}
 
-	.periodo .periodo__activo {
-		background: var(--brand-primary-deep);
+	.periodo__opcion {
+		position: relative;
+		padding: 4px 10px;
+		text-align: center;
+		transition: color 0.2s ease;
+	}
+
+	.periodo__opcion--activa {
 		color: var(--white);
 	}
 
@@ -349,8 +424,10 @@ const movimientos = [
 		align-content: start;
 		gap: 2px;
 		padding: 12px;
+		border: 1px solid transparent;
 		border-radius: 14px;
 		background: var(--navy-850);
+		transition: border-color 0.2s ease, transform 0.25s var(--curva-salida);
 	}
 
 	.cifra:first-child {
@@ -391,9 +468,11 @@ const movimientos = [
 		margin-top: 16px;
 	}
 
+	/* touch-action: el dedo que se desliza de costado mueve la guía; el que sube o baja, la página. */
 	.grafico__lienzo {
 		position: relative;
 		height: 120px;
+		touch-action: pan-y;
 		/* Tres guías horizontales, recesivas: dan escala sin competir con la curva. */
 		background:
 			linear-gradient(var(--border-dark), var(--border-dark)) 0 15% / 100% 1px no-repeat,
@@ -416,8 +495,36 @@ const movimientos = [
 		stroke-dashoffset: 0;
 	}
 
+	/* La guía y el marcador ocupan todo el lienzo: así se mueven con translate en % del lienzo
+	   (solo transform), y el punto y la etiqueta cuelgan de su esquina de arriba a la izquierda. */
+	.grafico__guia,
+	.grafico__marcador {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		transition: transform 0.2s var(--curva-salida);
+	}
+
+	.grafico__guia {
+		opacity: 0;
+		transition: transform 0.2s var(--curva-salida), opacity 0.2s ease;
+	}
+
+	.grafico__guia::before {
+		content: '';
+		position: absolute;
+		inset: 0 auto 0 0;
+		border-left: 1px dashed var(--blue-400);
+	}
+
+	.grafico--activo .grafico__guia {
+		opacity: 1;
+	}
+
 	.grafico__pico {
 		position: absolute;
+		top: 0;
+		left: 0;
 		width: 12px;
 		height: 12px;
 		border-radius: 50%;
@@ -426,11 +533,14 @@ const movimientos = [
 		transform: translate(-50%, -50%);
 	}
 
-	/* La etiqueta del pico, arriba a la izquierda del punto: a la derecha no entra. */
+	/* La etiqueta, arriba a la izquierda del punto; en los tres primeros días, a la derecha (a la
+	   izquierda no entra). La ubica translate y no transform: transform es de su entrada. */
 	.grafico__etiqueta {
 		position: absolute;
-		right: 50%;
-		bottom: calc(100% + 8px);
+		top: 0;
+		left: 0;
+		translate: -100% calc(-100% - 12px);
+		transition: translate 0.2s var(--curva-salida);
 		padding: 4px 10px;
 		border-radius: var(--radius-pill);
 		background: var(--cyan-300);
@@ -442,6 +552,10 @@ const movimientos = [
 		box-shadow: 0 8px 20px rgba(2, 6, 18, 0.4);
 	}
 
+	.grafico__marcador--derecha .grafico__etiqueta {
+		translate: 0 calc(-100% - 12px);
+	}
+
 	.grafico__dias {
 		display: grid;
 		grid-template-columns: repeat(7, 1fr);
@@ -450,7 +564,11 @@ const movimientos = [
 		text-align: center;
 	}
 
-	.grafico__dias .grafico__dia--pico {
+	.grafico__dias span {
+		transition: color 0.2s ease;
+	}
+
+	.grafico__dias .grafico__dia--marcado {
 		color: var(--text-heading-light);
 		font-weight: var(--fw-semibold);
 	}
@@ -473,6 +591,7 @@ const movimientos = [
 		gap: 12px;
 		padding: 8px;
 		border-radius: 14px;
+		transition: background-color 0.2s ease;
 	}
 
 	.movimiento--nuevo {
@@ -536,7 +655,8 @@ const movimientos = [
 		transform: translateY(-50%);
 	}
 
-	/* El aviso claro: papel sobre la ventana oscura, montado sobre el borde de abajo. */
+	/* El aviso claro: papel sobre la ventana oscura, montado sobre el borde de abajo a la derecha,
+	   como una notificación que acaba de llegar. En todos los anchos en el mismo lugar. */
 	.tablero__aviso {
 		position: absolute;
 		right: 16px;
@@ -599,11 +719,11 @@ const movimientos = [
 		}
 
 		.ventana__barra strong {
-			min-width: 152px;
+			min-width: 136px;
 		}
 
 		.ventana__cuerpo {
-			grid-template-columns: 184px minmax(0, 1fr);
+			grid-template-columns: 168px minmax(0, 1fr);
 		}
 
 		.modulos {
@@ -627,37 +747,118 @@ const movimientos = [
 			padding: 20px;
 		}
 
-		.grafico__lienzo {
-			height: 140px;
-		}
 
 		.tablero__chip {
 			right: auto;
-			left: 216px;
+			left: 192px;
 		}
 
-		.tablero {
-			padding-bottom: 20px;
-		}
-
-		/* Con la barra lateral, el aviso se monta sobre el borde izquierdo, en el lugar libre que
-		   queda abajo de los módulos: así se ve en la primera pantalla. Sobresale lo que mide el
-		   margen del contenedor (16 px hasta 767): más, y la portada lo recorta. */
 		.tablero__aviso {
-			top: 51%;
-			right: auto;
-			bottom: auto;
-			left: calc(-1 * var(--space-2));
+			right: 24px;
+		}
+
+		/* La pastilla del módulo activo es una sola capa que se desliza: con el mouse va hasta el
+		   módulo que señalás (filas de 40 px y 4 de separación). */
+		.modulos {
+			position: relative;
+		}
+
+		.modulos::before {
+			content: '';
+			position: absolute;
+			top: 16px;
+			right: 12px;
+			left: 12px;
+			height: 40px;
+			border-radius: 12px;
+			background: var(--blue-950);
+			transition: transform 0.25s var(--curva-salida);
+		}
+
+		.modulo {
+			position: relative;
+			height: 40px;
+			padding-block: 0;
+			transition: color 0.2s ease;
+		}
+
+		.modulo--activo {
+			background: none;
+		}
+
+		.modulo :global(svg),
+		.modulo__aviso {
+			transition: transform 0.25s var(--curva-salida);
 		}
 	}
 
-	@media (min-width: 1024px) {
-		.cifra__valor {
-			font-size: 1.5rem;
+	@media (min-width: 640px) and (hover: hover) and (pointer: fine) {
+		.modulos:has(.modulo:nth-child(2):hover)::before { transform: translateY(44px); }
+		.modulos:has(.modulo:nth-child(3):hover)::before { transform: translateY(88px); }
+		.modulos:has(.modulo:nth-child(4):hover)::before { transform: translateY(132px); }
+		.modulos:has(.modulo:nth-child(5):hover)::before { transform: translateY(176px); }
+		.modulos:has(.modulo:nth-child(6):hover)::before { transform: translateY(220px); }
+
+		.modulo:hover {
+			color: var(--blue-100);
 		}
 
-		.tablero__aviso {
-			left: -40px;
+		.modulos:has(.modulo:hover) .modulo--activo:not(:hover) {
+			color: var(--text-muted-light);
+		}
+
+		.modulo:hover :global(svg) {
+			transform: translateX(3px);
+		}
+
+		.modulo:hover .modulo__aviso {
+			transform: scale(1.12);
+		}
+	}
+
+	/* En escritorio el tablero va al lado del titular y tiene que entrar en la primera pantalla:
+	   dos movimientos y no tres. */
+	@media (min-width: 1024px) {
+		.ventana__barra {
+			padding-block: 14px;
+		}
+
+		.movimiento:nth-child(3) {
+			display: none;
+		}
+
+		.ventana__contenido {
+			gap: 12px;
+		}
+
+		.grafico__lienzo {
+			height: 100px;
+		}
+	}
+
+	/* --- Con el mouse, el tablero responde como una app: el período, las cifras y los
+	   movimientos. Solo con puntero fino: en el celular el hover queda pegado. Corre también con
+	   movimiento reducido: lo dispara quien pasa el mouse y son pasos de 2 a 3 px. --- */
+	@media (hover: hover) and (pointer: fine) {
+		.periodo:has(.periodo__opcion:last-child:hover)::before {
+			transform: translateX(100%);
+		}
+
+		.periodo:has(.periodo__opcion:last-child:hover) .periodo__opcion--activa {
+			color: var(--text-muted-light);
+		}
+
+		.periodo__opcion:last-child:hover {
+			color: var(--white);
+		}
+
+		.cifra:hover {
+			border-color: var(--border-dark);
+			transform: translateY(-2px);
+		}
+
+		.movimiento:hover {
+			background-color: var(--navy-850);
 		}
 	}
 

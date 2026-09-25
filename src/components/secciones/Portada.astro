@@ -1,9 +1,8 @@
 ---
 // SPECS §4.1: qué hacen y para quién en una línea, con el botón visible sin scroll.
 // Portada partida: el texto a la izquierda y el producto a la derecha (debajo en el celular).
-// El producto es el tablero de un negocio con varios sistemas adentro (mocks/MockPanel.astro):
-// en escritorio es más ancho que su columna y el borde de la pantalla lo corta, como una app
-// abierta que sigue de largo. El titular no se anima: es lo más grande de la primera pantalla
+// El producto es el tablero de un negocio con varios sistemas adentro (mocks/MockPanel.astro),
+// del ancho de su columna. El titular no se anima: es lo más grande de la primera pantalla
 // (el LCP) y tiene que pintarse de entrada.
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
@@ -76,10 +75,11 @@ import MockPanel from '../mocks/MockPanel.astro';
 			font-size: clamp(2.75rem, 1.6rem + 2.4vw, 3.75rem);
 		}
 
-		/* Más ancho que su columna: sigue de largo hacia la derecha y la pantalla lo corta
-		   (la sección recorta con overflow: clip). En pantallas anchas entra entero. */
+		/* El tablero entra en su columna: antes se pasaba y lo cortaba la pantalla, y se veía
+		   demasiado grande (pedido del usuario, 2026-09-25). */
 		.portada__producto > :global(*) {
-			width: 720px;
+			max-width: 600px;
+			margin-left: auto;
 		}
 	}
 </style>
