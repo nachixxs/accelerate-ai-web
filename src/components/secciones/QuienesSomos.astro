@@ -7,7 +7,7 @@
 const personas = [
 	{
 		nombre: 'Ignacio',
-		rol: 'La parte técnica: programa los sistemas, los bots de WhatsApp y las automatizaciones.',
+		rol: 'La parte técnica: programa los sistemas y las automatizaciones que los conectan.',
 	},
 	{
 		nombre: 'Gabriel',
@@ -53,10 +53,13 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		margin-top: var(--space-5);
 	}
 
+	/* Recorta el corrimiento de entrada de los nombres: sin esto, "y Gabriel" arranca un 14 %
+	   afuera de la pantalla y la página scrollea de costado. Solo en x: los rasgos altos no se cortan. */
 	.personas {
 		display: grid;
 		gap: var(--space-4);
 		margin-top: var(--space-5);
+		overflow-x: clip;
 	}
 
 	.persona {

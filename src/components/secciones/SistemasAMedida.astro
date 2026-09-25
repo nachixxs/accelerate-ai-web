@@ -7,8 +7,6 @@
 // Las clases .ejemplo--destacado y .chip-montado las usa scripts/capturas.mjs.
 import Glow from '../Glow.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
-import MockPedidos from '../mocks/MockPedidos.astro';
-import MockTurnos from '../mocks/MockTurnos.astro';
 import MockCaja from '../mocks/MockCaja.astro';
 import MockPanel from '../mocks/MockPanel.astro';
 ---
@@ -27,23 +25,6 @@ import MockPanel from '../mocks/MockPanel.astro';
 		</div>
 
 		<div class="bento">
-			<article class="ejemplo ejemplo--destacado ejemplo--pedidos">
-				<span class="chip-montado">Ya funciona en una imprenta</span>
-				<div class="ejemplo__texto">
-					<h3 class="t-label">Pedidos por WhatsApp que se cargan solos en una planilla</h3>
-					<p>El cliente pide por WhatsApp y el pedido queda anotado sin que nadie lo tipee. Vos solo revisás los casos raros.</p>
-				</div>
-				<MockPedidos />
-			</article>
-
-			<article class="ejemplo ejemplo--turnos">
-				<div class="ejemplo__texto">
-					<h3 class="t-label">Turnos y reservas con recordatorios</h3>
-					<p>Tus clientes reservan por WhatsApp a cualquier hora y reciben un aviso antes del turno.</p>
-				</div>
-				<MockTurnos />
-			</article>
-
 			<article class="ejemplo ejemplo--caja">
 				<div class="ejemplo__texto">
 					<h3 class="t-label">Cajas y cierres diarios sin cuadernos</h3>
@@ -160,7 +141,6 @@ import MockPanel from '../mocks/MockPanel.astro';
 			grid-template-columns: 1fr 1fr;
 		}
 
-		.ejemplo--pedidos,
 		.ejemplo--panel {
 			grid-column: span 2;
 		}
@@ -178,14 +158,6 @@ import MockPanel from '../mocks/MockPanel.astro';
 		.bento {
 			grid-template-columns: repeat(12, 1fr);
 			gap: var(--space-3);
-		}
-
-		.ejemplo--pedidos {
-			grid-column: span 7;
-		}
-
-		.ejemplo--turnos {
-			grid-column: span 5;
 		}
 
 		.ejemplo--caja {

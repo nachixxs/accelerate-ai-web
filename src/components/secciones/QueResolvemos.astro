@@ -10,18 +10,18 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 const dolores = [
 	{
-		icono: 'chats-circle-duotone',
-		frase: 'Me paso el día contestando lo mismo.',
-		detalle: 'Horarios, precios, si hay stock. Mientras tanto, lo que de verdad importa espera.',
-		solucion: 'Las preguntas de siempre se contestan solas.',
-		como: 'El sistema responde por WhatsApp a cualquier hora. Vos te quedás con las consultas que valen la pena.',
+		icono: 'package-duotone',
+		frase: 'Me entero de lo que falta cuando ya falta.',
+		detalle: 'Nadie sabe bien qué queda en el depósito hasta que un cliente lo pide y no hay.',
+		solucion: 'Sabés qué reponer antes de quedarte sin nada.',
+		como: 'Cada venta descuenta del stock, y cuando algo baja del mínimo el pedido al proveedor ya está armado.',
 	},
 	{
 		icono: 'note-pencil-duotone',
 		frase: 'Los pedidos quedan anotados en tres lados.',
 		detalle: 'Un cuaderno, un chat y una planilla. En algún pase, siempre se pierde uno.',
 		solucion: 'Cada pedido queda en un solo lugar.',
-		como: 'Entra por WhatsApp y se carga en la planilla. Nadie lo pasa a mano.',
+		como: 'Se carga una vez y todo el equipo ve en qué está. Nadie lo pasa a mano.',
 	},
 	{
 		icono: 'calculator-duotone',
@@ -330,7 +330,7 @@ const dolores = [
 		transition: opacity 0.2s, visibility 0s;
 	}
 
-	@keyframes sello-asienta {
+	@keyframes resolvemos-sello {
 		from { transform: scale(0.9); }
 	}
 
@@ -375,7 +375,7 @@ const dolores = [
 
 		/* El círculo del ícono se asienta como un sello: de 0.9 a su tamaño, sin rebote. */
 		.resolvemos:has(.interruptor__sistema:checked) .dolor__iconos {
-			animation: sello-asienta 0.35s var(--curva-salida) calc(120ms + var(--i) * 60ms) backwards;
+			animation: resolvemos-sello 0.35s var(--curva-salida) calc(120ms + var(--i) * 60ms) backwards;
 		}
 
 		/* El texto que se va se desenfoca y sube; el que llega baja a su lugar. El blur tapa el
