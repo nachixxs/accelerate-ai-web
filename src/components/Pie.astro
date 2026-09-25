@@ -308,6 +308,12 @@ const links = [
 				animation-timeline: --pie;
 				animation-range: entry calc(20% + var(--i) * 12%) entry calc(55% + var(--i) * 12%);
 			}
+
+			/* Tab puede llevar el foco a un link antes de que su bloque termine de entrar (el
+			   navegador sólo scrollea lo mínimo): con el foco adentro, se ve entero. */
+			.pie__bloque:focus-within {
+				animation: none;
+			}
 		}
 	}
 </style>
