@@ -243,9 +243,22 @@ const movimientos = [
 
 	/* --- El tablero: la ventana oscura (la card invertida de la sección) y, montados sobre sus
 	   bordes, el chip de arriba y el aviso claro de abajo (la regla de profundidad de la marca). --- */
+	/* Es un mock, no texto para copiar: sin el cursor de texto ni la selección. Lo que reacciona
+	   al mouse lleva la manito (pedido del usuario, 2026-09-25). */
 	.tablero {
 		position: relative;
 		padding-block: 20px 40px;
+		cursor: default;
+		user-select: none;
+		-webkit-user-select: none;
+	}
+
+	.modulo,
+	.periodo__opcion,
+	.cifra,
+	.movimiento,
+	.grafico {
+		cursor: pointer;
 	}
 
 	.ventana {
