@@ -1,0 +1,464 @@
+---
+// Mock de "Órdenes de trabajo": el tablero de una imprenta con cuatro columnas, de la entrada a la
+// entrega. Con el scroll, una orden terminada cruza sola de "En proceso" a "Para entregar" y los
+// contadores de las dos columnas se actualizan. Son datos de ejemplo, y lo dice el propio mock.
+// El estado de base es el final (la orden ya en "Para entregar"): sin soporte de animaciones
+// atadas al scroll, o con movimiento reducido, se ve completo y quieto.
+// En el celular entran dos columnas: quedan las dos entre las que cruza la orden.
+// Se anima con el timeline --celda de la card que lo contiene.
+import Icono from '../Icono.astro';
+
+type Orden = { numero: number; cliente: string; trabajo: string; fecha: string; quien: string; avance?: number; urgente?: boolean };
+
+const columnas: { nombre: string; clase: string; antes: number; despues: number; ordenes: Orden[]; hueco?: boolean }[] = [
+	{
+		nombre: 'Recibidas',
+		clase: 'recibidas',
+		antes: 2,
+		despues: 2,
+		ordenes: [
+			{ numero: 1048, cliente: 'Estudio Paz', trabajo: '200 tarjetas', fecha: 'Jue 25', quien: 'JM' },
+			{ numero: 1049, cliente: 'Taller Sosa', trabajo: '30 carpetas', fecha: 'Vie 26', quien: 'LR', urgente: true },
+		],
+	},
+	{
+		nombre: 'En proceso',
+		clase: 'proceso',
+		antes: 2,
+		despues: 1,
+		ordenes: [{ numero: 1041, cliente: 'Club Norte', trabajo: 'Banner 3 × 1 m', fecha: 'Hoy', quien: 'JM', avance: 70 }],
+		hueco: true,
+	},
+	{
+		nombre: 'Para entregar',
+		clase: 'entregar',
+		antes: 1,
+		despues: 2,
+		ordenes: [{ numero: 1039, cliente: 'Kiosco Rivas', trabajo: '50 afiches A3', fecha: 'Listo', quien: 'AG', avance: 100 }],
+	},
+	{
+		nombre: 'Entregadas',
+		clase: 'entregadas',
+		antes: 14,
+		despues: 14,
+		ordenes: [
+			{ numero: 1031, cliente: 'Óptica Mar', trabajo: 'Folletos', fecha: 'Lun 22', quien: 'AG' },
+			{ numero: 1036, cliente: 'Farmacia Luz', trabajo: 'Recetarios', fecha: 'Lun 22', quien: 'LR' },
+		],
+	},
+];
+---
+
+<div
+	class="ordenes"
+	role="img"
+	aria-label="Ejemplo con datos inventados: el tablero de órdenes de trabajo de una imprenta, con columnas de recibidas, en proceso, para entregar y entregadas. Cada orden dice cliente, trabajo, fecha de entrega, quién la tiene y cuánto avanzó. Una orden terminada pasa sola de en proceso a para entregar."
+>
+	<div class="ordenes__barra">
+		<strong>Órdenes de trabajo</strong>
+		<span class="ordenes__semana">Semana del 22 al 26</span>
+		<span class="ordenes__nueva">
+			<Icono nombre="plus-bold" size={14} />
+			Nueva orden
+		</span>
+	</div>
+
+	<div class="columnas">
+		{
+			columnas.map(({ nombre, clase, antes, despues, ordenes, hueco }, c) => (
+				<div class={`columna columna--${clase}`}>
+					<div class="columna__cabecera">
+						<span class="columna__nombre">
+							<span class="columna__punto" />
+							{nombre}
+						</span>
+						<span class:list={['cuenta', { 'cuenta--cambia': antes !== despues }]}>
+							<span class="cuenta__despues">{despues}</span>
+							{antes !== despues && <span class="cuenta__antes">{antes}</span>}
+						</span>
+					</div>
+
+					{ordenes.map(({ numero, cliente, trabajo, fecha, quien, avance, urgente }, i) => (
+						<div class="orden" style={`--i: ${c + i}`}>
+							<div class="orden__arriba">
+								<span class="orden__numero">#{numero}</span>
+								{urgente && <span class="orden__urgente">Urgente</span>}
+							</div>
+							<span class="orden__cliente">
+								{cliente}
+								<small>{trabajo}</small>
+							</span>
+							{avance !== undefined && (
+								<span class="orden__avance">
+									<span style={`--avance: ${avance / 100}`} />
+								</span>
+							)}
+							<div class="orden__abajo">
+								<span class="orden__fecha">
+									<Icono nombre={avance === 100 ? 'check-circle-duotone' : 'calendar-blank-duotone'} size={14} />
+									{fecha}
+								</span>
+								<span class="orden__quien">{quien}</span>
+							</div>
+						</div>
+					))}
+
+					{hueco && <div class="hueco" />}
+
+					{clase === 'entregar' && (
+						<div class="hueco">
+							<div class="orden orden--cruza">
+								<div class="orden__arriba">
+									<span class="orden__numero">#1044</span>
+								</div>
+								<span class="orden__cliente">
+									Casa Ferro
+									<small>Lona para vidriera</small>
+								</span>
+								<span class="orden__avance">
+									<span class="orden__avance-cruza" style="--avance: 1" />
+								</span>
+								<div class="orden__abajo">
+									<span class="orden__fecha">
+										<Icono nombre="check-circle-duotone" size={14} />
+										Lista
+									</span>
+									<span class="orden__quien">AG</span>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+			))
+		}
+	</div>
+
+	<span class="ordenes__chip">
+		<Icono nombre="lightning-duotone" size={16} />
+		Terminada: pasa sola a "Para entregar"
+	</span>
+
+	<p class="ordenes__nota">Datos de ejemplo</p>
+</div>
+
+<style>
+	.ordenes {
+		--separacion: 12px;
+		container-type: inline-size;
+		position: relative;
+		display: grid;
+		gap: 16px;
+		padding: 16px 16px 28px;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-card);
+		background: var(--navy-900);
+		color: var(--text-body-light);
+		font-size: 0.875rem;
+		line-height: 1.35;
+	}
+
+	.ordenes__barra {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px 12px;
+	}
+
+	.ordenes__barra strong {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-bold);
+	}
+
+	.ordenes__semana {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+	}
+
+	.ordenes__nueva {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-left: auto;
+		padding: 6px 12px;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-pill);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+	}
+
+	/* --- Las columnas: dos en el celular (las de la orden que cruza), cuatro desde tablet. --- */
+	.columnas {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--separacion);
+	}
+
+	.columna {
+		display: grid;
+		align-content: start;
+		gap: 10px;
+		min-width: 0;
+	}
+
+	/* Después de .columna, que les daría display: grid. */
+	.columna--recibidas,
+	.columna--entregadas {
+		display: none;
+	}
+
+	.columna__cabecera {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		padding-inline: 4px;
+	}
+
+	.columna__nombre {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
+		white-space: nowrap;
+	}
+
+	.columna__punto {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--text-muted-light);
+	}
+
+	.columna--proceso .columna__punto { background: var(--cyan-400); }
+	.columna--entregar .columna__punto { background: var(--blue-300); }
+	.columna--entregadas .columna__punto { background: var(--navy-700); }
+
+	/* El contador: el valor final en el HTML; el de antes se funde encima y se va cuando la orden
+	   llega. */
+	.cuenta {
+		display: grid;
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.cuenta > span {
+		grid-area: 1 / 1;
+		text-align: right;
+	}
+
+	.cuenta__antes {
+		opacity: 0;
+	}
+
+	/* --- Cada orden: datos del negocio (vence, quién, avance), no una tarjeta vacía. --- */
+	.orden {
+		display: grid;
+		gap: 8px;
+		padding: 12px;
+		border: 1px solid var(--border-dark);
+		border-radius: 14px;
+		background: var(--navy-850);
+	}
+
+	.orden__arriba,
+	.orden__abajo {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+	}
+
+	.orden__numero,
+	.orden__fecha {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.orden__fecha {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.orden__urgente {
+		padding: 4px 8px;
+		border-radius: var(--radius-pill);
+		background: var(--blue-900);
+		color: var(--blue-100);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+		line-height: 1;
+	}
+
+	.orden__cliente {
+		display: grid;
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
+	}
+
+	.orden__cliente small {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-regular);
+	}
+
+	.orden__avance {
+		height: 4px;
+		border-radius: 4px;
+		background: var(--border-dark);
+		overflow: clip;
+	}
+
+	.orden__avance > span {
+		display: block;
+		height: 100%;
+		background: var(--cyan-400);
+		transform-origin: left;
+		transform: scaleX(var(--avance));
+	}
+
+	.orden__quien {
+		display: grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		background: var(--blue-800);
+		color: var(--blue-100);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-bold);
+	}
+
+	/* El lugar vacío: en "En proceso" queda donde estaba la orden; en "Para entregar" la recibe. */
+	.hueco {
+		position: relative;
+		min-height: 136px;
+		border: 1px dashed var(--navy-700);
+		border-radius: 14px;
+	}
+
+	/* En el flujo, tapando el hueco que la recibe: si el texto baja de línea, el hueco crece con ella. */
+	.hueco:has(.orden--cruza) {
+		display: grid;
+		min-height: 0;
+	}
+
+	.orden--cruza {
+		position: relative;
+		margin: -1px;
+		z-index: 1;
+		border-color: var(--blue-800);
+		box-shadow: 0 16px 36px rgba(2, 6, 18, 0.45);
+	}
+
+	.ordenes__chip {
+		position: absolute;
+		right: 16px;
+		bottom: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		max-width: calc(100% - 32px);
+		padding: 10px 16px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+		line-height: 1.2;
+		box-shadow: var(--shadow-elevada);
+		transform: translateY(50%);
+	}
+
+	.ordenes__nota {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+	}
+
+	/* Consulta de contenedor: cuatro columnas cuando el mock tiene lugar, no según la pantalla. */
+	@container (min-width: 640px) {
+		.columnas {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+
+		.columna--recibidas,
+		.columna--entregadas {
+			display: grid;
+		}
+	}
+
+	/* --- Movimiento --- */
+	@keyframes ordenes-entra {
+		from { opacity: 0; transform: translateY(16px); }
+	}
+
+	/* La orden arranca en "En proceso" (una columna a la izquierda), se levanta, cruza y se
+	   apoya en su lugar. */
+	@keyframes ordenes-cruza {
+		from { transform: translateX(calc(-100% - var(--separacion))); }
+		15% { transform: translateX(calc(-100% - var(--separacion))) translateY(-6px) rotate(-2deg); }
+		85% { transform: translateY(-6px) rotate(1.5deg); }
+		to { transform: none; }
+	}
+
+	@keyframes ordenes-avance {
+		from { transform: scaleX(0.9); }
+	}
+
+	@keyframes ordenes-cuenta-antes {
+		from, to { opacity: 1; }
+	}
+
+	@keyframes ordenes-cuenta-despues {
+		from, to { opacity: 0; }
+	}
+
+	@keyframes ordenes-chip {
+		from { opacity: 0; transform: translateY(50%) scale(0.9); }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.orden:not(.orden--cruza) {
+				animation: ordenes-entra var(--curva-salida) both;
+				animation-timeline: --celda;
+				animation-range: entry calc(20% + var(--i) * 8%) entry calc(60% + var(--i) * 8%);
+			}
+
+			.orden--cruza {
+				animation: ordenes-cruza var(--curva-cruce) both;
+				animation-timeline: --celda;
+				animation-range: cover 45% cover 58%;
+			}
+
+			.orden__avance-cruza {
+				animation: ordenes-avance var(--curva-salida) both;
+				animation-timeline: --celda;
+				animation-range: cover 37% cover 45%;
+			}
+
+			/* Los contadores cambian cuando la orden se apoya. Fuera de ese tramo, fill: none deja
+			   el valor final; "backwards" muestra el de antes mientras la orden todavía no llegó. */
+			.cuenta__antes {
+				animation: ordenes-cuenta-antes linear backwards;
+				animation-timeline: --celda;
+				animation-range: cover 56% cover 57%;
+			}
+
+			.cuenta--cambia .cuenta__despues {
+				animation: ordenes-cuenta-despues linear backwards;
+				animation-timeline: --celda;
+				animation-range: cover 56% cover 57%;
+			}
+
+			.ordenes__chip {
+				animation: ordenes-chip var(--curva-salida) both;
+				animation-timeline: --celda;
+				animation-range: cover 58% cover 64%;
+			}
+		}
+	}
+</style>

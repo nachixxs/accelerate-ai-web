@@ -1,13 +1,40 @@
 ---
-// SPECS §2 y §4.3: la promesa amplia con 4 ejemplos al lado, como muestra y no como menú.
+// SPECS §2 y §4.3: la promesa amplia. Tres ejemplos como muestra, no como menú, y después la
+// pared: 20 tipos de sistema que se encienden en cascada con el scroll y rematan en "Y el que tu
+// negocio necesite". Los de arriba son muestras; la pared es la amplitud.
 // Fondo oscuro: en el claro la marca permite una sola card invertida por sección, y acá cada
-// ejemplo lleva su card con un mock del sistema funcionando. Grilla bento asimétrica: pedidos
-// ancho y turnos angosto arriba, caja angosta y panel ancho abajo; en el celular, una columna.
+// ejemplo lleva su card con un mock del sistema funcionando. Arriba el grande a lo ancho
+// (órdenes de trabajo); abajo dos medianos lado a lado (caja y stock); en el celular, una columna.
 // Cada card define el timeline --celda: sus mocks se arman mientras la card cruza la pantalla.
-// Las clases .ejemplo--destacado y .chip-montado las usa scripts/capturas.mjs.
 import Glow from '../Glow.astro';
+import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
+import MockOrdenes from '../mocks/MockOrdenes.astro';
 import MockCaja from '../mocks/MockCaja.astro';
+import MockStock from '../mocks/MockStock.astro';
+
+const tipos = [
+	{ nombre: 'Órdenes de trabajo', icono: 'clipboard-text-duotone' },
+	{ nombre: 'Stock', icono: 'package-duotone' },
+	{ nombre: 'Presupuestos', icono: 'file-text-duotone' },
+	{ nombre: 'Cobranzas', icono: 'hand-coins-duotone' },
+	{ nombre: 'Turnos y reservas', icono: 'calendar-check-duotone' },
+	{ nombre: 'Clientes y seguimiento', icono: 'address-book-duotone' },
+	{ nombre: 'Compras a proveedores', icono: 'shopping-cart-duotone' },
+	{ nombre: 'Horas del equipo', icono: 'timer-duotone' },
+	{ nombre: 'Listas de precios', icono: 'tag-duotone' },
+	{ nombre: 'Comisiones', icono: 'percent-duotone' },
+	{ nombre: 'Mantenimiento', icono: 'wrench-duotone' },
+	{ nombre: 'Flota y vehículos', icono: 'truck-duotone' },
+	{ nombre: 'Gastos', icono: 'receipt-duotone' },
+	{ nombre: 'Vencimientos', icono: 'hourglass-duotone' },
+	{ nombre: 'Legajos', icono: 'folder-user-duotone' },
+	{ nombre: 'Pedidos', icono: 'shopping-bag-duotone' },
+	{ nombre: 'Reportes para el contador', icono: 'calculator-duotone' },
+	{ nombre: 'Tareas del día', icono: 'list-checks-duotone' },
+	{ nombre: 'Encuestas a clientes', icono: 'star-duotone' },
+	{ nombre: 'Consignaciones', icono: 'handshake-duotone' },
+];
 ---
 
 <section id="sistemas" class="seccion seccion--oscura con-glow sistemas" aria-labelledby="sistemas-titulo">
@@ -19,11 +46,19 @@ import MockCaja from '../mocks/MockCaja.astro';
 			<h2 id="sistemas-titulo" class="t-titular">Armamos el sistema que tu negocio necesita</h2>
 			<p class="t-cuerpo">
 				No vendemos un producto cerrado. Elegimos el proceso que más tiempo o plata te hace perder y
-				armamos el sistema para eso. Algunos de los que ya construimos:
+				armamos el sistema para eso. Algunos ejemplos de lo que armamos:
 			</p>
 		</div>
 
-		<div class="bento">
+		<div class="ejemplos">
+			<article class="ejemplo ejemplo--ordenes">
+				<div class="ejemplo__texto">
+					<h3 class="t-label">Cada trabajo, de la entrada a la entrega</h3>
+					<p>Sabés en qué está cada pedido, quién lo tiene y qué vence hoy, sin preguntar en voz alta.</p>
+				</div>
+				<MockOrdenes />
+			</article>
+
 			<article class="ejemplo ejemplo--caja">
 				<div class="ejemplo__texto">
 					<h3 class="t-label">Cajas y cierres diarios sin cuadernos</h3>
@@ -32,15 +67,38 @@ import MockCaja from '../mocks/MockCaja.astro';
 				<MockCaja />
 			</article>
 
+			<article class="ejemplo ejemplo--stock">
+				<div class="ejemplo__texto">
+					<h3 class="t-label">Sabés qué falta antes de que falte</h3>
+					<p>Cada venta descuenta del stock y, cuando algo baja del mínimo, el pedido al proveedor ya está armado.</p>
+				</div>
+				<MockStock />
+			</article>
 		</div>
 
-		<div class="sistemas__pie">
-			<p class="t-label">¿Lo tuyo es otra cosa? Lo armamos igual.</p>
-			<BotonWhatsApp
-				variante="secundario"
-				texto="Quiero uno para mi negocio"
-				mensaje="Hola, vi los sistemas que armaron y quiero uno para mi negocio."
-			/>
+		<div class="pared">
+			<h3 class="t-label pared__titulo">Y también armamos</h3>
+			<ul class="pared__lista">
+				{
+					tipos.map(({ nombre, icono }, i) => (
+						<li class="tipo" style={`--i: ${i}`}>
+							<Icono nombre={icono} size={22} />
+							{nombre}
+						</li>
+					))
+				}
+				<li class="tipo tipo--final" style={`--i: ${tipos.length}`}>
+					<span class="tipo__final-texto">
+						<Icono nombre="plus-circle-duotone" size={24} />
+						Y el que tu negocio necesite
+					</span>
+					<BotonWhatsApp
+						variante="secundario"
+						texto="Quiero uno para mi negocio"
+						mensaje="Hola, vi los sistemas que arman y quiero uno para mi negocio."
+					/>
+				</li>
+			</ul>
 		</div>
 	</div>
 </section>
@@ -50,35 +108,18 @@ import MockCaja from '../mocks/MockCaja.astro';
 		color: var(--text-body-light);
 	}
 
-	.sistemas__pie {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-3);
-		margin-top: var(--space-5);
-		padding-top: var(--space-4);
-		border-top: 1px solid var(--border-dark);
-	}
-
-	.sistemas__pie .t-label {
-		color: var(--text-heading-light);
-		font-weight: var(--fw-semibold);
-	}
-
-	.bento {
+	.ejemplos {
 		display: grid;
-		gap: var(--space-3);
+		gap: var(--space-4);
 		margin-top: var(--space-6);
 	}
 
 	.ejemplo {
 		position: relative;
 		display: grid;
-		grid-template-rows: auto 1fr;
 		align-content: start;
 		gap: var(--space-4);
-		padding: var(--space-4) var(--space-3);
+		padding: var(--space-4) var(--space-3) var(--space-5);
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-card-lg);
 		background: var(--surface-card-dark);
@@ -86,78 +127,106 @@ import MockCaja from '../mocks/MockCaja.astro';
 		view-timeline: --celda block;
 	}
 
-	/* Los mocks van abajo de la card, pegados al borde de abajo en las celdas más altas. */
-	.ejemplo > :last-child {
-		align-self: end;
-	}
-
 	.ejemplo__texto {
 		display: grid;
 		gap: var(--space-1);
+		max-width: 560px;
 	}
 
 	.ejemplo h3 {
 		font-weight: var(--fw-semibold);
 	}
 
-	/* Variedad de fondos en la grilla: el destacado lleva un degradé azul profundo desde abajo. */
-	.ejemplo--destacado {
-		padding-top: var(--space-5);
-		background: linear-gradient(180deg, var(--surface-card-dark) 40%, var(--blue-950));
-	}
-
-	/* Chip "acento" de la marca, montado mitad adentro y mitad afuera del borde de la card. */
-	.chip-montado {
-		position: absolute;
-		top: 0;
-		left: var(--space-3);
-		max-width: calc(100% - 2 * var(--space-3));
-		transform: translateY(-50%);
-		padding: 10px 18px;
-		border-radius: var(--radius-pill);
-		background: var(--cyan-300);
-		color: var(--navy-950);
-		font-size: var(--type-meta-size);
-		font-weight: var(--fw-semibold);
-		line-height: 1.2;
-		box-shadow: var(--shadow-elevada);
+	/* Variedad de fondos: el grande lleva un degradé azul profundo desde abajo. */
+	.ejemplo--ordenes {
+		background: linear-gradient(180deg, var(--surface-card-dark) 45%, var(--blue-950));
 	}
 
 	.ejemplo--caja {
 		background: linear-gradient(160deg, var(--surface-card-dark) 55%, var(--navy-850));
 	}
 
-	/* Tablet: pedidos y panel a lo ancho, turnos y caja lado a lado. */
+	/* --- La pared --- */
+	.pared {
+		display: grid;
+		gap: var(--space-3);
+		margin-top: var(--space-7);
+		view-timeline: --pared block;
+	}
+
+	.pared__titulo {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
+	}
+
+	.pared__lista {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-1);
+	}
+
+	.tipo {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		min-height: 56px;
+		padding: 12px 14px;
+		border: 1px solid var(--border-dark);
+		border-radius: 16px;
+		background: var(--surface-card-dark);
+		color: var(--text-body-light);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-medium);
+		line-height: 1.25;
+	}
+
+	.tipo :global(svg) {
+		flex: none;
+		color: var(--cyan-400);
+	}
+
+	/* El remate: a lo ancho, con borde punteado (el lugar para el tuyo) y el botón. */
+	.tipo--final {
+		grid-column: 1 / -1;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--space-2);
+		padding: var(--space-3);
+		border: 1.5px dashed var(--blue-700);
+		background: transparent;
+		color: var(--text-heading-light);
+		font-size: var(--type-label-size);
+		font-weight: var(--fw-semibold);
+	}
+
+	.tipo__final-texto {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+	}
+
 	@media (min-width: 768px) {
-		.bento {
-			grid-template-columns: 1fr 1fr;
-		}
-
-		.ejemplo--panel {
-			grid-column: span 2;
-		}
-
 		.ejemplo {
-			padding: var(--space-5) var(--space-4) var(--space-4);
+			padding: var(--space-5) var(--space-4);
 		}
 
-		.ejemplo--destacado {
-			padding-top: var(--space-6);
+		.pared__lista {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
 	}
 
 	@media (min-width: 1024px) {
-		.bento {
-			grid-template-columns: repeat(12, 1fr);
-			gap: var(--space-3);
+		.ejemplos {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-4) var(--space-3);
 		}
 
-		.ejemplo--caja {
-			grid-column: span 5;
+		.ejemplo--ordenes {
+			grid-column: 1 / -1;
 		}
 
-		.ejemplo--panel {
-			grid-column: span 7;
+		.pared__lista {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 	}
 
@@ -172,12 +241,33 @@ import MockCaja from '../mocks/MockCaja.astro';
 		}
 	}
 
+	@keyframes sistemas-tipo-enciende {
+		from { opacity: 0.25; transform: translateY(8px); }
+	}
+
+	@keyframes sistemas-icono-enciende {
+		from { opacity: 0.3; }
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
 			.ejemplo {
-				animation: entrar-subiendo linear both;
+				animation: entrar-subiendo var(--curva-salida) both;
 				animation-timeline: --celda;
-				animation-range: entry 0% entry 60%;
+				animation-range: entry 0% entry 50%;
+			}
+
+			/* La pared se enciende en cascada, en el orden de la lista, mientras cruza la pantalla. */
+			.tipo {
+				animation: sistemas-tipo-enciende var(--curva-salida) both;
+				animation-timeline: --pared;
+				animation-range: entry calc(10% + var(--i) * 3%) entry calc(30% + var(--i) * 3%);
+			}
+
+			.tipo :global(svg) {
+				animation: sistemas-icono-enciende linear both;
+				animation-timeline: --pared;
+				animation-range: entry calc(20% + var(--i) * 3%) entry calc(30% + var(--i) * 3%);
 			}
 		}
 	}

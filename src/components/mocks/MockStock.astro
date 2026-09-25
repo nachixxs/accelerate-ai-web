@@ -1,0 +1,320 @@
+---
+// Mock de "Stock e inventario": cada producto con su barra de nivel y la marca del mínimo. Con
+// el scroll, las barras bajan hasta el stock de hoy, a los que quedaron bajo el mínimo les
+// aparece "Reponer" y, montado sobre el borde, el pedido sugerido al proveedor: papel claro sobre
+// la card oscura (la regla de profundidad de la marca). Son datos de ejemplo.
+// El estado de base es el final: sin soporte o con movimiento reducido, se ve completo y quieto.
+// Se anima con el timeline --celda de la card que lo contiene.
+import Icono from '../Icono.astro';
+
+// Tope de la barra: el doble del mínimo, o las unidades si son más.
+const productos = [
+	{ nombre: 'Cartulina A4 250 g', rubro: 'Papel', unidades: 1240, minimo: 500 },
+	{ nombre: 'Tinta negra XL', rubro: 'Insumos', unidades: 3, minimo: 6 },
+	{ nombre: 'Vinilo blanco mate', rubro: 'Rollos', unidades: 18, minimo: 8 },
+	{ nombre: 'Anillos 12 mm', rubro: 'Encuadernación', unidades: 40, minimo: 50 },
+].map((p) => {
+	const tope = Math.max(p.minimo * 2, p.unidades * 1.15);
+	return { ...p, nivel: Math.min(p.unidades / tope, 1), marca: p.minimo / tope, bajo: p.unidades < p.minimo };
+});
+---
+
+<div
+	class="stock"
+	role="img"
+	aria-label="Ejemplo con datos inventados: el stock de cuatro productos con su nivel y su mínimo. La tinta negra y los anillos quedaron bajo el mínimo y dicen reponer, y ya está armado el pedido sugerido al proveedor con esos dos productos."
+>
+	<div class="stock__barra">
+		<strong>Stock</strong>
+		<span class="stock__buscar">
+			<Icono nombre="magnifying-glass-duotone" size={14} />
+			Buscar producto
+		</span>
+	</div>
+
+	<ul class="stock__lista">
+		{
+			productos.map(({ nombre, rubro, unidades, minimo, nivel, marca, bajo }, i) => (
+				<li class:list={['producto', { 'producto--bajo': bajo }]} style={`--i: ${i}`}>
+					<span class="producto__nombre">
+						{nombre}
+						<small>{rubro}</small>
+					</span>
+					<span class="producto__estado">
+						{bajo ? (
+							<span class="producto__reponer">
+								<Icono nombre="warning-duotone" size={14} />
+								Reponer
+							</span>
+						) : (
+							<span class="producto__ok">Al día</span>
+						)}
+					</span>
+					<span class="producto__nivel" style={`--nivel: ${nivel.toFixed(3)}; --marca: ${(marca * 100).toFixed(1)}%`}>
+						<span class="producto__relleno" />
+						<span class="producto__minimo" />
+					</span>
+					<span class="producto__unidades">
+						{unidades.toLocaleString('es-AR')} <small>/ mín. {minimo.toLocaleString('es-AR')}</small>
+					</span>
+				</li>
+			))
+		}
+	</ul>
+
+	<p class="stock__nota">Datos de ejemplo</p>
+
+	<div class="pedido">
+		<span class="pedido__titulo">
+			<Icono nombre="shopping-cart-duotone" size={18} />
+			Pedido sugerido
+		</span>
+		<ul>
+			<li><span>Tinta negra XL</span><span>× 12</span></li>
+			<li><span>Anillos 12 mm</span><span>× 100</span></li>
+		</ul>
+		<span class="pedido__proveedor">Proveedor: Insumos del Sur</span>
+	</div>
+</div>
+
+<style>
+	.stock {
+		container-type: inline-size;
+		position: relative;
+		display: grid;
+		gap: 12px;
+		padding: 16px 16px 96px;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-card);
+		background: var(--navy-900);
+		color: var(--text-body-light);
+		font-size: 0.875rem;
+		line-height: 1.35;
+	}
+
+	.stock__barra {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.stock__barra strong {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-bold);
+	}
+
+	.stock__buscar {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 12px;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-pill);
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+	}
+
+	.stock__lista {
+		display: grid;
+		gap: 4px;
+	}
+
+	/* Cada fila: nombre y estado arriba, la barra con el mínimo y las unidades abajo. */
+	.producto {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: 8px 12px;
+		padding: 10px 12px;
+		border-radius: 14px;
+		background: var(--navy-850);
+	}
+
+	.producto__nombre {
+		display: grid;
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
+	}
+
+	.producto__nombre small,
+	.producto__unidades small {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-regular);
+	}
+
+	.producto__estado {
+		justify-self: end;
+	}
+
+	.producto__ok,
+	.producto__reponer {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 4px 10px;
+		border-radius: var(--radius-pill);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+		line-height: 1.2;
+		white-space: nowrap;
+	}
+
+	.producto__ok {
+		border: 1px solid var(--border-dark);
+		color: var(--text-muted-light);
+	}
+
+	.producto__reponer {
+		background: var(--cyan-300);
+		color: var(--navy-950);
+	}
+
+	.producto__nivel {
+		position: relative;
+		height: 8px;
+		border-radius: 8px;
+		background: var(--border-dark);
+	}
+
+	.producto__relleno {
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: var(--blue-400);
+		transform-origin: left;
+		transform: scaleX(var(--nivel));
+	}
+
+	.producto--bajo .producto__relleno {
+		background: var(--cyan-400);
+	}
+
+	/* La marca del mínimo: una rayita clara que cruza la barra. */
+	.producto__minimo {
+		position: absolute;
+		top: -4px;
+		bottom: -4px;
+		left: var(--marca);
+		width: 2px;
+		border-radius: 2px;
+		background: var(--text-heading-light);
+	}
+
+	.producto__unidades {
+		justify-self: end;
+		color: var(--text-heading-light);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	.stock__nota {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+	}
+
+	/* El pedido sugerido: papel claro, montado sobre el borde de abajo y un poco girado. */
+	.pedido {
+		position: absolute;
+		right: 16px;
+		bottom: -24px;
+		display: grid;
+		gap: 8px;
+		width: min(260px, calc(100% - 32px));
+		padding: 16px;
+		border-radius: 18px;
+		background: var(--off-white);
+		color: var(--text-body-dark);
+		font-size: 0.875rem;
+		box-shadow: var(--shadow-card);
+		transform: rotate(1.5deg);
+	}
+
+	.pedido__titulo {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-bold);
+	}
+
+	.pedido__titulo :global(svg) {
+		color: var(--brand-primary-deep);
+	}
+
+	.pedido ul {
+		display: grid;
+		gap: 4px;
+		padding-block: 8px;
+		border-block: 1px dashed var(--slate-300);
+	}
+
+	.pedido li {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.pedido li span:last-child {
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-semibold);
+	}
+
+	.pedido__proveedor {
+		color: var(--text-muted-dark);
+		font-size: 0.8125rem;
+	}
+
+	/* Consulta de contenedor: la card mide distinto según la grilla, no según la pantalla. */
+	@container (min-width: 420px) {
+		.producto {
+			grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+		}
+
+		.producto__nombre { grid-column: 1; grid-row: 1 / span 2; }
+		.producto__nivel { grid-column: 2; grid-row: 1; }
+		.producto__unidades { grid-column: 2; grid-row: 2; justify-self: start; }
+		.producto__estado { grid-column: 3; grid-row: 1 / span 2; }
+	}
+
+	/* --- Movimiento --- */
+	@keyframes stock-baja {
+		from { transform: scaleX(1); }
+	}
+
+	@keyframes stock-aparece {
+		from { opacity: 0; transform: scale(0.9); }
+	}
+
+	@keyframes stock-pedido {
+		from { opacity: 0; transform: translateY(32px) rotate(-2deg); }
+		to { opacity: 1; transform: rotate(1.5deg); }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			/* Las barras arrancan llenas y bajan hasta el stock de hoy, una detrás de otra. */
+			.producto__relleno {
+				animation: stock-baja var(--curva-salida) both;
+				animation-timeline: --celda;
+				animation-range: entry calc(40% + var(--i) * 6%) cover calc(40% + var(--i) * 3%);
+			}
+
+			.producto__estado {
+				animation: stock-aparece var(--curva-salida) both;
+				animation-timeline: --celda;
+				animation-range: cover calc(38% + var(--i) * 3%) cover calc(44% + var(--i) * 3%);
+			}
+
+			.pedido {
+				animation: stock-pedido var(--curva-salida) both;
+				animation-timeline: --celda;
+				animation-range: cover 50% cover 60%;
+			}
+		}
+	}
+</style>
