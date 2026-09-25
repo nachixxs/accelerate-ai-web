@@ -287,6 +287,12 @@ const links = [
 		background: var(--blue-50);
 	}
 
+	/* Feedback al presionar: scale suelto, no transform (ese lo usa el hover de la cara). */
+	.capsula__cta:active {
+		scale: 0.97;
+		transition: scale 0.12s var(--curva-salida);
+	}
+
 	.capsula__cta--lleno:active .capsula__cta-relleno {
 		border-color: var(--blue-800);
 		background: var(--blue-800);
@@ -471,14 +477,20 @@ const links = [
 		/* Como los botones de las secciones (BotonWhatsApp.astro): se despega, lo cruza un brillo
 		   por debajo del texto y el logo se balancea. Corre también con movimiento reducido
 		   (pedido del usuario, 2026-09-25). */
+		/* Navy sobre la cara de contorno (fondo blanco): un brillo blanco ahí no se ve. Blanco solo
+		   sobre la cara de relleno, ya azul. */
 		.capsula__cta-cara::before {
 			content: '';
 			position: absolute;
 			inset: 0;
 			z-index: -1;
-			background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
+			background: linear-gradient(105deg, transparent 30%, rgba(31, 87, 194, 0.1) 50%, transparent 70%);
 			transform: translateX(-100%);
 			pointer-events: none;
+		}
+
+		.capsula__cta-relleno::before {
+			background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
 		}
 
 		.capsula__cta:hover .capsula__cta-cara {
@@ -619,11 +631,23 @@ const links = [
 			}
 		}
 
-		/* Los links entran en cascada, de arriba hacia abajo. */
+		/* Los links entran en cascada, de arriba hacia abajo. Recorrido corto (8px) y propio: no
+		   es entrar-corto de global.css (ese es de 16px, para piezas dentro de una card). */
 		.menu:popover-open .menu__lista li {
-			animation: entrar-subiendo 0.4s var(--curva-salida) backwards;
-			animation-delay: calc(60ms + var(--i) * 40ms);
+			animation: menu-entrar 0.25s var(--curva-salida) backwards;
+			animation-delay: calc(30ms + var(--i) * 30ms);
 		}
+	}
+
+	@keyframes menu-entrar {
+		from { opacity: 0; transform: translateY(8px); }
+	}
+
+	/* El cierre es la respuesta del sistema: va más rápido que la apertura, que es una decisión
+	   de quien toca "Menú". */
+	.menu:not(:popover-open),
+	.menu:not(:popover-open)::backdrop {
+		transition-duration: 0.15s;
 	}
 
 </style>
