@@ -146,11 +146,13 @@ const datos = [
 		padding-inline: var(--space-2);
 	}
 
-	/* Debajo del botón, ya fuera de la card: quién contesta. */
+	/* Debajo del botón, ya fuera de la card: quién contesta. El gris apagado (--text-muted-light)
+	   no llega a AA acá: el glow de la esquina y la sombra del botón aclaran el fondo real por
+	   debajo. Pasa al gris claro del cuerpo, con margen de sobra para separarlo de esa sombra. */
 	.cierre__quien {
-		margin-top: var(--space-5);
+		margin-top: var(--space-6);
 		padding-left: var(--space-2);
-		color: var(--text-muted-light);
+		color: var(--text-body-light);
 		font-size: var(--type-meta-size);
 	}
 
