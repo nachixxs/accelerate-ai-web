@@ -3,9 +3,9 @@
 // que flota sobre la página desde arriba de todo (borde fino y sombra teñida de navy, sin vidrio
 // ni blur) y baja 4 px al empezar el scroll. La sección en la que estás queda marcada.
 // El botón de WhatsApp está siempre (pedido del usuario, 2026-09-25): de contorno mientras se ve
-// un botón principal (el de la portada o el del cierre) y lleno de #2971f2 cuando no se ve
-// ninguno, así nunca hay dos azules llenos a la vista. Lo decide el script de abajo; sin
-// JavaScript queda de contorno.
+// un botón principal (el de la portada o el del cierre) y lleno de #1f57c2 (con texto blanco,
+// AA) cuando no se ve ninguno, así nunca hay dos azules llenos a la vista. Lo decide el script
+// de abajo; sin JavaScript queda de contorno.
 // En el celular y la tablet, un "Menú" abre un popover con las 5 secciones numeradas y el botón.
 import { Image } from 'astro:assets';
 import Icono from './Icono.astro';
@@ -51,6 +51,13 @@ const links = [
 			<div class="capsula__acciones">
 				<a class="capsula__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
 					<span class="capsula__cta-cara">
+						<Icono nombre="si:whatsapp" size={20} />
+						<span class="capsula__cta-texto solo-lector">Escribinos por WhatsApp</span>
+					</span>
+					{/* Segunda cara, ya azul con texto blanco, que se descubre con un recorte al llenarse:
+					   así nunca hay un instante a mitad de camino donde el texto y el fondo compartan el
+					   mismo tono (lo que pasaría si el color de fondo y el de texto cruzaran a la vez). */}
+					<span class="capsula__cta-cara capsula__cta-relleno" aria-hidden="true">
 						<Icono nombre="si:whatsapp" size={20} />
 						<span class="capsula__cta-texto solo-lector">Escribinos por WhatsApp</span>
 					</span>
@@ -184,6 +191,7 @@ const links = [
 		color: var(--text-body-dark);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-medium);
+		white-space: nowrap;
 		transition: color 0.2s;
 	}
 
@@ -218,12 +226,13 @@ const links = [
 		padding-right: 4px;
 	}
 
-	/* --- El botón: de contorno mientras se ve un botón principal, lleno de #2971f2 cuando no.
+	/* --- El botón: de contorno mientras se ve un botón principal, lleno de #1f57c2 cuando no
+	   (nunca el #2971f2 de máxima saturación: con el texto chico de acá no llega a AA).
 	   En el celular es solo el ícono. --- */
 	.capsula__cta {
+		position: relative;
 		display: inline-flex;
 		border-radius: var(--radius-pill);
-		color: var(--brand-primary-deep);
 		-webkit-tap-highlight-color: transparent;
 	}
 
@@ -240,12 +249,11 @@ const links = [
 		border: 1.5px solid var(--brand-primary-deep);
 		border-radius: inherit;
 		background: var(--white);
+		color: var(--brand-primary-deep);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
 		transition:
-			background-color 0.3s ease,
-			border-color 0.3s ease,
-			color 0.3s ease,
+			background-color 0.2s ease,
 			transform 0.25s var(--curva-salida);
 	}
 
@@ -253,22 +261,35 @@ const links = [
 		flex: none;
 	}
 
-	.capsula__cta--lleno {
+	/* La cara de relleno: ya azul con texto blanco (AA, 6,6:1), siempre lista debajo de todo.
+	   Se descubre con clip-path en vez de cruzar colores, así nunca pasa por un tono a medio
+	   camino entre el texto y el fondo. */
+	.capsula__cta-cara.capsula__cta-relleno {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		border-color: var(--brand-primary-deep);
+		background: var(--brand-primary-deep);
 		color: var(--white);
+		clip-path: inset(0 100% 0 0);
+		transition:
+			clip-path 0.3s var(--curva-salida),
+			border-color 0.2s ease,
+			background-color 0.2s ease;
+		pointer-events: none;
 	}
 
-	.capsula__cta--lleno .capsula__cta-cara {
-		border-color: var(--brand-primary);
-		background: var(--brand-primary);
+	.capsula__cta--lleno .capsula__cta-relleno {
+		clip-path: inset(0 0 0 0);
 	}
 
 	.capsula__cta:active .capsula__cta-cara {
 		background: var(--blue-50);
 	}
 
-	.capsula__cta--lleno:active .capsula__cta-cara {
-		border-color: var(--brand-primary-deep);
-		background: var(--brand-primary-deep);
+	.capsula__cta--lleno:active .capsula__cta-relleno {
+		border-color: var(--blue-800);
+		background: var(--blue-800);
 	}
 
 	/* --- El botón del menú: pastilla blanca con borde; "Cerrar" en navy. --- */
@@ -374,14 +395,16 @@ const links = [
 		min-height: 56px;
 		margin: 8px 8px 0;
 		border-radius: var(--radius-pill);
-		background: var(--brand-primary);
+		background: var(--brand-primary-deep);
 		color: var(--white);
 		font-weight: var(--fw-bold);
-		box-shadow: var(--shadow-boton);
+		/* Sombra más corta que --shadow-boton (0 18 40): esa alcanza a oscurecer la nota de abajo
+		   y le baja el contraste. Misma marca (navy), menos alcance. */
+		box-shadow: 0 2px 6px rgba(15, 36, 80, 0.18);
 	}
 
 	.menu__nota {
-		padding: 12px 8px 8px;
+		padding: 40px 8px 8px;
 		color: var(--text-muted-dark);
 		font-size: var(--type-meta-size);
 		text-align: center;
@@ -411,8 +434,10 @@ const links = [
 		}
 	}
 
-	/* Escritorio: los links en la cápsula y sin menú. */
-	@media (min-width: 1080px) {
+	/* Escritorio: los links en la cápsula y sin menú. En em (67.5em = 1080px con la letra al 100 %):
+	   si la letra crece (150 %), el corte sube con ella y la cápsula pasa al modo menú antes de
+	   que los links no entren, en vez de quedar recortados a 1080px físicos fijos. */
+	@media (min-width: 67.5em) {
 		.capsula__nav {
 			display: block;
 		}
@@ -456,22 +481,14 @@ const links = [
 			pointer-events: none;
 		}
 
-		.capsula__cta:hover {
-			color: var(--brand-primary-deep);
-		}
-
 		.capsula__cta:hover .capsula__cta-cara {
 			background: var(--blue-50);
 			transform: translateY(-2px) scale(1.04);
 		}
 
-		.capsula__cta--lleno:hover {
-			color: var(--white);
-		}
-
-		.capsula__cta--lleno:hover .capsula__cta-cara {
-			border-color: var(--brand-primary-deep);
-			background: var(--brand-primary-deep);
+		.capsula__cta--lleno:hover .capsula__cta-relleno {
+			border-color: var(--blue-800);
+			background: var(--blue-800);
 		}
 
 		.capsula__cta:hover .capsula__cta-cara::before {
