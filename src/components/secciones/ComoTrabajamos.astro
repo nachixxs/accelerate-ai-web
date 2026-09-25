@@ -26,8 +26,8 @@ const auditoria = [
 			<h2 id="proceso-titulo" class="t-titular">Primero entendemos tu negocio, después construimos</h2>
 		</div>
 
+		<div class="proceso__riel">
 		<ol class="linea">
-			<span class="linea__punto" aria-hidden="true"></span>
 			<li class="paso">
 				<span class="paso__marca"><Icono nombre="magnifying-glass-duotone" size={22} /></span>
 				<div class="paso__texto" style="--paso: --paso-1">
@@ -119,6 +119,8 @@ const auditoria = [
 				</div>
 			</li>
 		</ol>
+		<span class="linea__punto" aria-hidden="true"></span>
+		</div>
 
 		<div class="proceso__pie">
 			<BotonWhatsApp
@@ -195,13 +197,23 @@ const auditoria = [
 		margin-top: var(--space-6);
 	}
 
-	/* --- El riel y los pasos (celular primero) --- */
-	.linea {
+	/* --- El riel y los pasos (celular primero) ---
+	   El envoltorio lleva --marca (la comparten .linea y .linea__punto, que ahora son hermanos:
+	   una custom property solo pasa a los descendientes, no entre hermanos) y el margen que
+	   antes tenía .linea, para que el punto pueda medirse contra la misma caja sin offsets. */
+	.proceso__riel {
+		position: relative;
+		margin-top: var(--space-6);
 		--marca: 48px;
+		/* .linea declara el timeline --proceso; .linea__punto es su hermano, no su descendiente,
+		   así que necesita este scope para poder usarlo (igual que --paso-N con las pantallas). */
+		timeline-scope: --proceso;
+	}
+
+	.linea {
 		position: relative;
 		display: grid;
 		gap: var(--space-6);
-		margin-top: var(--space-6);
 		view-timeline: --proceso block;
 		timeline-scope: --paso-1, --paso-2, --paso-3, --paso-4;
 	}
@@ -555,8 +567,11 @@ const auditoria = [
 	/* --- Escritorio sin la card fija (movimiento reducido o sin soporte): cada visual al lado de
 	   su paso. --- */
 	@media (min-width: 1024px) {
-		.linea {
+		.proceso__riel {
 			--marca: 56px;
+		}
+
+		.linea {
 			gap: var(--space-7);
 		}
 
