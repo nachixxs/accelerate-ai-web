@@ -804,7 +804,6 @@ const movimientos = [
 			.movimientos { view-timeline: --tablero-movimientos block; }
 
 			.cifra,
-			.cifra__valor,
 			.grafico__linea,
 			.grafico__area,
 			.grafico__pico,
@@ -816,13 +815,12 @@ const movimientos = [
 				animation-duration: auto;
 			}
 
-			.cifra,
-			.cifra__valor {
+			/* Las cifras cuentan con el tiempo, al cargar: atadas al scroll, quien no baja las vería
+			   quietas en el valor de partida. */
+			.cifra {
 				animation-timeline: --tablero-cifras;
+				animation-range: entry 20% entry 90%;
 			}
-
-			.cifra { animation-range: entry 20% entry 90%; }
-			.cifra__valor { animation-range: entry 60% cover 50%; }
 
 			.grafico__linea,
 			.grafico__area,

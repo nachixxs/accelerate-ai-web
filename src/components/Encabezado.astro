@@ -1,288 +1,678 @@
 ---
-// Encabezado fijo: logo, links a las secciones y el botón de WhatsApp.
-// Fondo sólido, sin vidrio ni blur (la marca los prohíbe fuera de los glows). La sombra y la
-// barra de progreso de lectura se mueven con el scroll, con CSS y sin JavaScript.
-// El botón de acá usa el azul profundo: #2971f2 queda para el botón principal de cada sección.
-// El logo es el imagotipo, con las capas de movimiento de la "A". La marca pide 280 px de mínimo,
-// pero en un lienzo de 1080 px: una pieza de redes se ve en el celular a un tercio de su tamaño,
-// así que 280 px del lienzo son unos 95 px en pantalla. A 150-176 px las capas se leen.
+// Encabezado: la cápsula que se despega (concepto A, elegido por el usuario el 2026-09-25).
+// Arriba de todo es una fila liviana sobre la portada, sin botón: el de la portada ya está a la
+// vista. Al bajar 96 px aparece detrás una cápsula blanca que flota (borde fino y sombra teñida
+// de navy, sin vidrio ni blur). El botón navy entra cuando el de la portada sale de la pantalla,
+// así nunca hay dos iguales a la vista. La sección en la que estás queda marcada, y la barra de
+// lectura vive adentro de la cápsula. Todo con animaciones atadas al scroll, sin JavaScript;
+// donde no hay soporte (Firefox) la cápsula y el botón se ven siempre, quietos.
+// En el celular y la tablet, un "Menú" abre un popover con las 5 secciones numeradas y el botón.
+// El único JavaScript de la página son las 3 líneas del final: cierran el menú al tocar un link
+// (SPECS §8).
+// El botón de acá es navy: #2971f2 queda para el botón principal de cada sección.
 import { Image } from 'astro:assets';
 import Icono from './Icono.astro';
 import imagotipo from '../assets/identidad/imagotipo-azul.png';
 import { WHATSAPP_URL } from '../config';
 
+// --s-* son los timelines de las secciones (global.css): marcan cuál está en pantalla.
 const links = [
-	{ href: '#sistemas', texto: 'Qué armamos' },
-	{ href: '#proceso', texto: 'Cómo trabajamos' },
-	{ href: '#preguntas', texto: 'Preguntas' },
+	{ href: '#resolvemos', texto: 'Qué resolvemos', timeline: '--s-resolvemos' },
+	{ href: '#sistemas', texto: 'Qué armamos', timeline: '--s-sistemas' },
+	{ href: '#proceso', texto: 'Cómo trabajamos', timeline: '--s-proceso' },
+	{ href: '#somos', texto: 'Quiénes somos', timeline: '--s-somos', soloMenu: true },
+	{ href: '#preguntas', texto: 'Preguntas', timeline: '--s-preguntas' },
 ];
 ---
 
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <header class="encabezado">
-	<div class="contenedor encabezado__interior">
-		<a href="#inicio" class="encabezado__logo">
-			<Image src={imagotipo} alt="Accelerate.ai" width={352} loading="eager" />
-		</a>
-
-		<nav aria-label="Secciones" class="encabezado__nav">
-			<ul>
-				{links.map(({ href, texto }) => <li><a href={href}>{texto}</a></li>)}
-			</ul>
-		</nav>
-
-		<a class="encabezado__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
-			<span class="encabezado__cta-cara">
-				<Icono nombre="si:whatsapp" size={20} />
-				<span class="encabezado__cta-texto">Escribinos por WhatsApp</span>
+	<div class="contenedor">
+		<div class="capsula">
+			<span class="capsula__fondo" aria-hidden="true">
+				<span class="capsula__progreso"></span>
 			</span>
-		</a>
+
+			<a href="#inicio" class="capsula__logo">
+				<Image src={imagotipo} alt="Accelerate.ai" width={352} loading="eager" />
+			</a>
+
+			<nav aria-label="Secciones" class="capsula__nav">
+				<ul>
+					{
+						links
+							.filter(({ soloMenu }) => !soloMenu)
+							.map(({ href, texto, timeline }) => (
+								<li>
+									<a href={href} style={`--timeline: ${timeline}`}>
+										{texto}
+									</a>
+								</li>
+							))
+					}
+				</ul>
+			</nav>
+
+			<div class="capsula__acciones">
+				<a class="capsula__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
+					<span class="capsula__cta-cara">
+						<Icono nombre="si:whatsapp" size={20} />
+						<span class="capsula__cta-texto">Escribinos por WhatsApp</span>
+					</span>
+				</a>
+
+				<button class="capsula__menu" type="button" popovertarget="menu">
+					<Icono nombre="list-bold" size={18} />
+					Menú
+				</button>
+			</div>
+		</div>
 	</div>
-	<div class="encabezado__progreso" aria-hidden="true"></div>
+
+	<div id="menu" class="menu" popover>
+		<div class="menu__barra">
+			<Image src={imagotipo} alt="" width={352} class="menu__logo" />
+			<button class="capsula__menu capsula__menu--cerrar" type="button" popovertarget="menu" popovertargetaction="hide">
+				<Icono nombre="x-bold" size={18} />
+				Cerrar
+			</button>
+		</div>
+		<nav aria-label="Secciones">
+			<ol class="menu__lista">
+				{
+					links.map(({ href, texto }, i) => (
+						<li style={`--i: ${i}`}>
+							<a href={href}>
+								<span class="menu__numero">{String(i + 1).padStart(2, '0')}</span>
+								{texto}
+								<Icono nombre="arrow-right-bold" size={16} class="menu__flecha" />
+							</a>
+						</li>
+					))
+				}
+			</ol>
+		</nav>
+		<a class="menu__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
+			<Icono nombre="si:whatsapp" size={22} />
+			Escribinos por WhatsApp
+		</a>
+		<p class="menu__nota">Te contesta Ignacio o Gabriel</p>
+	</div>
 </header>
 
+<script is:inline>
+	const menu = document.getElementById('menu');
+	menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => menu.hidePopover()));
+</script>
+
 <style>
+	/* El encabezado no tiene fondo propio: la página pasa por detrás, alrededor de la cápsula.
+	   Solo la cápsula recibe clics. */
 	.encabezado {
 		position: sticky;
 		top: 0;
 		z-index: 10;
-		background: var(--surface-alt);
-		border-bottom: 1px solid transparent;
+		padding-block: 8px;
+		pointer-events: none;
 	}
 
-	.encabezado__interior {
+	.capsula {
+		position: relative;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-3);
-		height: 72px;
+		gap: var(--space-2);
+		height: 64px;
+		pointer-events: auto;
 	}
 
-	.encabezado__logo {
+	/* La cápsula blanca: una capa aparte, así lo que aparece con el scroll es solo opacidad y
+	   escala (sin repintar borde ni sombra en cada cuadro). Es más ancha que el contenido: el
+	   logo y el botón quedan alineados con el resto de la página arriba de todo. */
+	.capsula__fondo {
+		position: absolute;
+		inset: 0 -8px;
+		z-index: -1;
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius-pill);
+		background: var(--white);
+		box-shadow: 0 12px 32px rgba(15, 36, 80, 0.1), 0 2px 6px rgba(15, 23, 42, 0.04);
+		overflow: clip;
+	}
+
+	/* Barra de lectura, adentro de la cápsula: se llena de izquierda a derecha a medida que bajás. */
+	.capsula__progreso {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		height: 3px;
+		background: var(--brand-primary-deep);
+		transform-origin: left;
+	}
+
+	.capsula__logo {
 		display: flex;
 		align-items: center;
 		min-height: 44px;
+		margin-right: auto;
+		padding-left: 8px;
 	}
 
-	.encabezado__logo img {
-		width: 150px;
+	.capsula__logo img {
+		width: 140px;
 		height: auto;
 	}
 
-	/* En el celular no hay lugar para los links: la página es corta y se recorre con el pulgar. */
-	.encabezado__nav {
+	/* --- Links de escritorio. La sección en pantalla queda marcada con la pastilla y el punto. --- */
+	.capsula__nav {
 		display: none;
 	}
 
-	.encabezado__nav ul {
+	.capsula__nav ul {
 		display: flex;
-		gap: var(--space-1);
+		gap: 4px;
 	}
 
-	.encabezado__nav a {
+	.capsula__nav a {
+		position: relative;
+		isolation: isolate;
 		display: inline-flex;
 		align-items: center;
+		gap: 6px;
 		min-height: 44px;
 		padding-inline: var(--space-2);
 		border-radius: var(--radius-pill);
 		color: var(--text-body-dark);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-medium);
-		transition: color 0.2s, background-color 0.2s;
+		transition: color 0.2s;
 	}
 
+	.capsula__nav a::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		background: var(--blue-50);
+		opacity: 0;
+		transition: opacity 0.2s;
+	}
 
-	.encabezado__cta {
+	.capsula__nav a::after {
+		content: '';
+		position: absolute;
+		top: calc(50% - 3px);
+		left: 7px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--brand-primary-deep);
+		opacity: 0;
+		transform: scale(0);
+	}
+
+	.capsula__acciones {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding-right: 4px;
+	}
+
+	/* --- El botón: navy, con el logo de WhatsApp en cian. En el celular es solo el ícono. --- */
+	.capsula__cta {
 		display: inline-flex;
 		border-radius: var(--radius-pill);
 		color: var(--white);
 		-webkit-tap-highlight-color: transparent;
 	}
 
-	.encabezado__cta-cara {
+	.capsula__cta-cara {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		gap: var(--space-1);
-		min-width: 44px;
-		min-height: 44px;
-		padding-inline: 12px;
+		min-width: 48px;
+		min-height: 48px;
 		border-radius: inherit;
-		background: var(--brand-primary-deep);
+		background: var(--navy-950);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
-		transition: background-color 0.2s, transform 0.2s var(--curva-salida);
+		transition: background-color 0.2s, transform 0.25s var(--curva-salida);
 	}
 
-	.encabezado__cta:hover {
+	.capsula__cta :global(svg) {
+		flex: none;
+		color: var(--cyan-300);
+	}
+
+	.capsula__cta:hover {
 		color: var(--white);
 	}
 
-	.encabezado__cta:active .encabezado__cta-cara {
-		background: var(--blue-800);
+	.capsula__cta:active .capsula__cta-cara {
+		background: var(--navy-800);
+	}
+
+	.capsula__cta-texto {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+
+	/* --- El botón del menú: pastilla blanca con borde; "Cerrar" en navy. --- */
+	.capsula__menu {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		min-height: 44px;
+		padding-inline: 14px;
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius-pill);
+		background: var(--white);
+		color: var(--text-heading-dark);
+		font: inherit;
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+		cursor: pointer;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.capsula__menu--cerrar {
+		border-color: var(--navy-950);
+		background: var(--navy-950);
+		color: var(--white);
+	}
+
+	.capsula__menu:focus-visible,
+	.capsula__cta:focus-visible,
+	.menu a:focus-visible {
+		outline: 3px solid var(--brand-primary-deep);
+		outline-offset: 3px;
+	}
+
+	/* --- El menú: una card blanca en el lugar de la cápsula, como si se abriera hacia abajo. --- */
+	/* pointer-events vuelve a auto: el encabezado lo apaga y se hereda. */
+	.menu {
+		position: fixed;
+		pointer-events: auto;
+		inset: 8px 8px auto;
+		width: auto;
+		max-width: 480px;
+		max-height: calc(100dvh - 16px);
+		margin: 0 0 0 auto;
+		padding: 8px;
+		overflow: auto;
+		border: 1px solid var(--border-light);
+		border-radius: var(--radius-card-lg);
+		background: var(--white);
+		color: var(--text-heading-dark);
+		box-shadow: 0 24px 60px rgba(15, 36, 80, 0.22);
+	}
+
+	.menu::backdrop {
+		background: rgba(11, 18, 32, 0.32);
+	}
+
+	.menu__barra {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 64px;
+		padding-inline: 16px 4px;
+	}
+
+	.menu :global(.menu__logo) {
+		width: 140px;
+		height: auto;
+	}
+
+	.menu__lista {
+		display: grid;
+		gap: 2px;
+		padding-block: 8px;
+		border-top: 1px solid var(--border-light);
+	}
+
+	.menu__lista a {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		min-height: 56px;
+		padding-inline: 16px;
+		border-radius: 18px;
+		color: var(--text-heading-dark);
+		font-size: 1.125rem;
+		font-weight: var(--fw-semibold);
+	}
+
+	.menu__lista a:active {
+		background: var(--blue-50);
+	}
+
+	.menu__numero {
+		min-width: 2ch;
+		color: var(--slate-500);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.menu :global(.menu__flecha) {
+		margin-left: auto;
+		color: var(--brand-primary-deep);
+	}
+
+	.menu__cta {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-height: 56px;
+		margin: 8px 8px 0;
+		border-radius: var(--radius-pill);
+		background: var(--navy-950);
+		color: var(--white);
+		font-weight: var(--fw-bold);
+	}
+
+	.menu__cta :global(svg) {
+		color: var(--cyan-300);
+	}
+
+	.menu__nota {
+		padding: 12px 8px 8px;
+		color: var(--text-muted-dark);
+		font-size: var(--type-meta-size);
+		text-align: center;
+	}
+
+	@media (min-width: 640px) {
+		.capsula__logo img {
+			width: 160px;
+		}
+
+		.capsula__cta-cara {
+			padding-inline: 20px;
+		}
+
+		.capsula__cta-texto {
+			position: static;
+			width: auto;
+			height: auto;
+			overflow: visible;
+			clip: auto;
+		}
+
+		.capsula__fondo {
+			inset: 0 -16px;
+		}
+	}
+
+	/* Escritorio: los links en la cápsula y sin menú. */
+	@media (min-width: 1080px) {
+		.capsula__nav {
+			display: block;
+		}
+
+		.capsula__menu {
+			display: none;
+		}
 	}
 
 	/* Hover solo con mouse: en el celular queda pegado después de tocar. */
 	@media (hover: hover) and (pointer: fine) {
-		.encabezado__nav a:hover {
+		.capsula__nav a:hover {
 			color: var(--brand-primary-deep);
-			background: var(--blue-50);
 		}
 
-		.encabezado__cta:hover .encabezado__cta-cara {
-			background: var(--blue-800);
+		.capsula__nav a:hover::before {
+			opacity: 1;
+		}
+
+		.capsula__menu:hover {
+			border-color: var(--slate-300);
+		}
+
+		.menu__lista a:hover {
+			background: var(--blue-50);
 		}
 
 		/* Como los botones de las secciones (BotonWhatsApp.astro): se despega, lo cruza un brillo
 		   por debajo del texto y el logo se balancea. Corre también con movimiento reducido
 		   (pedido del usuario, 2026-09-25). */
-		.encabezado__cta-cara {
-			position: relative;
-			isolation: isolate;
-			overflow: hidden;
-			transition:
-				background-color 0.2s,
-				transform 0.25s var(--curva-salida);
-		}
-
-		.encabezado__cta-cara::before {
+		.capsula__cta-cara::before {
 			content: '';
 			position: absolute;
 			inset: 0;
 			z-index: -1;
-			background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+			background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
 			transform: translateX(-100%);
 			pointer-events: none;
 		}
 
-		.encabezado__cta:hover .encabezado__cta-cara {
-			transform: translateY(-2px) scale(1.05);
+		.capsula__cta:hover .capsula__cta-cara {
+			background: var(--navy-800);
+			transform: translateY(-2px) scale(1.04);
 		}
 
-		.encabezado__cta:hover .encabezado__cta-cara::before {
-			animation: cta-brillo 0.6s var(--curva-cruce);
+		.capsula__cta:hover .capsula__cta-cara::before {
+			animation: encabezado-brillo 0.6s var(--curva-cruce);
 		}
 
-		.encabezado__cta:hover :global(svg) {
-			animation: cta-globo 0.45s var(--curva-cruce);
+		.capsula__cta:hover :global(svg) {
+			animation: encabezado-globo 0.45s var(--curva-cruce);
 		}
 
 		@media (prefers-reduced-motion: no-preference) {
 			/* El logo arranca un poco hacia adelante, como la A. */
-			.encabezado__logo:hover img {
+			.capsula__logo:hover img {
 				transform: translateX(4px);
 			}
 		}
 	}
 
-	@keyframes cta-brillo {
-		from {
-			transform: translateX(-100%);
-		}
-		to {
-			transform: translateX(100%);
-		}
-	}
-
-	@keyframes cta-globo {
-		20% {
-			transform: rotate(-14deg);
-		}
-		45% {
-			transform: rotate(10deg);
-		}
-		70% {
-			transform: rotate(-5deg);
-		}
-	}
-
-	.encabezado__cta :global(svg) {
-		flex: none;
-	}
-
-	.encabezado__logo img {
+	.capsula__logo img {
 		transition: transform 0.3s var(--curva-salida);
+	}
+
+	@keyframes encabezado-brillo {
+		from { transform: translateX(-100%); }
+		to { transform: translateX(100%); }
+	}
+
+	@keyframes encabezado-globo {
+		20% { transform: rotate(-14deg); }
+		45% { transform: rotate(10deg); }
+		70% { transform: rotate(-5deg); }
 	}
 
 	/* Entrada del logo al cargar: se descubre de izquierda a derecha, arrancando rápido, como las
 	   capas de movimiento de la A. clip-path y no blur: la marca no usa blur fuera de los glows. */
-	@keyframes logo-arranca {
+	@keyframes encabezado-logo {
 		from {
 			clip-path: inset(0 100% 0 0);
 			transform: translateX(-24px);
 		}
+		to {
+			clip-path: inset(0 0 0 0);
+		}
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
-		.encabezado__logo img {
-			animation: logo-arranca 0.8s var(--curva-salida) 0.1s backwards;
+		.capsula__logo img {
+			animation: encabezado-logo 0.8s var(--curva-salida) 0.1s backwards;
 		}
 	}
 
-	/* En el celular el botón es solo el ícono; el texto queda para el lector de pantalla. */
-	@media (max-width: 639px) {
-		.encabezado__cta-texto {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			overflow: hidden;
-			clip: rect(0 0 0 0);
-			white-space: nowrap;
-		}
-	}
-
-	@media (min-width: 640px) {
-		.encabezado__logo img {
-			width: 176px;
-		}
-
-		.encabezado__cta-cara {
-			padding-inline: var(--space-3);
-		}
-	}
-
-	@media (min-width: 960px) {
-		.encabezado__nav {
-			display: block;
-		}
-	}
-
-	/* Barra de lectura: se llena de izquierda a derecha a medida que bajás. */
-	.encabezado__progreso {
-		position: absolute;
-		left: 0;
-		bottom: -1px;
-		width: 100%;
-		height: 3px;
-		background: var(--brand-accent);
-		transform-origin: left;
-		transform: scaleX(0);
-	}
-
+	/* --- Lo atado al scroll --- */
 	@keyframes encabezado-despega {
-		to {
-			border-bottom-color: var(--border-light);
-			box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-		}
+		from { opacity: 0; transform: scale(0.98); }
 	}
 
-	@keyframes progreso-lectura {
-		to {
-			transform: scaleX(1);
-		}
+	@keyframes encabezado-flota {
+		to { transform: translateY(4px); }
+	}
+
+	@keyframes encabezado-lectura {
+		from { transform: scaleX(0); }
+	}
+
+	@keyframes encabezado-cta-entra {
+		from { opacity: 0; visibility: hidden; transform: translateY(-8px) scale(0.9); }
+	}
+
+	@keyframes encabezado-cta-aparece {
+		from { opacity: 0; visibility: hidden; }
+	}
+
+	/* La sección en pantalla: pastilla, punto y texto en azul. */
+	@keyframes encabezado-activo {
+		from, to { color: var(--brand-primary-deep); }
+	}
+
+	@keyframes encabezado-activo-fondo {
+		from, to { opacity: 1; }
+	}
+
+	@keyframes encabezado-activo-punto {
+		from, to { opacity: 1; transform: scale(1); }
 	}
 
 	@supports (animation-timeline: scroll()) {
-		.encabezado {
+		/* La cápsula aparece en los primeros 96 px de scroll. Es un cambio de estado y no un
+		   desplazamiento: queda también con movimiento reducido. */
+		.capsula__fondo {
 			animation: encabezado-despega linear both;
 			animation-timeline: scroll();
-			animation-range: 0 120px;
+			animation-range: 0 96px;
+		}
+
+		/* El botón entra cuando el de la portada termina de salir por arriba. */
+		.capsula__cta {
+			animation: encabezado-cta-entra linear both;
+			animation-timeline: --cta-portada;
+			animation-range: exit 40% exit 100%;
+		}
+
+		.capsula__nav a {
+			animation: encabezado-activo linear none;
+			animation-timeline: var(--timeline);
+			animation-range: exit-crossing 0% exit-crossing 100%;
+		}
+
+		.capsula__nav a::before {
+			animation: encabezado-activo-fondo linear none;
+			animation-timeline: var(--timeline);
+			animation-range: exit-crossing 0% exit-crossing 100%;
+		}
+
+		.capsula__nav a::after {
+			animation: encabezado-activo-punto linear none;
+			animation-timeline: var(--timeline);
+			animation-range: exit-crossing 0% exit-crossing 100%;
 		}
 
 		@media (prefers-reduced-motion: no-preference) {
-			.encabezado__progreso {
-				animation: progreso-lectura linear both;
+			.capsula {
+				animation: encabezado-flota linear both;
 				animation-timeline: scroll();
+				animation-range: 0 96px;
+			}
+
+			.capsula__progreso {
+				animation: encabezado-lectura linear both;
+				animation-timeline: scroll();
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.capsula__cta {
+				animation-name: encabezado-cta-aparece;
+			}
+		}
+	}
+
+	/* --- El menú abre y cierra con transición (display y overlay discretos), sin JavaScript. --- */
+	@media (prefers-reduced-motion: no-preference) {
+		.menu,
+		.menu::backdrop {
+			transition:
+				opacity 0.25s var(--curva-salida),
+				transform 0.3s var(--curva-cajon),
+				display 0.3s allow-discrete,
+				overlay 0.3s allow-discrete;
+		}
+
+		.menu {
+			opacity: 0;
+			transform: translateY(-8px) scale(0.98);
+			transform-origin: top right;
+		}
+
+		.menu:popover-open {
+			opacity: 1;
+			transform: none;
+		}
+
+		@starting-style {
+			.menu:popover-open {
+				opacity: 0;
+				transform: translateY(-8px) scale(0.98);
+			}
+		}
+
+		.menu::backdrop {
+			opacity: 0;
+		}
+
+		.menu:popover-open::backdrop {
+			opacity: 1;
+		}
+
+		@starting-style {
+			.menu:popover-open::backdrop {
+				opacity: 0;
+			}
+		}
+
+		/* Los links entran en cascada, de arriba hacia abajo. */
+		.menu:popover-open .menu__lista li {
+			animation: entrar-subiendo 0.4s var(--curva-salida) backwards;
+			animation-delay: calc(60ms + var(--i) * 40ms);
+		}
+	}
+
+	/* Movimiento reducido: el menú solo se funde. */
+	@media (prefers-reduced-motion: reduce) {
+		.menu,
+		.menu::backdrop {
+			transition:
+				opacity 0.2s ease-out,
+				display 0.2s allow-discrete,
+				overlay 0.2s allow-discrete;
+		}
+
+		.menu,
+		.menu::backdrop {
+			opacity: 0;
+		}
+
+		.menu:popover-open,
+		.menu:popover-open::backdrop {
+			opacity: 1;
+		}
+
+		@starting-style {
+			.menu:popover-open,
+			.menu:popover-open::backdrop {
+				opacity: 0;
 			}
 		}
 	}

@@ -23,7 +23,7 @@ import MockPanel from '../mocks/MockPanel.astro';
 				Armamos sistemas a medida para tu negocio. Empezamos con una auditoría gratis para ver
 				dónde perdés más tiempo.
 			</p>
-			<div class="entrada" style="--orden: 2">
+			<div class="portada__cta entrada" style="--orden: 2">
 				<BotonWhatsApp />
 			</div>
 		</div>
@@ -54,6 +54,11 @@ import MockPanel from '../mocks/MockPanel.astro';
 	.portada__bajada {
 		max-width: 44ch;
 		color: var(--text-body-dark);
+	}
+
+	/* Timeline del botón: cuando sale de la pantalla, entra el del encabezado (Encabezado.astro). */
+	.portada__cta {
+		view-timeline: --cta-portada block;
 	}
 
 	.portada__producto {
