@@ -120,7 +120,9 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 			cifra.dataset.valor = String(nuevo);
 
 			if (movimientoReducido()) cifra.textContent = unidades(nuevo);
-			else contar(cifra, desde, nuevo, unidades);
+			// 500 ms: el mismo tiempo que tarda la barra en llenarse (`.producto__relleno`), para que
+			// lleguen juntas.
+			else contar(cifra, desde, nuevo, unidades, 500);
 		});
 	});
 </script>
@@ -242,6 +244,21 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		translate: -50% -50%;
 	}
 
+	@media (hover: hover) and (pointer: fine) {
+		.producto__reponer {
+			transition: background-color 0.2s;
+		}
+
+		.producto__reponer:hover {
+			background: var(--cyan-200);
+		}
+	}
+
+	.producto__reponer:active {
+		scale: 0.96;
+		transition: scale 0.12s var(--curva-salida);
+	}
+
 	.producto__nivel {
 		position: relative;
 		height: 8px;
@@ -257,7 +274,9 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		transform-origin: left;
 		transform: scaleX(var(--nivel));
 		/* `scale` es una propiedad aparte de `transform`: no pisa la animación de scroll de abajo. */
-		transition: scale 0.5s var(--curva-salida);
+		transition:
+			scale 0.5s var(--curva-salida),
+			background-color 0.3s;
 	}
 
 	.producto--bajo .producto__relleno {
@@ -331,7 +350,6 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		justify-content: space-between;
 		gap: 12px;
 		font-variant-numeric: tabular-nums;
-		transition: opacity 0.3s var(--curva-salida);
 	}
 
 	.pedido li span:last-child {
@@ -339,9 +357,11 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		font-weight: var(--fw-semibold);
 	}
 
-	/* El ítem repuesto se tacha en el pedido, en vez de desarmar la lista. */
-	.pedido li.pedido__item--repuesto {
-		opacity: 0.6;
+	/* El ítem repuesto se tacha en el pedido, en vez de desarmar la lista. Color de token en vez de
+	   opacidad: con opacidad el texto queda en ≈3,3:1, bajo el mínimo AA de 4,5:1. */
+	.pedido li.pedido__item--repuesto,
+	.pedido li.pedido__item--repuesto span:last-child {
+		color: var(--text-muted-dark);
 	}
 
 	.pedido li.pedido__item--repuesto span {
@@ -404,8 +424,7 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 
 	/* Con movimiento reducido, el clic en "Reponer" salta directo al estado final. */
 	@media (prefers-reduced-motion: reduce) {
-		.producto__relleno,
-		.pedido li {
+		.producto__relleno {
 			transition: none;
 		}
 	}

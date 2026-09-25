@@ -56,12 +56,13 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 </script>
 
 <style>
-	/* Es un mock: sin cursor de texto ni selección. */
+	/* Es un mock: nada es clickeable (el ticket reacciona al hover, no necesita cursor de mano),
+	   sin cursor de texto ni selección. */
 	.mock-caja {
 		display: grid;
 		justify-items: center;
 		gap: 16px;
-		cursor: pointer;
+		cursor: default;
 		user-select: none;
 		-webkit-user-select: none;
 	}
@@ -152,16 +153,16 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 		rotate: -4deg;
 	}
 
-	/* Con el mouse el ticket se endereza y sube, y el sello se vuelve a estampar. Corre también
-	   con movimiento reducido: lo dispara quien pasa el mouse. */
+	/* Con el mouse encima del ticket (no de todo el mock) se endereza y sube, y el sello se vuelve
+	   a estampar. Corre también con movimiento reducido: lo dispara quien pasa el mouse. */
 	@media (hover: hover) and (pointer: fine) {
-		.mock-caja:hover .ticket {
+		.ticket:hover {
 			rotate: 0deg;
 			translate: 0 -4px;
 		}
 
 		/* Otro nombre que el del scroll: con el mismo, el navegador no reinicia la animación. */
-		.mock-caja:hover .ticket__sello {
+		.ticket:hover .ticket__sello {
 			animation: caja-reestampar 0.35s var(--curva-salida);
 		}
 	}

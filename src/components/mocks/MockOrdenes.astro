@@ -170,14 +170,17 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 			let y0 = 0;
 
 			carta.addEventListener('pointerdown', (evento) => {
-				if (evento.pointerType !== 'mouse') return;
+				if (evento.pointerType !== 'mouse' || evento.button !== 0) return;
 				bajado = true;
 				x0 = evento.clientX;
 				y0 = evento.clientY;
 			});
 
 			carta.addEventListener('pointermove', (evento) => {
-				if (!bajado) return;
+				if (!bajado || !(evento.buttons & 1)) {
+					bajado = false;
+					return;
+				}
 				const dx = evento.clientX - x0;
 				const dy = evento.clientY - y0;
 				if (!arrastrando) {
@@ -214,6 +217,18 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 				carta.style.translate = `${antes.left - despues.left}px ${antes.top - despues.top}px`;
 				carta.getBoundingClientRect(); // fuerza el reflujo antes de volver a animar
 				carta.style.transition = '';
+
+				// Al llegar, se limpian los estilos inline (si no, le ganan al :hover y la carta ya no
+				// se levanta). El transitionend cubre el caso normal; el timeout, cuando no hay nada
+				// que transicionar (ej. soltar en el mismo lugar, sin desplazamiento real).
+				const limpiar = () => {
+					carta.style.translate = '';
+					carta.style.rotate = '';
+					carta.style.scale = '';
+				};
+				carta.addEventListener('transitionend', limpiar, { once: true });
+				setTimeout(limpiar, 250);
+
 				requestAnimationFrame(() => {
 					carta.style.translate = '0px 0px';
 					carta.style.rotate = '0deg';
@@ -359,6 +374,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 
 	/* --- Cada orden: datos del negocio (vence, quién, avance), no una tarjeta vacía. --- */
 	.orden {
+		position: relative;
 		display: grid;
 		gap: 8px;
 		padding: 12px;
@@ -368,8 +384,21 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		transition:
 			translate 0.2s var(--curva-salida),
 			rotate 0.2s var(--curva-salida),
-			scale 0.2s var(--curva-salida),
-			box-shadow 0.2s var(--curva-salida);
+			scale 0.2s var(--curva-salida);
+	}
+
+	/* La sombra del hover, en su propia capa que solo cambia de opacidad: animar box-shadow
+	   directo repinta en cada cuadro (ver BotonWhatsApp.astro). */
+	.orden::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		box-shadow: var(--shadow-elevada-oscura);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.2s;
 	}
 
 	.orden__arriba,
@@ -473,7 +502,10 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 
 		.orden:not(.orden--cruza):not(.orden--arrastrando):hover {
 			translate: 0 -4px;
-			box-shadow: var(--shadow-elevada-oscura);
+		}
+
+		.orden:not(.orden--cruza):not(.orden--arrastrando):hover::after {
+			opacity: 1;
 		}
 
 		.orden--arrastrando {
