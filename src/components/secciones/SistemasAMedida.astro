@@ -1,7 +1,9 @@
 ---
 // SPECS §2 y §4.3: la promesa amplia. Tres ejemplos como muestra, no como menú, y después la
-// pared: 20 tipos de sistema que se encienden con el scroll, fila por fila, y rematan en "Y el que tu
-// negocio necesite". Los de arriba son muestras; la pared es la amplitud.
+// pared: 8 tipos de sistema más (los que más piden las pymes, sin repetir los de arriba), cada uno
+// con una línea de qué resuelve, y el remate "Y el que tu negocio necesite". Cada tipo abre
+// WhatsApp con su propio mensaje. Antes eran 20 y se veían como una lista de relleno (pedido del
+// usuario, 2026-09-25).
 // Fondo oscuro: en el claro la marca permite una sola card invertida por sección, y acá cada
 // ejemplo lleva su card con un mock del sistema funcionando. Arriba el grande a lo ancho
 // (órdenes de trabajo); abajo dos medianos lado a lado (caja y stock); en el celular, una columna.
@@ -12,28 +14,18 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 import MockOrdenes from '../mocks/MockOrdenes.astro';
 import MockCaja from '../mocks/MockCaja.astro';
 import MockStock from '../mocks/MockStock.astro';
+import { whatsappUrl } from '../../config';
 
+// Las bajadas son borrador (REVISION-TEXTOS.md).
 const tipos = [
-	{ nombre: 'Órdenes de trabajo', icono: 'clipboard-text-duotone' },
-	{ nombre: 'Stock', icono: 'package-duotone' },
-	{ nombre: 'Presupuestos', icono: 'file-text-duotone' },
-	{ nombre: 'Cobranzas', icono: 'hand-coins-duotone' },
-	{ nombre: 'Turnos y reservas', icono: 'calendar-check-duotone' },
-	{ nombre: 'Clientes y seguimiento', icono: 'address-book-duotone' },
-	{ nombre: 'Compras a proveedores', icono: 'shopping-cart-duotone' },
-	{ nombre: 'Horas del equipo', icono: 'timer-duotone' },
-	{ nombre: 'Listas de precios', icono: 'tag-duotone' },
-	{ nombre: 'Comisiones', icono: 'percent-duotone' },
-	{ nombre: 'Mantenimiento', icono: 'wrench-duotone' },
-	{ nombre: 'Flota y vehículos', icono: 'truck-duotone' },
-	{ nombre: 'Gastos', icono: 'receipt-duotone' },
-	{ nombre: 'Vencimientos', icono: 'hourglass-duotone' },
-	{ nombre: 'Legajos', icono: 'folder-user-duotone' },
-	{ nombre: 'Pedidos', icono: 'shopping-bag-duotone' },
-	{ nombre: 'Reportes para el contador', icono: 'calculator-duotone' },
-	{ nombre: 'Tareas del día', icono: 'list-checks-duotone' },
-	{ nombre: 'Encuestas a clientes', icono: 'star-duotone' },
-	{ nombre: 'Consignaciones', icono: 'handshake-duotone' },
+	{ nombre: 'Presupuestos', icono: 'file-text-duotone', bajada: 'Armados en minutos y con seguimiento hasta que se aprueban.' },
+	{ nombre: 'Cobranzas', icono: 'hand-coins-duotone', bajada: 'Quién te debe, cuánto y desde cuándo, sin revisar papeles.' },
+	{ nombre: 'Turnos y reservas', icono: 'calendar-check-duotone', bajada: 'Una agenda para todo el equipo, con aviso al cliente.' },
+	{ nombre: 'Clientes', icono: 'address-book-duotone', bajada: 'La historia de cada cliente en un solo lugar.' },
+	{ nombre: 'Compras a proveedores', icono: 'shopping-cart-duotone', bajada: 'Qué pediste, a qué precio y qué falta que llegue.' },
+	{ nombre: 'Listas de precios', icono: 'tag-duotone', bajada: 'Cambiás un precio una vez y se actualiza en todos lados.' },
+	{ nombre: 'Horas del equipo', icono: 'timer-duotone', bajada: 'Quién trabajó en qué y cuánto, sin planillas sueltas.' },
+	{ nombre: 'Reportes para el contador', icono: 'calculator-duotone', bajada: 'Lo que te pide cada mes, listo para mandar.' },
 ];
 ---
 
@@ -80,25 +72,38 @@ const tipos = [
 			<h3 class="t-label pared__titulo">Y también armamos</h3>
 			<ul class="pared__lista">
 				{
-					tipos.map(({ nombre, icono }) => (
-						<li class="tipo">
-							<Icono nombre={icono} size={22} />
-							{nombre}
+					tipos.map(({ nombre, icono, bajada }, i) => (
+						<li style={`--i: ${i}`}>
+							<a
+								class="tipo"
+								href={whatsappUrl(`Hola, vi la web y me interesa un sistema de ${nombre.toLowerCase()}.`)}
+								target="_blank"
+								rel="noopener"
+							>
+								<span class="tipo__icono">
+									<Icono nombre={icono} size={24} />
+								</span>
+								<span class="tipo__textos">
+									<span class="tipo__nombre">{nombre}</span>
+									<span class="tipo__bajada">{bajada}</span>
+								</span>
+								<Icono nombre="arrow-up-right-bold" size={18} class="tipo__flecha" />
+							</a>
 						</li>
 					))
 				}
-				<li class="tipo tipo--final">
-					<span class="tipo__final-texto">
-						<Icono nombre="plus-circle-duotone" size={24} />
-						Y el que tu negocio necesite
-					</span>
-					<BotonWhatsApp
-						variante="secundario"
-						texto="Quiero uno para mi negocio"
-						mensaje="Hola, vi los sistemas que arman y quiero uno para mi negocio."
-					/>
-				</li>
 			</ul>
+			<div class="pared__final">
+				<span class="pared__final-texto">
+					<Icono nombre="plus-circle-duotone" size={24} />
+					Y el que tu negocio necesite
+				</span>
+				<BotonWhatsApp
+					variante="secundario"
+					texto="Quiero uno para mi negocio"
+					mensaje="Hola, vi los sistemas que arman y quiero uno para mi negocio."
+				/>
+			</div>
 		</div>
 	</div>
 </section>
@@ -146,7 +151,8 @@ const tipos = [
 		background: linear-gradient(160deg, var(--surface-card-dark) 55%, var(--navy-850));
 	}
 
-	/* --- La pared --- */
+	/* --- La pared: el título con una línea que sigue hasta el borde, 8 tipos en cards y el remate
+	   a lo ancho. --- */
 	.pared {
 		display: grid;
 		gap: var(--space-3);
@@ -154,56 +160,131 @@ const tipos = [
 	}
 
 	.pared__titulo {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 		color: var(--text-heading-light);
 		font-weight: var(--fw-semibold);
 	}
 
+	.pared__titulo::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: var(--border-dark);
+	}
+
 	.pared__lista {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-1);
 	}
 
+	/* Cada tipo: el ícono en un cuadrado, el nombre y qué resuelve. Con el mouse se levanta, el
+	   cuadrado se prende de cian y aparece la flecha (abre WhatsApp). */
 	.tipo {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		min-height: 56px;
-		padding: 12px 14px;
+		position: relative;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-content: start;
+		align-items: start;
+		gap: var(--space-2);
+		height: 100%;
+		padding: var(--space-2);
 		border: 1px solid var(--border-dark);
-		border-radius: 16px;
+		border-radius: var(--radius-card);
 		background: var(--surface-card-dark);
 		color: var(--text-body-light);
-		font-size: var(--type-meta-size);
-		font-weight: var(--fw-medium);
+		-webkit-tap-highlight-color: transparent;
+		transition:
+			border-color 0.2s ease,
+			transform 0.25s var(--curva-salida);
+	}
+
+	.tipo__icono {
+		display: grid;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		border-radius: 14px;
+		background: var(--blue-950);
+		color: var(--cyan-400);
+		transition: background-color 0.2s ease, color 0.2s ease;
+	}
+
+	.tipo__textos {
+		display: grid;
+		gap: 4px;
+		padding-right: var(--space-2);
+	}
+
+	.tipo__nombre {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
 		line-height: 1.25;
 	}
 
-	/* Solo el ícono del tipo, no la flecha del botón del remate. */
-	.tipo > :global(svg),
-	.tipo__final-texto > :global(svg) {
-		flex: none;
-		color: var(--cyan-400);
+	.tipo__bajada {
+		color: var(--text-muted-light);
+		font-size: var(--type-meta-size);
+		line-height: 1.4;
+	}
+
+	.tipo :global(.tipo__flecha) {
+		position: absolute;
+		top: var(--space-2);
+		right: var(--space-2);
+		color: var(--cyan-300);
+		opacity: 0;
+		transform: translate(-4px, 4px);
+		transition: opacity 0.2s ease, transform 0.25s var(--curva-salida);
+	}
+
+	.tipo:active {
+		border-color: var(--cyan-300);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.tipo:hover {
+			border-color: var(--blue-700);
+			transform: translateY(-4px);
+		}
+
+		.tipo:hover .tipo__icono {
+			background: var(--cyan-300);
+			color: var(--navy-950);
+		}
+
+		.tipo:hover :global(.tipo__flecha) {
+			opacity: 1;
+			transform: none;
+		}
 	}
 
 	/* El remate: a lo ancho, con borde punteado (el lugar para el tuyo) y el botón. */
-	.tipo--final {
-		grid-column: 1 / -1;
+	.pared__final {
+		display: flex;
 		flex-wrap: wrap;
+		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-2);
 		padding: var(--space-3);
 		border: 1.5px dashed var(--blue-700);
-		background: transparent;
+		border-radius: var(--radius-card);
 		color: var(--text-heading-light);
 		font-size: var(--type-label-size);
 		font-weight: var(--fw-semibold);
 	}
 
-	.tipo__final-texto {
+	.pared__final-texto {
 		display: inline-flex;
 		align-items: center;
 		gap: 12px;
+	}
+
+	.pared__final-texto :global(svg) {
+		flex: none;
+		color: var(--cyan-400);
 	}
 
 	@media (min-width: 768px) {
@@ -212,7 +293,7 @@ const tipos = [
 		}
 
 		.pared__lista {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 
@@ -229,6 +310,13 @@ const tipos = [
 		.pared__lista {
 			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
+
+		/* En cuatro columnas, el ícono arriba y el texto abajo. */
+		.tipo {
+			grid-template-columns: minmax(0, 1fr);
+			gap: var(--space-3);
+			padding: var(--space-3);
+		}
 	}
 
 	/* Borde que se aclara al pasar el mouse: la card responde sin moverse de lugar. */
@@ -242,14 +330,6 @@ const tipos = [
 		}
 	}
 
-	@keyframes sistemas-tipo-enciende {
-		from { opacity: 0.25; transform: translateY(8px); }
-	}
-
-	@keyframes sistemas-icono-enciende {
-		from { opacity: 0.3; }
-	}
-
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
 			.ejemplo {
@@ -258,19 +338,15 @@ const tipos = [
 				animation-range: entry 0% entry 50%;
 			}
 
-			/* Cada tipo se enciende al entrar en pantalla: la pared se prende fila por fila a medida
-			   que sube, con cualquier cantidad de columnas y de tipos. */
-			.tipo {
-				animation: sistemas-tipo-enciende var(--curva-salida) both;
-				animation-timeline: view();
-				animation-range: entry 10% entry 90%;
+			/* Los tipos entran en cascada cuando la pared llega a la pantalla. */
+			.pared__lista {
+				view-timeline: --pared block;
 			}
 
-			.tipo > :global(svg),
-			.tipo__final-texto > :global(svg) {
-				animation: sistemas-icono-enciende linear both;
-				animation-timeline: view();
-				animation-range: entry 60% cover 30%;
+			.pared__lista li {
+				animation: entrar-corto var(--curva-salida) both;
+				animation-timeline: --pared;
+				animation-range: entry calc(5% + var(--i) * 4%) entry calc(45% + var(--i) * 4%);
 			}
 		}
 	}
