@@ -236,8 +236,11 @@ const movimientos = [
 		font-size: 0.8125rem;
 	}
 
+	/* La columna va explícita: la implícita tomaba el ancho de la fila de módulos (overflow: clip
+	   no la achica) y en el celular cortaba las cifras y el gráfico. */
 	.ventana__cuerpo {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		min-width: 0;
 	}
 
@@ -381,9 +384,11 @@ const movimientos = [
 
 	/* --- El gráfico: el SVG se estira al ancho; el trazo no se deforma (non-scaling-stroke) y el
 	   punto del pico es HTML, así queda redondo. --- */
+	/* El margen de arriba es para la etiqueta del pico, que sale por encima del lienzo. */
 	.grafico {
 		display: grid;
 		gap: 8px;
+		margin-top: 16px;
 	}
 
 	.grafico__lienzo {
@@ -636,12 +641,13 @@ const movimientos = [
 		}
 
 		/* Con la barra lateral, el aviso se monta sobre el borde izquierdo, en el lugar libre que
-		   queda abajo de los módulos: así se ve en la primera pantalla. */
+		   queda abajo de los módulos: así se ve en la primera pantalla. Sobresale lo que mide el
+		   margen del contenedor (16 px hasta 767): más, y la portada lo recorta. */
 		.tablero__aviso {
 			top: 51%;
 			right: auto;
 			bottom: auto;
-			left: -24px;
+			left: calc(-1 * var(--space-2));
 		}
 	}
 
@@ -811,11 +817,18 @@ const movimientos = [
 				animation-duration: auto;
 			}
 
-			/* Las cifras cuentan con el tiempo, al cargar: atadas al scroll, quien no baja las vería
-			   quietas en el valor de partida. */
+			/* Las cards de las cifras están ocultas hasta que llegás: el conteo va atado al mismo
+			   timeline, un poco después, para que se vea contar y no aparezca ya terminado. */
 			.cifra {
 				animation-timeline: --tablero-cifras;
 				animation-range: entry 20% entry 90%;
+			}
+
+			.cifra__valor {
+				animation-delay: 0s;
+				animation-duration: auto;
+				animation-timeline: --tablero-cifras;
+				animation-range: entry 40% cover 50%;
 			}
 
 			.grafico__linea,

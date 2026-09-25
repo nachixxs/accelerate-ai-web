@@ -67,16 +67,18 @@ const datos = [
 	}
 
 	/* Cada renglón recorta a su texto, que sube desde abajo. El padding deja lugar a las letras
-	   que bajan de la línea (p, g) y el margen negativo lo devuelve. */
+	   que bajan de la línea (p, g) y el margen negativo lo devuelve. Va en el span y no en el
+	   renglón: el gradiente (background-clip: text) solo pinta dentro de la caja del span, y sin
+	   el padding la cola de la "g" de "gratis" quedaba afuera. */
 	.cierre__renglon {
 		display: block;
 		overflow: clip;
-		padding-bottom: 0.12em;
 		margin-bottom: -0.12em;
 	}
 
 	.cierre__renglon > span {
 		display: inline-block;
+		padding-bottom: 0.12em;
 	}
 
 	.cierre__bajada {

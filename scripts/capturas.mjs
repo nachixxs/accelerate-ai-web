@@ -171,7 +171,7 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 
 	await pagina.evaluate(() => (document.documentElement.style.fontSize = '150%'));
 	await pagina.screenshot({ path: `capturas/${nombre}-texto-150-primera-pantalla.png` });
-	const botones = await pagina.evaluate(() => Math.round(Math.max(...[...document.querySelectorAll('.boton[href^="https://wa.me"]')].map((el) => el.getBoundingClientRect().right))));
+	const botones = await pagina.evaluate(() => Math.round(Math.max(...[...document.querySelectorAll('a[href^="https://wa.me"]')].map((el) => el.getBoundingClientRect().right))));
 	const montadosGrande = await montados();
 	chequeos.push(
 		[botones <= width - 16, `con letra al 150 %, los botones entran con el margen (terminan en ${botones} px)`],
