@@ -34,6 +34,16 @@ Tailwind, sin librerías de UI y sin JavaScript en el navegador** salvo que `SPE
 - Copy en voseo rioplatense, sentence case, sin "potenciado por IA" ni "transformación digital".
 - CTA: "Escribinos por WhatsApp" → `https://wa.me/5492625634845?text=...`.
 
+## Worktrees de Orca
+
+- Cada tarea corre en su propio worktree, en `D:\Orca\workspaces\`. Al crearlo, `orca.yaml`
+  corre `npm ci`: cada worktree tiene su `node_modules`, no se comparte.
+- Dev server: `npm run dev` → `http://localhost:4321`. Si el puerto está ocupado (otro
+  worktree), Astro toma el siguiente libre (4322…): usar la URL que imprime.
+- No hay `.env`: nada que copiar entre worktrees.
+- Puertos de otros proyectos en esta PC, para no pisarlos: caja de quiniela 5173 (Vite),
+  8000 (API), 5433 (Postgres en Docker); Postgres nativo en 5432.
+
 ## Git
 
 - Commits chicos, en español: `tipo: descripción corta`.
