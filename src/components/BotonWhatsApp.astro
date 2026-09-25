@@ -22,6 +22,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 ---
 
 <a class:list={['boton', `boton--${variante}`, clase]} href={whatsappUrl(mensaje)} target="_blank" rel="noopener">
+	{(variante === 'principal' || variante === 'secundario') && <span class="boton__brillo" aria-hidden="true"></span>}
 	{texto}
 	{variante === 'principal' ? <Icono nombre="si:whatsapp" size={24} class="boton__icono" /> : <Icono nombre="arrow-right-bold" size={20} class="boton__icono" />}
 </a>
@@ -41,11 +42,14 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		font-weight: var(--fw-semibold);
 		line-height: 1.2;
 		-webkit-tap-highlight-color: transparent;
+		/* isolation: las capas del brillo y de la sombra (z-index -1) quedan arriba del fondo del
+		   botón y abajo del texto, sin escaparse detrás de la sección. */
+		position: relative;
+		isolation: isolate;
 		transition:
 			background-color 0.2s,
 			border-color 0.2s,
-			color 0.2s,
-			box-shadow 0.2s;
+			color 0.2s;
 	}
 
 	.boton :global(.boton__icono) {
@@ -121,7 +125,6 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		.boton--secundario:hover {
 			background: var(--blue-800);
 			color: var(--white);
-			box-shadow: var(--shadow-card);
 		}
 
 		:global(.seccion--oscura) .boton--secundario:hover {
@@ -149,29 +152,60 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		}
 	}
 
-	/* Con el mouse encima, el botón se despega (crece un 5 % y sube 2 px), un brillo lo cruza una
-	   vez y el ícono responde: la flecha sale por la derecha y vuelve a entrar, y el logo de
-	   WhatsApp se balancea como una notificación. Corre aunque el sistema pida movimiento
-	   reducido (pedido del usuario, 2026-09-25): lo dispara quien pasa el mouse, dura menos de un
-	   segundo y no se repite solo. El crecimiento es transición, así al salir vuelve desde donde
-	   esté; el brillo y el ícono son keyframes de una sola pasada, que no tienen vuelta. */
+	/* Con el mouse encima, el botón se despega (crece un 5 % y sube 2 px, con más sombra), un
+	   brillo lo cruza una vez y el ícono responde: la flecha se adelanta y el logo de WhatsApp se
+	   balancea como una notificación. Corre aunque el sistema pida movimiento reducido (pedido del
+	   usuario, 2026-09-25): lo dispara quien pasa el mouse, dura menos de un segundo y no se
+	   repite solo. Lo que tiene que poder cortarse a mitad de camino (crecer, la sombra, la
+	   flecha) es transición y vuelve desde donde esté; el brillo y el balanceo son keyframes de
+	   una sola pasada, y cortados no se notan. Solo transform y opacity. */
+
+	/* El brillo va en su propia capa, que recorta solo su contenido: así el botón no necesita
+	   overflow: hidden y la sombra de abajo puede salir de sus bordes. */
+	.boton__brillo {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.boton__brillo::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+		transform: translateX(-100%);
+	}
+
+	/* La sombra del hover, en una capa que solo cambia de opacidad: animar box-shadow repinta en
+	   cada cuadro. Se suma a la sombra de reposo de cada variante. */
+	.boton--principal::after,
+	.boton--secundario::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.boton--principal::after {
+		box-shadow: 0 24px 48px rgba(15, 36, 80, 0.3);
+	}
+
+	.boton--secundario::after {
+		box-shadow: var(--shadow-card);
+	}
+
 	@keyframes boton-brillo {
 		from {
 			transform: translateX(-100%);
 		}
 		to {
 			transform: translateX(100%);
-		}
-	}
-
-	@keyframes flecha-vuelve {
-		45% {
-			transform: translateX(150%);
-			opacity: 0;
-		}
-		46% {
-			transform: translateX(-150%);
-			opacity: 0;
 		}
 	}
 
@@ -193,50 +227,34 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 				background-color 0.2s,
 				border-color 0.2s,
 				color 0.2s,
-				box-shadow 0.25s var(--curva-salida),
 				transform 0.25s var(--curva-salida);
+		}
+
+		.boton::after,
+		.boton :global(.boton__icono) {
+			transition:
+				opacity 0.25s var(--curva-salida),
+				transform 0.2s var(--curva-salida);
 		}
 
 		.boton:hover {
 			transform: translateY(-2px) scale(1.05);
 		}
 
-		.boton--principal:hover {
-			box-shadow: 0 24px 48px rgba(15, 36, 80, 0.5);
+		.boton:hover::after {
+			opacity: 1;
 		}
 
-		.boton:hover :global(.boton__icono) {
-			animation: flecha-vuelve 0.5s var(--curva-salida);
+		.boton:not(.boton--principal):hover :global(.boton__icono) {
+			transform: translateX(4px);
 		}
 
 		.boton--principal:hover :global(.boton__icono) {
-			animation: globo-suena 0.6s ease-in-out;
+			animation: globo-suena 0.45s var(--curva-cruce);
 		}
 
-		/* El brillo va debajo del texto: isolation hace que el z-index -1 quede arriba del fondo
-		   del botón y abajo de las letras. Solo en los que tienen relleno; en el contorno y el
-		   link no se vería. */
-		.boton--principal,
-		.boton--secundario {
-			position: relative;
-			isolation: isolate;
-			overflow: hidden;
-		}
-
-		.boton--principal::before,
-		.boton--secundario::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			z-index: -1;
-			background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
-			transform: translateX(-100%);
-			pointer-events: none;
-		}
-
-		.boton--principal:hover::before,
-		.boton--secundario:hover::before {
-			animation: boton-brillo 0.7s ease-in-out;
+		.boton:hover .boton__brillo::before {
+			animation: boton-brillo 0.6s var(--curva-cruce);
 		}
 	}
 
