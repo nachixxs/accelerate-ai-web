@@ -160,10 +160,20 @@ const punto = (i: number) => 0.3 + i * 0.25;
 			if (moviendo) {
 				// Un tirón rápido decide por la dirección, aunque no haya pasado la mitad.
 				if (Math.abs(arrastre.v) > 0.11) elegir(arrastre.v > 0);
-				seccion.classList.remove('resolvemos--arrastrando');
+				// El --p de la sección ya saltó al valor final sin transición (cada elegir() de
+				// arriba cambia el radio y con él el :has() de la sección), aunque solo el
+				// interruptor y la lista mostraban el p soltado. Se pasa ese p soltado a la
+				// sección primero (todavía con resolvemos--arrastrando puesta, sin transición) y
+				// se fuerza el estilo, para que recién después, al sacar la clase y el --p de
+				// acá, transicione de p a ese valor final en vez de saltar.
+				const p = interruptor.style.getPropertyValue('--p');
+				seccion.style.setProperty('--p', p);
 				interruptor.style.removeProperty('--p');
 				lista.style.removeProperty('--p');
 				filas.forEach((fila) => fila.classList.remove('dolor--vuelta'));
+				getComputedStyle(seccion).getPropertyValue('--p');
+				seccion.classList.remove('resolvemos--arrastrando');
+				seccion.style.removeProperty('--p');
 				// El clic que sigue a un arrastre (si llega, con mouse) no tiene que volver a
 				// cambiar el radio.
 				interruptor.addEventListener('click', bloquear, { capture: true, once: true });
