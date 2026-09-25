@@ -3,8 +3,8 @@
 // sección de cierre, así se leen como un solo bloque; los separa la estela: las tres capas de
 // velocidad de la A (atrás, medio, frente), cortadas en diagonal como en el isotipo, que se
 // descubren con el scroll una detrás de la otra (clip-path).
-// Tres columnas: la frase de la marca, las secciones y el contacto. Abajo de todo, el imagotipo
-// grande, cortado por el borde de la página: es el logo del pie (por eso lleva el alt).
+// Tres columnas: la marca (imagotipo chico + frase), las secciones y el contacto. Lo último de
+// la página es la línea legal: nada va debajo.
 import { Image } from 'astro:assets';
 // El contacto, como en minificando: una línea discreta por canal (ícono, canal y dato), no un
 // número grande. WhatsApp primero porque es el canal principal; después el mail de cada socio.
@@ -34,6 +34,7 @@ const links = [
 	<div class="contenedor">
 		<div class="pie__grilla">
 			<div class="pie__bloque pie__marca" style="--i: 0">
+				<Image src={imagotipo} alt="Accelerate.ai" width={352} class="pie__logo" />
 				<p>Sistemas a medida para pymes que repiten tareas todos los días.</p>
 			</div>
 
@@ -73,10 +74,6 @@ const links = [
 				Volver arriba
 				<Icono nombre="arrow-up-bold" size={18} />
 			</a>
-		</div>
-
-		<div class="pie__firma">
-			<Image src={imagotipo} alt="Accelerate.ai" width={962} class="pie__logo" />
 		</div>
 	</div>
 </footer>
@@ -125,18 +122,12 @@ const links = [
 		line-height: 1.25;
 	}
 
-	/* El imagotipo grande, cortado por el borde de abajo: se ve el 62 % de su alto. El ancho
-	   tope es el del PNG (962 px), para no estirarlo. */
-	.pie__firma {
-		max-width: 962px;
-		aspect-ratio: 962 / 104;
-		overflow: clip;
-	}
-
+	/* El imagotipo en tamaño normal, alineado a la izquierda con el resto de la columna. */
 	.pie__logo {
 		display: block;
-		width: 100%;
+		width: 140px;
 		height: auto;
+		margin-bottom: var(--space-1);
 	}
 
 	/* Título de columna y links al mismo tamaño chico: el título se distingue por peso y color, y
@@ -210,11 +201,12 @@ const links = [
 		transition: color 0.2s;
 	}
 
+	/* En una columna angosta, la fila no entra entera: apilada, con "Volver arriba" arriba, así el
+	   © queda siempre como lo último visible de la página (nunca al revés). */
 	.pie__base {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
+		flex-direction: column-reverse;
+		align-items: flex-start;
 		gap: var(--space-2);
 		padding-block: var(--space-2) var(--space-5);
 		border-top: 1px solid var(--border-dark);
@@ -284,16 +276,18 @@ const links = [
 			grid-template-columns: 1fr;
 		}
 
+		/* Alineados por abajo: el botón es más alto que la línea de texto (padding, borde), y
+		   centrado dejaría su base por debajo del ©. Así el © queda siempre lo último. */
+		.pie__base {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: space-between;
+		}
 	}
 
 	@keyframes pie-estela {
 		from { clip-path: polygon(0 0, 0 0, -8px 100%, 0 100%); }
 		to { clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
-	}
-
-	/* El imagotipo sube desde el borde que lo corta. */
-	@keyframes pie-logo {
-		from { transform: translateY(100%); }
 	}
 
 	/* El pie es lo último de la página: los tramos terminan antes de que termine de entrar, así
@@ -313,12 +307,6 @@ const links = [
 				animation: entrar-subiendo linear both;
 				animation-timeline: --pie;
 				animation-range: entry calc(20% + var(--i) * 12%) entry calc(55% + var(--i) * 12%);
-			}
-
-			.pie__logo {
-				animation: pie-logo var(--curva-salida) both;
-				animation-timeline: --pie;
-				animation-range: entry 50% entry 92%;
 			}
 		}
 	}
