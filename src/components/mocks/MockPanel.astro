@@ -445,7 +445,7 @@ const movimientos = [
 		border: 1px solid transparent;
 		border-radius: 14px;
 		background: var(--navy-850);
-		transition: border-color 0.2s ease, transform 0.25s var(--curva-salida);
+		transition: border-color 0.2s ease, translate 0.25s var(--curva-salida);
 	}
 
 	.cifra:first-child {
@@ -867,8 +867,12 @@ const movimientos = [
 			transform: translateX(100%);
 		}
 
+		/* El texto de "Semana" recién pasa a muted cuando la pastilla ya se fue de abajo (mismos
+		   0.25s que su transform): a mitad de camino, con la pastilla todavía debajo, el muted
+		   sobre el azul bajaba a ≈2,2:1. */
 		.periodo:has(.periodo__opcion:last-child:hover) .periodo__opcion--activa {
 			color: var(--text-muted-light);
+			transition-delay: 0.25s;
 		}
 
 		.periodo__opcion:last-child:hover {
@@ -877,7 +881,7 @@ const movimientos = [
 
 		.cifra:hover {
 			border-color: var(--border-dark);
-			transform: translateY(-2px);
+			translate: 0 -2px;
 		}
 
 		.movimiento:hover {
@@ -1048,11 +1052,15 @@ const movimientos = [
 				animation-range: entry 20% entry 90%;
 			}
 
+			/* Termina bien adentro de la entrada (no a mitad de "cover"): en la primera pantalla
+			   el bloque ya está casi del todo a la vista sin haber scrolleado, y el conteo tiene
+			   que llegar a su valor final igual. Con la curva de salida, a esta altura del rango
+			   ya casi no queda diferencia visual con el 100%. */
 			.cifra__valor {
 				animation-delay: 0s;
 				animation-duration: auto;
 				animation-timeline: --tablero-cifras;
-				animation-range: entry 40% cover 50%;
+				animation-range: entry 40% entry 55%;
 			}
 
 			.grafico__linea,
