@@ -117,6 +117,13 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		background: var(--blue-50);
 	}
 
+	/* Feedback al presionar: scale suelto, no transform (ese lo usa el hover), sin pisar el
+	   cambio de color de arriba ni la sombra de ::after. */
+	.boton:active {
+		scale: 0.97;
+		transition: scale 0.12s var(--curva-salida);
+	}
+
 	@media (hover: hover) and (pointer: fine) {
 		.boton--principal:hover {
 			background: var(--brand-primary-deep);
