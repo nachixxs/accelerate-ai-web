@@ -5,30 +5,26 @@
 // el fondo, con divisiones punteadas; con un sistema pasan a la card invertida (la única de la
 // sección). Al cambiar, cada dolor se tacha, se va y llega su solución, uno detrás de otro.
 // Con movimiento reducido el cambio es un fundido corto, sin desplazamientos.
-import MessagesSquare from '@lucide/astro/icons/messages-square';
-import NotebookPen from '@lucide/astro/icons/notebook-pen';
-import Calculator from '@lucide/astro/icons/calculator';
-import CircleCheck from '@lucide/astro/icons/circle-check';
-import Sparkles from '@lucide/astro/icons/sparkles';
+import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 const dolores = [
 	{
-		icono: MessagesSquare,
+		icono: 'chats-circle-duotone',
 		frase: 'Me paso el día contestando lo mismo.',
 		detalle: 'Horarios, precios, si hay stock. Mientras tanto, lo que de verdad importa espera.',
 		solucion: 'Las preguntas de siempre se contestan solas.',
 		como: 'El sistema responde por WhatsApp a cualquier hora. Vos te quedás con las consultas que valen la pena.',
 	},
 	{
-		icono: NotebookPen,
+		icono: 'note-pencil-duotone',
 		frase: 'Los pedidos quedan anotados en tres lados.',
 		detalle: 'Un cuaderno, un chat y una planilla. En algún pase, siempre se pierde uno.',
 		solucion: 'Cada pedido queda en un solo lugar.',
 		como: 'Entra por WhatsApp y se carga en la planilla. Nadie lo pasa a mano.',
 	},
 	{
-		icono: Calculator,
+		icono: 'calculator-duotone',
 		frase: 'Cerrar la caja me lleva una hora.',
 		detalle: 'Y cuando no cierra, nadie sabe dónde está la diferencia.',
 		solucion: 'El cierre del día sale en minutos.',
@@ -52,7 +48,7 @@ const dolores = [
 				</label>
 				<label>
 					<input type="radio" name="resolvemos" value="sistema" class="interruptor__sistema" />
-					<Sparkles size={18} stroke-width={2} class="interruptor__chispa" />
+					<Icono nombre="sparkle-duotone" size={18} class="interruptor__chispa" />
 					Con un sistema
 				</label>
 			</fieldset>
@@ -60,11 +56,11 @@ const dolores = [
 
 		<ul class="lista" aria-live="polite">
 			{
-				dolores.map(({ icono: Icono, frase, detalle, solucion, como }, i) => (
+				dolores.map(({ icono, frase, detalle, solucion, como }, i) => (
 					<li class="dolor" style={`--i: ${i}`}>
 						<span class="dolor__iconos" aria-hidden="true">
-							<Icono size={28} stroke-width={1.75} class="hoy" />
-							<CircleCheck size={28} stroke-width={1.75} class="sistema" />
+							<Icono nombre={icono} size={28} class="hoy" />
+							<Icono nombre="check-circle-duotone" size={28} class="sistema" />
 						</span>
 						<div class="dolor__textos">
 							<div class="hoy">

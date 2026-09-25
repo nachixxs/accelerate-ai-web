@@ -2,7 +2,7 @@
 // SPECS §4.6: las objeciones típicas. <details> abre y cierra sin JavaScript.
 // En escritorio el título queda fijo a la izquierda mientras pasan las preguntas. La apertura
 // es suave con ::details-content e interpolate-size (Chrome); donde no hay soporte, abre de golpe.
-import ChevronDown from '@lucide/astro/icons/chevron-down';
+import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 const preguntas = [
@@ -48,7 +48,7 @@ const preguntas = [
 						<summary class="t-label">
 							{pregunta}
 							<span class="pregunta__flecha" aria-hidden="true">
-								<ChevronDown size={20} stroke-width={2} />
+								<Icono nombre="caret-down-bold" size={20} />
 							</span>
 						</summary>
 						<p class="t-cuerpo">{respuesta}</p>

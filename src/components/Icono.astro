@@ -1,0 +1,34 @@
+---
+// Un ícono como SVG en el HTML, armado al compilar: sin JavaScript en el navegador ni CDN.
+// Los íconos son de Phosphor, casi todos en la variante dúo (dos tonos del mismo color,
+// elegida por el usuario el 2026-09-24); las flechas y el chevron van en negrita, porque en dúo
+// no tienen relleno y quedan finas. El único logo de marca es el de WhatsApp, de Simple Icons:
+// se pide con el prefijo "si:" (nombre="si:whatsapp").
+// El color sale de currentColor, así que se pinta con `color` desde afuera, como con Lucide.
+import { getIconData, iconToSVG } from '@iconify/utils';
+import { icons as phosphor } from '@iconify-json/ph';
+import { icons as marcas } from '@iconify-json/simple-icons';
+
+interface Props {
+	nombre: string;
+	size?: number;
+	class?: string;
+}
+
+const { nombre, size = 24, class: clase } = Astro.props;
+const [set, id] = nombre.startsWith('si:') ? [marcas, nombre.slice(3)] : [phosphor, nombre];
+const datos = getIconData(set, id);
+if (!datos) throw new Error(`No existe el ícono "${nombre}"`);
+const { attributes, body } = iconToSVG(datos);
+---
+
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	viewBox={attributes.viewBox}
+	width={size}
+	height={size}
+	fill="currentColor"
+	aria-hidden="true"
+	class={clase}
+	set:html={body}
+/>

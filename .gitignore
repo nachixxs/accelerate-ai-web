@@ -28,3 +28,9 @@ capturas/
 
 # worktrees de Claude Code
 .claude/worktrees/
+
+# documentos internos del proyecto: quedan solo en la compu, no van a GitHub
+CLAUDE.md
+ESTADO.md
+REVISION-TEXTOS.md
+SPECS.md

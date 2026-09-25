@@ -4,9 +4,7 @@
 // mensaje. La planilla es papel claro sobre la card oscura, como el ticket de la caja: se lee de
 // un vistazo que es otra herramienta. Datos de ejemplo, nombres inventados.
 // Se anima con el timeline --celda de la card que lo contiene (SistemasAMedida.astro).
-import ArrowRight from '@lucide/astro/icons/arrow-right';
-import Check from '@lucide/astro/icons/check';
-import FileSpreadsheet from '@lucide/astro/icons/file-spreadsheet';
+import Icono from '../Icono.astro';
 
 const pedidos = [
 	{ inicial: 'M', cliente: 'Marcos Sosa', hora: '09:14', texto: '300 tarjetas como las de la otra vez, para el viernes', pedido: '300 tarjetas', entrega: 'Viernes' },
@@ -38,15 +36,15 @@ const pedidos = [
 	</div>
 
 	<span class="mp-flecha">
-		<ArrowRight size={20} stroke-width={2} />
+		<Icono nombre="arrow-right-bold" size={20} />
 	</span>
 
 	<div class="planilla">
 		<div class="planilla__titulo">
-			<FileSpreadsheet size={16} stroke-width={2} />
+			<Icono nombre="table-duotone" size={16} />
 			Pedidos
 			<span class="planilla__sello">
-				<Check size={12} stroke-width={3} />
+				<Icono nombre="check-bold" size={12} />
 				Al día
 			</span>
 		</div>

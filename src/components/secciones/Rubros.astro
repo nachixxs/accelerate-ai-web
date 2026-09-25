@@ -1,92 +1,64 @@
 ---
 // Cinta de rubros debajo de la portada: responde "¿sirve para mi rubro?" antes de que lo
-// pregunten. Es la única cinta en movimiento de la página: dos filas que corren en sentidos
-// opuestos, como una cinta transportadora, y que además se corren un poco más con el scroll.
-// Sin JavaScript: la pausa es un checkbox (WCAG 2.2.2 pide poder frenar lo que se mueve más de
-// 5 segundos), también frena con el mouse encima y con prefers-reduced-motion queda quieta y
-// en varias líneas. No son clientes: son rubros donde se repiten las mismas tareas todos los días.
-import Printer from '@lucide/astro/icons/printer';
-import UtensilsCrossed from '@lucide/astro/icons/utensils-crossed';
-import Wrench from '@lucide/astro/icons/wrench';
-import Store from '@lucide/astro/icons/store';
-import Stethoscope from '@lucide/astro/icons/stethoscope';
-import Truck from '@lucide/astro/icons/truck';
-import Building from '@lucide/astro/icons/building';
-import Calculator from '@lucide/astro/icons/calculator';
-import Dumbbell from '@lucide/astro/icons/dumbbell';
-import Scissors from '@lucide/astro/icons/scissors';
-import PawPrint from '@lucide/astro/icons/paw-print';
-import Hammer from '@lucide/astro/icons/hammer';
-import Plane from '@lucide/astro/icons/plane';
-import Glasses from '@lucide/astro/icons/glasses';
-import BookOpen from '@lucide/astro/icons/book-open';
-import Car from '@lucide/astro/icons/car';
-import Shirt from '@lucide/astro/icons/shirt';
-import Pill from '@lucide/astro/icons/pill';
-import GraduationCap from '@lucide/astro/icons/graduation-cap';
-import Pause from '@lucide/astro/icons/pause';
-import Play from '@lucide/astro/icons/play';
+// pregunten. Es la única cinta en movimiento de la página: todos los rubros en una sola fila
+// que corre lenta de izquierda a derecha, como una cinta transportadora, y se funde en los dos
+// costados de la pantalla. Sin botón de pausa (al usuario no le gustó): WCAG 2.2.2 pide poder
+// frenar lo que se mueve más de 5 segundos, así que frena con el mouse encima, al tocarla en el
+// celular y al llegar con el teclado (la ventana es enfocable). Corre aunque el sistema pida
+// movimiento reducido: lo pidió el usuario (ver el comentario de la animación).
+// No son clientes: son rubros donde se repiten las mismas tareas todos los días.
+import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
-const filas = [
-	[
-		{ icono: Printer, nombre: 'Imprentas' },
-		{ icono: UtensilsCrossed, nombre: 'Gastronomía' },
-		{ icono: Wrench, nombre: 'Talleres' },
-		{ icono: Store, nombre: 'Comercios' },
-		{ icono: Stethoscope, nombre: 'Consultorios' },
-		{ icono: Truck, nombre: 'Distribuidoras' },
-		{ icono: Building, nombre: 'Inmobiliarias' },
-		{ icono: Calculator, nombre: 'Estudios contables' },
-		{ icono: Dumbbell, nombre: 'Gimnasios' },
-		{ icono: Scissors, nombre: 'Peluquerías' },
-	],
-	[
-		{ icono: PawPrint, nombre: 'Veterinarias' },
-		{ icono: Hammer, nombre: 'Ferreterías' },
-		{ icono: Plane, nombre: 'Agencias de viaje' },
-		{ icono: Glasses, nombre: 'Ópticas' },
-		{ icono: BookOpen, nombre: 'Librerías' },
-		{ icono: Car, nombre: 'Lavaderos de autos' },
-		{ icono: Shirt, nombre: 'Indumentaria' },
-		{ icono: Pill, nombre: 'Farmacias' },
-		{ icono: GraduationCap, nombre: 'Institutos' },
-	],
+const rubros = [
+	{ icono: 'printer-duotone', nombre: 'Imprentas' },
+	{ icono: 'fork-knife-duotone', nombre: 'Gastronomía' },
+	{ icono: 'wrench-duotone', nombre: 'Talleres' },
+	{ icono: 'storefront-duotone', nombre: 'Comercios' },
+	{ icono: 'stethoscope-duotone', nombre: 'Consultorios' },
+	{ icono: 'truck-duotone', nombre: 'Distribuidoras' },
+	{ icono: 'buildings-duotone', nombre: 'Inmobiliarias' },
+	{ icono: 'calculator-duotone', nombre: 'Estudios contables' },
+	{ icono: 'barbell-duotone', nombre: 'Gimnasios' },
+	{ icono: 'scissors-duotone', nombre: 'Peluquerías' },
+	{ icono: 'paw-print-duotone', nombre: 'Veterinarias' },
+	{ icono: 'hammer-duotone', nombre: 'Ferreterías' },
+	{ icono: 'airplane-tilt-duotone', nombre: 'Agencias de viaje' },
+	{ icono: 'eyeglasses-duotone', nombre: 'Ópticas' },
+	{ icono: 'book-open-duotone', nombre: 'Librerías' },
+	{ icono: 'car-duotone', nombre: 'Lavaderos de autos' },
+	{ icono: 't-shirt-duotone', nombre: 'Indumentaria' },
+	{ icono: 'pill-duotone', nombre: 'Farmacias' },
+	{ icono: 'graduation-cap-duotone', nombre: 'Institutos' },
 ];
 ---
 
 <section class="rubros" aria-labelledby="rubros-titulo">
 	<div class="contenedor rubros__cabecera">
 		<h2 id="rubros-titulo" class="rubros__titulo">Para cualquier negocio que repite tareas todos los días</h2>
-		<label class="rubros__pausa">
-			<input type="checkbox" />
-			<Pause size={16} class="rubros__icono-pausa" />
-			<Play size={16} class="rubros__icono-seguir" />
-			<span>Pausar</span>
-		</label>
 	</div>
 
-	<div class="rubros__ventana">
-		{
-			filas.map((rubros, f) => (
-				<div class={`rubros__fila rubros__fila--${f + 1}`}>
-					<div class="rubros__pista">
-						{[false, true].map((copia) => (
-							<ul class="rubros__lista" aria-hidden={copia ? 'true' : undefined}>
-								{rubros.map(({ icono: Icono, nombre }) => (
-									<li>
-										<span class="rubros__icono">
-											<Icono size={20} stroke-width={1.75} />
-										</span>
-										{nombre}
-									</li>
-								))}
-							</ul>
-						))}
-					</div>
-				</div>
-			))
-		}
+	<!-- El marco es enfocable para poder frenar la cinta sin botón: con Tab o con un toque en el
+	     celular. Va afuera de la ventana para que la máscara del fundido no borre el foco. -->
+	<div class="rubros__marco" tabindex="0" role="group" aria-label="Rubros">
+		<div class="rubros__ventana">
+			<div class="rubros__pista">
+				{
+					[false, true].map((copia) => (
+						<ul class="rubros__lista" aria-hidden={copia ? 'true' : undefined}>
+							{rubros.map(({ icono, nombre }) => (
+								<li>
+									<span class="rubros__icono">
+										<Icono nombre={icono} size={20} />
+									</span>
+									{nombre}
+								</li>
+							))}
+						</ul>
+					))
+				}
+			</div>
+		</div>
 	</div>
 
 	<div class="contenedor rubros__pie">
@@ -106,11 +78,7 @@ const filas = [
 	}
 
 	.rubros__cabecera {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-2);
-		margin-bottom: var(--space-3);
+		margin-bottom: var(--space-2);
 	}
 
 	.rubros__pie {
@@ -123,15 +91,65 @@ const filas = [
 		font-weight: var(--fw-medium);
 	}
 
+	/* Los costados se funden con el fondo: los rubros aparecen y se van difuminados en vez de
+	   cortarse seco. El fundido crece con la pantalla (48 px en el celular, 240 px en la compu). */
 	.rubros__ventana {
-		display: grid;
-		gap: 12px;
+		--fundido: clamp(48px, 16vw, 240px);
 		overflow: hidden;
+		mask-image: linear-gradient(
+			90deg,
+			transparent,
+			#000 var(--fundido),
+			#000 calc(100% - var(--fundido)),
+			transparent
+		);
+	}
+
+	/* La cinta corre sola de izquierda a derecha: arranca corrida media pista (una copia de la
+	   lista) hacia la izquierda y vuelve a cero, donde la copia queda justo en el lugar del
+	   original y el salto no se ve. Lineal, porque es movimiento constante. 150 s por vuelta da
+	   unos 25 px por segundo: se lee cada rubro sin perseguirlo.
+	   Corre también con prefers-reduced-motion: con los efectos de animación de Windows apagados
+	   se veía una lista quieta, y el usuario eligió que se mueva siempre (2026-09-24). Es lenta,
+	   lineal y se puede frenar. */
+	@keyframes cinta {
+		from { transform: translateX(-50%); }
+		to { transform: translateX(0); }
 	}
 
 	.rubros__pista {
 		display: flex;
 		width: max-content;
+		animation: cinta 150s linear infinite;
+	}
+
+	/* Frena mientras el marco tiene el foco (Tab, o un toque en el celular: se retoma al tocar
+	   afuera) y mientras se mantiene apretada. */
+	.rubros__marco:focus .rubros__pista,
+	.rubros__marco:active .rubros__pista {
+		animation-play-state: paused;
+	}
+
+	/* El aire de arriba y abajo separa el anillo de foco de las fichas. */
+	.rubros__marco {
+		padding-block: 8px;
+	}
+
+	.rubros__marco:focus {
+		outline: none;
+	}
+
+	.rubros__marco:focus-visible {
+		outline: 3px solid var(--brand-primary-deep);
+		outline-offset: -3px;
+	}
+
+	/* Con el mouse encima frena para leer. Solo con puntero fino: en el celular, un toque dejaría
+	   el :hover pegado y la cinta frenada. */
+	@media (hover: hover) and (pointer: fine) {
+		.rubros__marco:hover .rubros__pista {
+			animation-play-state: paused;
+		}
 	}
 
 	.rubros__lista {
@@ -162,164 +180,5 @@ const filas = [
 		border-radius: var(--radius-pill);
 		background: var(--blue-50);
 		color: var(--brand-primary-deep);
-	}
-
-	/* La segunda fila, un tono más clara: se distingue de la primera sin sumar otra card
-	   invertida (la marca permite una sola por sección clara). */
-	.rubros__fila--2 .rubros__lista li {
-		background: var(--white);
-	}
-
-	.rubros__fila--2 .rubros__icono {
-		background: var(--surface-alt);
-		border: 1px solid var(--border-light);
-	}
-
-	/* Botón de pausa: un checkbox con apariencia de botón, 44 px de alto. */
-	.rubros__pausa {
-		position: relative;
-		display: none;
-		align-items: center;
-		gap: 6px;
-		min-height: 44px;
-		padding-inline: var(--space-2);
-		border: 1px solid var(--border-light);
-		border-radius: var(--radius-pill);
-		background: var(--white);
-		color: var(--text-body-dark);
-		font-size: var(--type-meta-size);
-		font-weight: var(--fw-medium);
-		cursor: pointer;
-		flex: none;
-		transition: border-color 0.2s, color 0.2s;
-	}
-
-	@media (hover: hover) and (pointer: fine) {
-		.rubros__pausa:hover {
-			border-color: var(--brand-primary-deep);
-			color: var(--brand-primary-deep);
-		}
-	}
-
-	.rubros__pausa input {
-		position: absolute;
-		opacity: 0;
-		inset: 0;
-		margin: 0;
-		cursor: pointer;
-	}
-
-	.rubros__pausa:has(input:focus-visible) {
-		outline: 3px solid var(--brand-primary-deep);
-		outline-offset: 3px;
-	}
-
-	.rubros__pausa :global(.rubros__icono-seguir),
-	.rubros__pausa:has(input:checked) :global(.rubros__icono-pausa) {
-		display: none;
-	}
-
-	.rubros__pausa:has(input:checked) :global(.rubros__icono-seguir) {
-		display: block;
-	}
-
-	/* Sin movimiento: las dos filas se vuelven listas quietas en varias líneas, con el margen del
-	   resto de la página, y las copias se ocultan. */
-	.rubros__pista,
-	.rubros__lista {
-		flex-wrap: wrap;
-		width: auto;
-		row-gap: 12px;
-	}
-
-	.rubros__pista {
-		max-width: 1200px;
-		margin-inline: auto;
-		padding-inline: var(--space-2);
-	}
-
-	@media (min-width: 768px) {
-		.rubros__pista {
-			padding-inline: var(--space-4);
-		}
-	}
-
-	.rubros__lista[aria-hidden] {
-		display: none;
-	}
-
-	/* La cinta corre sola; la fila entera, además, se desliza con el scroll: al bajar, la primera
-	   fila se adelanta hacia la izquierda y la segunda hacia la derecha. */
-	@keyframes cinta-izquierda {
-		to { transform: translateX(-50%); }
-	}
-
-	@keyframes cinta-derecha {
-		from { transform: translateX(-50%); }
-		to { transform: translateX(0); }
-	}
-
-	@keyframes deriva-izquierda {
-		from { transform: translateX(4%); }
-		to { transform: translateX(-4%); }
-	}
-
-	@keyframes deriva-derecha {
-		from { transform: translateX(-4%); }
-		to { transform: translateX(4%); }
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		/* Bordes que se funden con el fondo: la cinta entra y sale en vez de cortarse seco. */
-		.rubros__ventana {
-			mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-		}
-
-		.rubros__pista,
-		.rubros__lista {
-			flex-wrap: nowrap;
-		}
-
-		.rubros__pista {
-			width: max-content;
-			max-width: none;
-			margin-inline: 0;
-			padding-inline: 0;
-			animation: cinta-izquierda 45s linear infinite;
-		}
-
-		.rubros__fila--2 .rubros__pista {
-			animation: cinta-derecha 50s linear infinite;
-		}
-
-		.rubros__lista[aria-hidden] {
-			display: flex;
-		}
-
-		.rubros__pausa {
-			display: inline-flex;
-		}
-
-		.rubros:has(input:checked) .rubros__pista,
-		.rubros__ventana:hover .rubros__pista {
-			animation-play-state: paused;
-		}
-
-		@supports (animation-timeline: view()) {
-			.rubros__fila--1 {
-				animation: deriva-izquierda linear both;
-				animation-timeline: view();
-			}
-
-			.rubros__fila--2 {
-				animation: deriva-derecha linear both;
-				animation-timeline: view();
-			}
-
-			/* Con la pausa puesta, tampoco se mueve con el scroll. */
-			.rubros:has(input:checked) .rubros__fila {
-				animation: none;
-			}
-		}
 	}
 </style>
