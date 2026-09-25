@@ -2,12 +2,21 @@
 // SPECS §4.4 y el proceso de venta: auditoría gratis → propuesta con dos números →
 // construcción de 1 a 3 semanas con demo a mitad de camino → soporte mensual.
 // Es un <ol>: el orden ya lo dice la lista, sin rótulos de "Paso 1".
-// Línea de tiempo vertical (alternada en escritorio). La línea se llena con el scroll y cada
-// marca se enciende cuando la punta la alcanza, a media pantalla. Sin JavaScript: la línea usa
-// el view-timeline de la lista y cada marca su propio view(). Sin movimiento, todo queda
-// encendido. Cada paso lleva un visual chico; la propuesta es la única card invertida.
+// Los pasos van sobre un riel a la izquierda que se llena con el scroll; cada marca se enciende
+// cuando la punta la alcanza. En escritorio, a la derecha, una sola card invertida queda fija y
+// cambia de pantalla según el paso que está a media pantalla. En el celular no hay nada fijo:
+// cada paso lleva su visual abajo, en card clara (la propuesta es la única invertida).
+// Sin soporte de animaciones atadas al scroll, o con movimiento reducido, la card fija no existe:
+// cada visual queda al lado de su paso, completo y quieto.
 import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
+
+const auditoria = [
+	{ proceso: 'Pedidos', tiempo: 0.55 },
+	{ proceso: 'Caja', tiempo: 0.4 },
+	{ proceso: 'Turnos', tiempo: 1, elegido: true },
+	{ proceso: 'Stock', tiempo: 0.25 },
+];
 ---
 
 <section id="proceso" class="seccion proceso" aria-labelledby="proceso-titulo">
@@ -20,57 +29,92 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		<ol class="linea">
 			<li class="paso">
 				<span class="paso__marca"><Icono nombre="magnifying-glass-duotone" size={22} /></span>
-				<div class="paso__texto">
+				<div class="paso__texto" style="--paso: --paso-1">
 					<h3 class="t-label">Auditoría gratis</h3>
 					<p>Una charla de 30 a 45&nbsp;minutos sobre cómo se mueve tu negocio. Salimos con un problema concreto para resolver.</p>
 				</div>
-				<div class="paso__visual visual-auditoria" aria-hidden="true">
-					<span>Pedidos</span>
-					<span>Caja</span>
-					<span class="visual-auditoria__elegido">Turnos: el que más tiempo te lleva</span>
-					<span>Stock</span>
+				<div class="pantalla pantalla--1" aria-hidden="true">
+					<span class="pantalla__titulo">Dónde se va el tiempo</span>
+					<ul class="auditoria">
+						{
+							auditoria.map(({ proceso, tiempo, elegido }, i) => (
+								<li class:list={['auditoria__fila', { 'auditoria__fila--elegida': elegido }]} style={`--i: ${i}`}>
+									<span class="auditoria__nombre">{proceso}</span>
+									<span class="auditoria__barra">
+										<span style={`--tiempo: ${tiempo}`} />
+									</span>
+								</li>
+							))
+						}
+					</ul>
+					<span class="pantalla__chip">
+						<Icono nombre="target-duotone" size={16} />
+						Turnos: el que más tiempo te lleva
+					</span>
 				</div>
 			</li>
 
 			<li class="paso">
 				<span class="paso__marca"><Icono nombre="file-text-duotone" size={22} /></span>
-				<div class="paso__texto">
+				<div class="paso__texto" style="--paso: --paso-2">
 					<h3 class="t-label">Propuesta con dos números</h3>
 					<p>Lo que cuesta armarlo y lo que cuesta por mes, con la fecha de entrega.</p>
 				</div>
-				<div class="paso__visual visual-propuesta" aria-hidden="true">
-					<strong>Propuesta</strong>
-					<dl>
-						<div><dt>Armado</dt><dd>un pago</dd></div>
-						<div><dt>Soporte</dt><dd>por mes</dd></div>
-						<div><dt>Entrega</dt><dd>con fecha</dd></div>
+				<div class="pantalla pantalla--2 pantalla--invertida" aria-hidden="true">
+					<span class="pantalla__titulo">Propuesta</span>
+					<dl class="propuesta">
+						<div style="--i: 0"><dt>Armado</dt><dd>un pago</dd></div>
+						<div style="--i: 1"><dt>Soporte</dt><dd>por mes</dd></div>
+						<div style="--i: 2"><dt>Entrega</dt><dd>con fecha</dd></div>
 					</dl>
+					<span class="propuesta__sello">
+						<Icono nombre="seal-check-duotone" size={18} />
+						Aprobada
+					</span>
 				</div>
 			</li>
 
 			<li class="paso">
 				<span class="paso__marca"><Icono nombre="hammer-duotone" size={22} /></span>
-				<div class="paso__texto">
+				<div class="paso__texto" style="--paso: --paso-3">
 					<h3 class="t-label">Construcción en 1 a 3&nbsp;semanas</h3>
 					<p>A mitad de camino te mostramos cómo va, para ajustar antes de terminar.</p>
 				</div>
-				<div class="paso__visual visual-semanas" aria-hidden="true">
-					<span class="visual-semanas__demo"><Icono nombre="flag-duotone" size={14} /> Demo</span>
-					<span class="visual-semanas__tramo">Semana 1</span>
-					<span class="visual-semanas__tramo">Semana 2</span>
-					<span class="visual-semanas__tramo">Semana 3</span>
+				<div class="pantalla pantalla--3" aria-hidden="true">
+					<span class="pantalla__titulo">Construcción</span>
+					<div class="semanas">
+						<span class="semanas__demo"><Icono nombre="flag-duotone" size={14} /> Demo</span>
+						<span class="semanas__tramo" style="--i: 0">Semana 1</span>
+						<span class="semanas__tramo" style="--i: 1">Semana 2</span>
+						<span class="semanas__tramo" style="--i: 2">Semana 3</span>
+					</div>
+					<ul class="tareas">
+						<li style="--i: 0"><Icono nombre="check-circle-duotone" size={18} />Lo que hoy anotás a mano, cargado</li>
+						<li style="--i: 1"><Icono nombre="check-circle-duotone" size={18} />Demo: lo probás y ajustamos</li>
+						<li style="--i: 2"><Icono nombre="check-circle-duotone" size={18} />Listo para tu equipo</li>
+					</ul>
 				</div>
 			</li>
 
 			<li class="paso">
 				<span class="paso__marca"><Icono nombre="lifebuoy-duotone" size={22} /></span>
-				<div class="paso__texto">
+				<div class="paso__texto" style="--paso: --paso-4">
 					<h3 class="t-label">Soporte todos los meses</h3>
 					<p>Arreglamos lo que falle y mejoramos el sistema a medida que tu negocio cambia.</p>
 				</div>
-				<div class="paso__visual visual-soporte" aria-hidden="true">
-					<p class="visual-soporte__pedido">¿Podemos sumar el CUIT en los pedidos?</p>
-					<p class="visual-soporte__respuesta">Listo, ya aparece en la planilla.</p>
+				<div class="pantalla pantalla--4" aria-hidden="true">
+					<span class="pantalla__titulo">Soporte</span>
+					<div class="soporte">
+						<p class="soporte__pedido">¿Podemos sumar el CUIT en las órdenes?</p>
+						<p class="soporte__respuesta">
+							<span class="soporte__quien">I</span>
+							Listo, ya aparece en cada orden.
+						</p>
+					</div>
+					<span class="soporte__mejora">
+						<Icono nombre="arrow-up-right-bold" size={16} />
+						El sistema cambia con tu negocio
+					</span>
 				</div>
 			</li>
 		</ol>
@@ -86,13 +130,13 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 </section>
 
 <style>
-	/* El botón cierra la línea de tiempo: queda debajo, donde la línea se desvanece. */
 	.proceso__pie {
 		display: flex;
 		justify-content: center;
 		margin-top: var(--space-6);
 	}
 
+	/* --- El riel y los pasos (celular primero) --- */
 	.linea {
 		--marca: 48px;
 		position: relative;
@@ -100,10 +144,11 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		gap: var(--space-6);
 		margin-top: var(--space-6);
 		view-timeline: --proceso block;
+		timeline-scope: --paso-1, --paso-2, --paso-3, --paso-4;
 	}
 
-	/* El riel y su relleno. Van a la altura del centro de las marcas y se desvanecen al final:
-	   el soporte sigue. */
+	/* El riel y su relleno, a la altura del centro de las marcas; se desvanecen al final: el
+	   soporte sigue. */
 	.linea::before,
 	.linea::after {
 		content: '';
@@ -127,23 +172,36 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 	.paso {
 		position: relative;
 		display: grid;
-		grid-template-columns: var(--marca) 1fr;
+		grid-template-columns: var(--marca) minmax(0, 1fr);
 		column-gap: var(--space-3);
 		row-gap: var(--space-3);
 	}
 
-	/* Estado encendido: es el de base, así sin movimiento (o en Firefox) todo se ve completo. */
+	/* Encendida es la de base: sin movimiento (o en Firefox) todo se ve completo. Apagada es una
+	   capa blanca encima, que se funde: solo opacidad, sin repintar el fondo en cada cuadro. */
 	.paso__marca {
+		position: relative;
 		z-index: 1;
+		isolation: isolate;
 		display: grid;
 		place-items: center;
 		width: var(--marca);
 		height: var(--marca);
-		border: 1px solid var(--brand-primary-deep);
 		border-radius: var(--radius-pill);
 		background: var(--brand-primary-deep);
 		color: var(--white);
 		box-shadow: 0 0 0 8px var(--surface-alt);
+	}
+
+	.paso__marca::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border: 1px solid var(--border-light);
+		border-radius: inherit;
+		background: var(--white);
+		opacity: 0;
 	}
 
 	.paso__texto {
@@ -162,100 +220,158 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		max-width: 42ch;
 	}
 
-	.paso__visual {
+	/* --- Las pantallas: card clara en el celular (la propuesta, invertida). Los colores van en
+	   variables: en escritorio las cuatro pasan a ser la misma card invertida. --- */
+	.pantalla {
+		--p-fondo: var(--white);
+		--p-borde: var(--border-light);
+		--p-titulo: var(--text-heading-dark);
+		--p-texto: var(--text-body-dark);
+		--p-suave: var(--text-muted-dark);
+		--p-riel: var(--slate-100);
+		--p-acento: var(--brand-primary-deep);
+		--p-chip-fondo: var(--blue-50);
+		--p-chip-texto: var(--brand-primary-deep);
 		grid-column: 2;
+		position: relative;
+		display: grid;
+		align-content: start;
+		gap: var(--space-2);
+		max-width: 420px;
+		padding: var(--space-3);
+		border: 1px solid var(--p-borde);
+		border-radius: var(--radius-card);
+		background: var(--p-fondo);
+		color: var(--p-texto);
+		font-size: 0.9375rem;
+		line-height: 1.4;
+		box-shadow: var(--shadow-elevada);
 	}
 
-	/* --- Visuales de cada paso --- */
-	.visual-auditoria {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-1);
+	.pantalla--invertida {
+		--p-fondo: var(--surface-card-dark);
+		--p-borde: var(--border-dark);
+		--p-titulo: var(--text-heading-light);
+		--p-texto: var(--text-body-light);
+		--p-suave: var(--text-muted-light);
+		--p-riel: var(--navy-800);
+		--p-acento: var(--cyan-300);
+		--p-chip-fondo: var(--cyan-300);
+		--p-chip-texto: var(--navy-950);
+		box-shadow: var(--shadow-card);
 	}
 
-	.visual-auditoria span {
+	.pantalla__titulo {
+		color: var(--p-titulo);
+		font-weight: var(--fw-bold);
+	}
+
+	.pantalla__chip,
+	.propuesta__sello,
+	.soporte__mejora {
+		justify-self: start;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		padding: 8px 14px;
-		border: 1px solid var(--border-light);
 		border-radius: var(--radius-pill);
-		color: var(--text-muted-dark);
+		background: var(--p-chip-fondo);
+		color: var(--p-chip-texto);
 		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+		line-height: 1.2;
+	}
+
+	/* 1. Auditoría: dónde se va el tiempo, sin números; el proceso elegido resalta. */
+	.auditoria {
+		display: grid;
+		gap: 12px;
+	}
+
+	.auditoria__fila {
+		display: grid;
+		grid-template-columns: 72px minmax(0, 1fr);
+		align-items: center;
+		gap: 12px;
+		color: var(--p-suave);
 		font-weight: var(--fw-medium);
 	}
 
-	.visual-auditoria .visual-auditoria__elegido {
-		border-color: var(--brand-primary-deep);
-		background: var(--blue-50);
-		color: var(--brand-primary-deep);
-		font-weight: var(--fw-semibold);
+	.auditoria__fila--elegida {
+		color: var(--p-titulo);
+		font-weight: var(--fw-bold);
 	}
 
-	/* La propuesta: la única card invertida de la sección. Sin montos: los precios van en otra etapa. */
-	.visual-propuesta {
-		display: grid;
-		gap: var(--space-2);
-		max-width: 320px;
-		padding: var(--space-3);
-		border-radius: var(--radius-card);
-		background: var(--surface-card-dark);
-		color: var(--text-body-light);
-		box-shadow: var(--shadow-card);
-		font-size: 0.9375rem;
-		rotate: 1.5deg;
+	.auditoria__barra {
+		height: 10px;
+		border-radius: 10px;
+		background: var(--p-riel);
+		overflow: clip;
 	}
 
-	.visual-propuesta strong {
-		color: var(--text-heading-light);
+	.auditoria__barra > span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--p-suave);
+		opacity: 0.5;
+		transform-origin: left;
+		transform: scaleX(var(--tiempo));
 	}
 
-	.visual-propuesta dl {
+	.auditoria__fila--elegida .auditoria__barra > span {
+		background: var(--p-acento);
+		opacity: 1;
+	}
+
+	/* 2. Propuesta: sin montos, los precios van en otra etapa. */
+	.propuesta {
 		display: grid;
 		gap: var(--space-1);
 	}
 
-	.visual-propuesta dl div {
+	.propuesta div {
 		display: flex;
 		justify-content: space-between;
 		gap: var(--space-2);
 		padding-top: var(--space-1);
-		border-top: 1px solid var(--border-dark);
+		border-top: 1px solid var(--p-borde);
 	}
 
-	.visual-propuesta dd {
+	.propuesta dd {
 		margin: 0;
-		color: var(--cyan-300);
+		color: var(--p-acento);
 		font-weight: var(--fw-semibold);
 	}
 
-	.visual-semanas {
+	.propuesta__sello {
+		rotate: -3deg;
+	}
+
+	/* 3. Construcción: las tres semanas, la bandera de la demo a mitad de camino y las tareas. */
+	.semanas {
 		position: relative;
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 4px;
-		width: min(100%, 360px);
 		padding-top: 36px;
-		view-timeline: --semanas block;
 	}
 
-	.visual-semanas__tramo {
-		padding: 8px 4px;
+	.semanas__tramo {
+		padding: 8px 2px;
 		border-radius: 8px;
 		background: var(--blue-100);
 		color: var(--blue-900);
 		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
 		text-align: center;
+		white-space: nowrap;
 	}
 
-	.visual-semanas__tramo:nth-of-type(2) {
-		border-radius: var(--radius-pill) 8px 8px var(--radius-pill);
-	}
+	.semanas__tramo:nth-of-type(2) { border-radius: var(--radius-pill) 8px 8px var(--radius-pill); }
+	.semanas__tramo:nth-of-type(4) { border-radius: 8px var(--radius-pill) var(--radius-pill) 8px; }
 
-	.visual-semanas__tramo:nth-of-type(4) {
-		border-radius: 8px var(--radius-pill) var(--radius-pill) 8px;
-	}
-
-	/* La bandera de la demo, a mitad de la segunda semana, clavada sobre el borde de arriba. */
-	.visual-semanas__demo {
+	.semanas__demo {
 		position: absolute;
 		top: 0;
 		left: 50%;
@@ -267,134 +383,344 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		border-radius: var(--radius-pill);
 		background: var(--cyan-300);
 		color: var(--navy-950);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: var(--fw-bold);
 		box-shadow: var(--shadow-elevada);
 	}
 
-	.visual-soporte {
+	.tareas {
 		display: grid;
-		gap: 6px;
-		max-width: 340px;
-		font-size: 0.9375rem;
-		line-height: 1.4;
+		gap: 8px;
 	}
 
-	.visual-soporte p {
+	.tareas li {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.tareas :global(svg) {
+		flex: none;
+		color: var(--p-acento);
+	}
+
+	/* 4. Soporte: el pedido y la respuesta, que la da una persona (la inicial de Ignacio). */
+	.soporte {
+		display: grid;
+		gap: 8px;
+	}
+
+	.soporte p {
+		max-width: 30ch;
 		padding: 10px 14px;
 		border-radius: 18px;
 	}
 
-	.visual-soporte__pedido {
+	.soporte__pedido {
 		justify-self: start;
-		border: 1px solid var(--border-light);
+		border: 1px solid var(--p-borde);
 		border-bottom-left-radius: 6px;
-		color: var(--text-heading-dark);
+		color: var(--p-titulo);
 	}
 
-	.visual-soporte__respuesta {
+	.soporte__respuesta {
 		justify-self: end;
+		display: flex;
+		align-items: center;
+		gap: 8px;
 		border-bottom-right-radius: 6px;
 		background: var(--brand-primary-deep);
 		color: #eaf1ff;
 	}
 
-	/* --- Escritorio: la línea al centro y los pasos alternados a cada lado. --- */
+	.soporte__quien {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		background: var(--blue-100);
+		color: var(--blue-900);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-bold);
+	}
+
+	/* --- Escritorio sin la card fija (movimiento reducido o sin soporte): cada visual al lado de
+	   su paso. --- */
 	@media (min-width: 1024px) {
 		.linea {
 			--marca: 56px;
 			gap: var(--space-7);
 		}
 
-		.linea::before,
-		.linea::after {
-			left: calc(50% - 1px);
-		}
-
 		.paso {
-			grid-template-columns: 1fr var(--marca) 1fr;
-			column-gap: var(--space-6);
+			grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
+			column-gap: var(--space-4);
 			align-items: start;
 		}
 
-		.paso__marca {
-			grid-column: 2;
+		.pantalla {
+			grid-column: 3;
 			grid-row: 1;
-		}
-
-		.paso__texto,
-		.paso__visual {
-			grid-row: 1;
-		}
-
-		.paso__texto {
-			padding-top: var(--space-1);
-		}
-
-		.paso:nth-child(odd) .paso__texto { grid-column: 1; justify-self: end; }
-		.paso:nth-child(odd) .paso__visual { grid-column: 3; justify-self: start; }
-		.paso:nth-child(even) .paso__texto { grid-column: 3; }
-		.paso:nth-child(even) .paso__visual { grid-column: 1; justify-self: end; }
-
-		.paso__texto p {
-			max-width: 36ch;
+			width: 100%;
 		}
 	}
 
 	/* --- Movimiento --- */
-	@keyframes llenar-linea {
+	@keyframes proceso-llenar {
 		from { transform: scaleY(0); }
 	}
 
-	@keyframes encender-marca {
-		from {
-			border-color: var(--border-light);
-			background: var(--white);
-			color: var(--brand-primary-deep);
-		}
+	@keyframes proceso-apagada {
+		from, to { opacity: 1; }
 	}
 
-	@keyframes visual-entra {
-		from { opacity: 0; transform: translateY(16px) scale(0.98); }
+	@keyframes proceso-icono-apagado {
+		from, to { color: var(--brand-primary-deep); }
+	}
+
+	@keyframes proceso-entra {
+		from { opacity: 0; transform: translateY(16px); }
+	}
+
+	@keyframes proceso-barra {
+		from { transform: scaleX(0); }
 	}
 
 	/* Recorte de izquierda a derecha y no scaleX: así "Semana" no se aplasta mientras avanza. */
-	@keyframes tramo-avanza {
+	@keyframes proceso-tramo {
 		from { clip-path: inset(0 100% 0 0); }
+		to { clip-path: inset(0 0 0 0); }
+	}
+
+	@keyframes proceso-sello {
+		from { opacity: 0; transform: scale(1.3); }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
-			/* La punta del relleno va a media pantalla: arranca cuando el principio de la lista
-			   llega a la mitad y termina cuando el final llega a la mitad. */
+			/* La punta del relleno va a media pantalla. */
 			.linea::after {
-				animation: llenar-linea linear both;
+				animation: proceso-llenar linear both;
 				animation-timeline: --proceso;
 				animation-range: cover 50vh cover calc(100% - 50vh);
 			}
 
-			/* Cada marca se enciende en el mismo momento en que la punta la alcanza. */
-			.paso__marca {
-				animation: encender-marca linear both;
+			/* Cada marca está apagada hasta que la punta la alcanza (fill backwards: antes del
+			   tramo, apagada; después, la de base, encendida). */
+			.paso__marca::before {
+				animation: proceso-apagada linear backwards;
 				animation-timeline: view();
 				animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
 			}
 
-			.paso__visual {
-				animation: visual-entra linear both;
+			.paso__marca :global(svg) {
+				animation: proceso-icono-apagado linear backwards;
 				animation-timeline: view();
-				animation-range: entry 10% cover 35%;
+				animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
+			}
+		}
+	}
+
+	/* Celular y tablet: cada visual entra y se arma con su propio view(). */
+	@media (prefers-reduced-motion: no-preference) and (max-width: 1023px) {
+		@supports (animation-timeline: view()) {
+			.pantalla {
+				view-timeline: --pantalla block;
+				animation: proceso-entra var(--curva-salida) both;
+				animation-timeline: view();
+				animation-range: entry 10% entry 80%;
 			}
 
-			.visual-semanas__tramo {
-				animation: tramo-avanza linear both;
-				animation-timeline: --semanas;
+			.auditoria__barra > span {
+				animation: proceso-barra var(--curva-salida) both;
+				animation-timeline: --pantalla;
+				animation-range: entry calc(50% + var(--i) * 10%) cover calc(45% + var(--i) * 4%);
 			}
 
-			/* Las semanas se completan una detrás de otra, después de que entra el visual. */
-			.visual-semanas__tramo:nth-of-type(2) { animation-range: cover 30% cover 40%; }
-			.visual-semanas__tramo:nth-of-type(3) { animation-range: cover 38% cover 48%; }
-			.visual-semanas__tramo:nth-of-type(4) { animation-range: cover 46% cover 56%; }
+			.semanas__tramo {
+				animation: proceso-tramo var(--curva-salida) both;
+				animation-timeline: --pantalla;
+				animation-range: cover calc(30% + var(--i) * 8%) cover calc(40% + var(--i) * 8%);
+			}
+
+			.propuesta__sello {
+				animation: proceso-sello var(--curva-salida) both;
+				animation-timeline: --pantalla;
+				animation-range: cover 40% cover 48%;
+			}
+		}
+	}
+
+	/* --- Escritorio con movimiento: la card fija que cambia de pantalla. Los pasos pierden su
+	   caja (display: contents) y sus partes pasan a la grilla de la lista: marca y texto en una
+	   fila por paso, las cuatro pantallas apiladas en la tercera columna, fijas a media pantalla.
+	   Cada texto es alto (el tramo de scroll de su paso) y define su timeline, con la línea que
+	   cuenta a media pantalla (view-timeline-inset). --- */
+	/* Los timelines de dos pasos seguidos se pisan un 12 % (la franja de media pantalla): la que
+	   sale termina de irse antes de que llegue la otra, para que nunca se lean dos a la vez. */
+	@keyframes proceso-pantalla {
+		0%, 6% { opacity: 0; transform: translateY(16px); }
+		14%, 86% { opacity: 1; transform: none; }
+		93%, 100% { opacity: 0; transform: translateY(-16px); }
+	}
+
+	@keyframes proceso-pantalla-primera {
+		0%, 86% { opacity: 1; transform: none; }
+		93%, 100% { opacity: 0; transform: translateY(-16px); }
+	}
+
+	@keyframes proceso-pantalla-ultima {
+		0%, 6% { opacity: 0; transform: translateY(16px); }
+		14%, 100% { opacity: 1; transform: none; }
+	}
+
+	/* El texto del paso activo se aclara del resto. */
+	@keyframes proceso-texto-activo {
+		0%, 100% { opacity: 0.4; }
+		12%, 88% { opacity: 1; }
+	}
+
+	@media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
+		@supports (animation-timeline: view()) {
+			.linea {
+				grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
+				grid-template-rows: repeat(4, auto);
+				column-gap: var(--space-4);
+				row-gap: 0;
+				--fija-arriba: max(112px, calc(50vh - 200px));
+				--fija-alto: 400px;
+			}
+
+			.paso {
+				display: contents;
+			}
+
+			.paso:nth-child(1) > * { grid-row: 1; }
+			.paso:nth-child(2) > * { grid-row: 2; }
+			.paso:nth-child(3) > * { grid-row: 3; }
+			.paso:nth-child(4) > * { grid-row: 4; }
+
+			.paso__marca {
+				grid-column: 1;
+			}
+
+			.paso__texto {
+				grid-column: 2;
+				min-height: 70vh;
+				padding-bottom: var(--space-6);
+				view-timeline: var(--paso) block;
+				view-timeline-inset: 45% 45%;
+				animation: proceso-texto-activo linear both;
+				animation-timeline: var(--paso);
+			}
+
+			.paso:first-child .paso__texto { animation-name: none; }
+
+			/* El marco: la única card invertida, fija. Es el ::before del primer paso, que con
+			   display: contents igual genera su caja y cae en la grilla de la lista. Las cuatro
+			   pantallas van encima, transparentes: solo cambia el contenido. */
+			.paso:first-child::before {
+				content: '';
+				grid-column: 3;
+				grid-row: 1 / -1;
+				align-self: start;
+				position: sticky;
+				top: var(--fija-arriba);
+				height: var(--fija-alto);
+				border: 1px solid var(--border-dark);
+				border-radius: var(--radius-card);
+				background: var(--surface-card-dark);
+				box-shadow: var(--shadow-card);
+			}
+
+			.pantalla {
+				--p-fondo: var(--surface-card-dark);
+				--p-borde: var(--border-dark);
+				--p-titulo: var(--text-heading-light);
+				--p-texto: var(--text-body-light);
+				--p-suave: var(--text-muted-light);
+				--p-riel: var(--navy-800);
+				--p-acento: var(--cyan-300);
+				--p-chip-fondo: var(--cyan-300);
+				--p-chip-texto: var(--navy-950);
+				grid-column: 3;
+				grid-row: 1 / -1 !important;
+				align-self: start;
+				position: sticky;
+				top: var(--fija-arriba);
+				max-width: none;
+				height: var(--fija-alto);
+				padding: var(--space-5) var(--space-4);
+				gap: var(--space-3);
+				border-color: transparent;
+				background: none;
+				font-size: 1.0625rem;
+				box-shadow: none;
+				animation: proceso-pantalla linear both;
+			}
+
+			.pantalla--1 { animation-name: proceso-pantalla-primera; animation-timeline: --paso-1; }
+			.pantalla--2 { animation-timeline: --paso-2; }
+			.pantalla--3 { animation-timeline: --paso-3; }
+			.pantalla--4 { animation-name: proceso-pantalla-ultima; animation-timeline: --paso-4; }
+
+			.pantalla__titulo {
+				font-size: var(--type-label-size);
+			}
+
+			/* Cada pantalla se arma mientras su paso cruza la mitad. */
+			.pantalla--1 .auditoria__barra > span {
+				animation: proceso-barra var(--curva-salida) both;
+				animation-timeline: --paso-1;
+				animation-range: cover calc(5% + var(--i) * 6%) cover calc(35% + var(--i) * 6%);
+			}
+
+			.pantalla--2 .propuesta div {
+				animation: proceso-entra var(--curva-salida) both;
+				animation-timeline: --paso-2;
+				animation-range: cover calc(8% + var(--i) * 8%) cover calc(24% + var(--i) * 8%);
+			}
+
+			.pantalla--2 .propuesta__sello {
+				animation: proceso-sello var(--curva-salida) both;
+				animation-timeline: --paso-2;
+				animation-range: cover 40% cover 50%;
+			}
+
+			.pantalla--3 .semanas__tramo {
+				animation: proceso-tramo var(--curva-salida) both;
+				animation-timeline: --paso-3;
+				animation-range: cover calc(8% + var(--i) * 14%) cover calc(22% + var(--i) * 14%);
+			}
+
+			.pantalla--3 .tareas li {
+				animation: proceso-entra var(--curva-salida) both;
+				animation-timeline: --paso-3;
+				animation-range: cover calc(20% + var(--i) * 14%) cover calc(30% + var(--i) * 14%);
+			}
+
+			.pantalla--4 .soporte p,
+			.pantalla--4 .soporte__mejora {
+				animation: proceso-entra var(--curva-salida) both;
+				animation-timeline: --paso-4;
+			}
+
+			.pantalla--4 .soporte__pedido { animation-range: cover 8% cover 20%; }
+			.pantalla--4 .soporte__respuesta { animation-range: cover 22% cover 34%; }
+			.pantalla--4 .soporte__mejora { animation-range: cover 36% cover 46%; }
+		}
+	}
+
+	/* Movimiento reducido: la versión suave. Cada visual se funde al entrar, sin desplazarse. */
+	@media (prefers-reduced-motion: reduce) {
+		@supports (animation-timeline: view()) {
+			.pantalla {
+				animation: aparecer linear both;
+				animation-timeline: view();
+				animation-range: entry 0% entry 50%;
+			}
 		}
 	}
 </style>
