@@ -1,25 +1,19 @@
 ---
 // SPECS §4.7: el botón de WhatsApp otra vez. Las redes van en el pie (Pie.astro).
-// Layout "CTA" de la marca: fondo oscuro, glow desde otra esquina que la portada, titular
-// arriba y botón abajo. Al lado, la charla entera que arranca el botón: el mensaje real que
-// abre (sale de config.ts, así no se desfasan), la respuesta, el día elegido y la auditoría
-// agendada, que queda como aviso sobre el borde de la caja. Todo llega con el scroll, con
-// "escribiendo..." en la burbuja y en la cabecera y los tildes que pasan a leído.
-// Sin movimiento, la charla se ve completa.
-// El avatar es el de la marca para recorte circular (avatar-claro): la A ya viene centrada.
-// El isotipo suelto carga las capas de velocidad a la izquierda y en un círculo se ve corrido.
-import { Image } from 'astro:assets';
+// Cierre tipo manifiesto: un titular gigante, los tres datos de la auditoría en columnas y el
+// botón montado sobre el borde de esa card (la regla de profundidad de la marca). Fondo oscuro,
+// glow desde otra esquina que la portada.
+// Con el scroll, la sección llega como una card con márgenes y se abre de borde a borde
+// (clip-path), y las dos líneas del titular suben desde su renglón. Sin movimiento, o en
+// Firefox, se ve abierta y completa.
 import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
-import Burbuja from '../mocks/Burbuja.astro';
-import avatar from '../../assets/identidad/avatar-claro.png';
-import { WHATSAPP_MENSAJE } from '../../config';
 
 const datos = [
-	{ icono: 'clock-duotone', texto: '30 a 45 minutos' },
-	{ icono: 'gift-duotone', texto: 'Gratis' },
-	{ icono: 'clipboard-text-duotone', texto: 'Sin preparar nada' },
+	{ icono: 'clock-duotone', titulo: '30 a 45 minutos', texto: 'Coordinamos el día por WhatsApp, cuando te quede cómodo.' },
+	{ icono: 'gift-duotone', titulo: 'Gratis', texto: 'Salís con un problema concreto para resolver, lo contrates o no.' },
+	{ icono: 'clipboard-text-duotone', titulo: 'Sin preparar nada', texto: 'Nos contás cómo trabajan hoy. No hace falta mandar nada antes.' },
 ];
 ---
 
@@ -27,420 +21,248 @@ const datos = [
 	<Glow tono="azul" esquina="abajo-izq" />
 	<Glow tono="cian" esquina="abajo-izq" />
 
-	<div class="contenedor cierre__grilla">
-		<div class="cierre__texto">
-			<h2 id="cierre-titulo" class="t-hook">Empezá por la <span class="texto-gradiente">auditoría gratis</span></h2>
-			<p class="t-cuerpo">Una charla para encontrar el proceso que más tiempo te hace perder.</p>
+	<div class="contenedor">
+		<h2 id="cierre-titulo" class="cierre__titular">
+			<span class="cierre__renglon"><span>Empezá por la</span></span>
+			<span class="cierre__renglon"><span class="texto-gradiente">auditoría gratis</span></span>
+		</h2>
+		<p class="t-cuerpo cierre__bajada revelar">Una charla para encontrar el proceso que más tiempo te hace perder.</p>
+
+		<div class="cierre__card">
 			<ul class="cierre__datos">
 				{
-					datos.map(({ icono, texto }, i) => (
-						<li style={`--i: ${i}`}>
-							<Icono nombre={icono} size={18} />
-							{texto}
+					datos.map(({ icono, titulo, texto }, i) => (
+						<li class="dato" style={`--i: ${i}`}>
+							<Icono nombre={icono} size={28} />
+							<strong>{titulo}</strong>
+							<span>{texto}</span>
 						</li>
 					))
 				}
 			</ul>
-			<BotonWhatsApp />
-		</div>
-
-		<div
-			class="cierre__chat"
-			role="img"
-			aria-label={`Ejemplo de la charla por WhatsApp. Vos: “${WHATSAPP_MENSAJE}”. Accelerate.ai pregunta qué día te queda cómodo, elegís el jueves a la tarde y queda agendada la auditoría para el jueves a las 17.`}
-		>
-			<div class="chat__cabecera">
-				<span class="chat__avatar">
-					<span class="chat__avatar-circulo">
-						<Image src={avatar} alt="" width={132} />
-					</span>
-				</span>
-				<span>
-					Accelerate.ai
-					<span class="chat__estado">
-						<small class="chat__estado-linea">en línea</small>
-						<small class="chat__estado-escribe" aria-hidden="true">escribiendo…</small>
-					</span>
-				</span>
-			</div>
-
-			<div class="chat__mensajes">
-				<span class="chat__dia">Hoy</span>
-				<Burbuja de="enviada" hora="10:02" class="chat__mio chat__mio--1">{WHATSAPP_MENSAJE}</Burbuja>
-				<div class="chat__turno chat__turno--1">
-					<span class="escribiendo"><i></i><i></i><i></i></span>
-					<Burbuja de="recibida" hora="10:03" class="chat__respuesta">
-						¡Hola! Buenísimo. ¿Qué día te queda cómodo para charlar media hora?
-					</Burbuja>
-				</div>
-				<Burbuja de="enviada" hora="10:04" class="chat__mio chat__mio--2">El jueves a la tarde me viene bien.</Burbuja>
-				<div class="chat__turno chat__turno--2">
-					<span class="escribiendo"><i></i><i></i><i></i></span>
-					<Burbuja de="recibida" hora="10:04" class="chat__respuesta">Listo, jueves a las 17. ¡Hablamos!</Burbuja>
-				</div>
-			</div>
-
-			<div class="agendada">
-				<span class="agendada__icono">
-					<Icono nombre="calendar-check-duotone" size={20} />
-				</span>
-				<span>
-					<strong>Auditoría agendada</strong>
-					<small>Jueves 17:00 · 30 a 45 min</small>
-				</span>
+			<div class="cierre__accion">
+				<BotonWhatsApp />
 			</div>
 		</div>
+		<p class="cierre__quien">Te contesta Ignacio o Gabriel</p>
 	</div>
 </section>
 
 <style>
-	.cierre__grilla {
+	.cierre {
+		padding-bottom: var(--space-8);
+	}
+
+	/* El titular es la pieza: más grande que el de la portada, en dos renglones. */
+	.cierre__titular {
 		display: grid;
-		gap: var(--space-6);
+		max-width: 15ch;
+		view-timeline: --titular block;
+		font-size: clamp(3rem, 1.25rem + 7vw, 6.5rem);
+		font-weight: var(--type-hook-weight);
+		line-height: 0.95;
+		letter-spacing: -0.03em;
+		text-wrap: balance;
 	}
 
-	.cierre__texto {
-		display: grid;
-		justify-items: start;
-		align-content: center;
-		gap: var(--space-3);
+	/* Cada renglón recorta a su texto, que sube desde abajo. El padding deja lugar a las letras
+	   que bajan de la línea (p, g) y el margen negativo lo devuelve. */
+	.cierre__renglon {
+		display: block;
+		overflow: clip;
+		padding-bottom: 0.12em;
+		margin-bottom: -0.12em;
 	}
 
-	.cierre__texto h2 {
-		max-width: 12ch;
+	.cierre__renglon > span {
+		display: inline-block;
 	}
 
-	.cierre__texto p {
+	.cierre__bajada {
 		max-width: 40ch;
+		margin-top: var(--space-3);
+		color: var(--text-body-light);
 	}
 
-	/* Los tres datos de la auditoría, en píldoras: se leen de un vistazo antes del botón. */
-	.cierre__datos {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-1);
-		margin-bottom: var(--space-1);
-	}
-
-	.cierre__datos li {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-1);
-		padding: var(--space-1) var(--space-2);
-		border: 1px solid var(--border-dark);
-		border-radius: var(--radius-pill);
-		background: var(--surface-card-dark);
-		color: var(--text-heading-light);
-		font-size: var(--type-meta-size);
-		font-weight: var(--fw-semibold);
-	}
-
-	.cierre__datos :global(svg) {
-		color: var(--cyan-300);
-	}
-
-	/* El chat: la card oscura de la marca, un tono arriba del fondo de la sección. Deja lugar
-	   abajo para el aviso de la auditoría agendada, que se monta sobre el borde. */
-	.cierre__chat {
-		width: 100%;
-		max-width: 440px;
-		justify-self: center;
-		margin-bottom: 32px;
+	/* La card de los tres datos. Deja abajo lugar para el botón, que se monta sobre su borde. */
+	.cierre__card {
+		position: relative;
+		margin-top: var(--space-6);
+		padding: var(--space-4) var(--space-3) var(--space-6);
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-card-lg);
 		background: var(--surface-card-dark);
 		box-shadow: 0 24px 60px rgba(2, 6, 18, 0.45);
-		color: var(--text-body-light);
-		view-timeline: --chat block;
 	}
 
-	.chat__cabecera {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 14px var(--space-2);
-		border-bottom: 1px solid var(--border-dark);
-		color: var(--text-heading-light);
-		font-size: 0.9375rem;
-		font-weight: var(--fw-semibold);
+	.cierre__datos {
+		display: grid;
+		gap: var(--space-3);
 	}
 
-	.chat__cabecera small {
-		display: block;
+	.dato {
+		display: grid;
+		gap: var(--space-1);
+		align-content: start;
+		padding-top: var(--space-3);
+		border-top: 1px solid var(--border-dark);
+	}
+
+	.dato:first-child {
+		padding-top: 0;
+		border-top: 0;
+	}
+
+	.dato :global(svg) {
 		color: var(--cyan-300);
-		font-size: 0.75rem;
-		font-weight: var(--fw-regular);
 	}
 
-	/* "en línea" y "escribiendo..." comparten el lugar; sin movimiento solo se ve el primero. */
-	.chat__estado {
-		display: grid;
+	.dato strong {
+		color: var(--text-heading-light);
+		font-size: var(--type-label-size);
+		font-weight: var(--fw-bold);
+		line-height: 1.15;
 	}
 
-	.chat__estado > * {
-		grid-area: 1 / 1;
+	.dato span {
+		max-width: 32ch;
+		color: var(--text-body-light);
+		font-size: var(--type-meta-size);
 	}
 
-	.chat__estado-escribe {
-		visibility: hidden;
-	}
-
-	/* El avatar de la marca llena el círculo; el punto cian dice "en línea", como en WhatsApp.
-	   La A es cursiva y lo claro cae a la derecha (las capas de la izquierda son azules sobre
-	   navy): centrada por su caja se ve corrida. Va movida a la izquierda, adentro del círculo,
-	   sin recortar las capas. El fondo del círculo es el mismo navy del PNG. */
-	.chat__avatar {
-		position: relative;
-		flex: none;
-		width: 44px;
-		height: 44px;
-	}
-
-	.chat__avatar-circulo {
-		display: block;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		border-radius: var(--radius-pill);
-		background: var(--navy-950);
-		box-shadow: 0 0 0 1px var(--border-dark);
-	}
-
-	.chat__avatar :global(img) {
-		display: block;
-		width: 100%;
-		height: 100%;
-		translate: -6% 0;
-	}
-
-	.chat__avatar::after {
-		content: '';
+	/* El botón, mitad adentro y mitad afuera del borde de abajo. */
+	/* En el celular va a lo ancho, con menos aire a los lados para que entre en un renglón. */
+	.cierre__accion {
 		position: absolute;
-		right: -1px;
-		bottom: -1px;
-		width: 12px;
-		height: 12px;
-		border: 2px solid var(--surface-card-dark);
-		border-radius: var(--radius-pill);
-		background: var(--cyan-300);
+		left: var(--space-2);
+		right: var(--space-2);
+		bottom: 0;
+		display: grid;
+		translate: 0 50%;
 	}
 
-	.chat__mensajes {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		padding: var(--space-2) var(--space-2) var(--space-5);
+	.cierre__accion > :global(*) {
+		padding-inline: var(--space-2);
 	}
 
-	.chat__dia {
-		align-self: center;
-		padding: 4px 12px;
-		border-radius: var(--radius-pill);
-		background: var(--navy-850);
+	/* Debajo del botón, ya fuera de la card: quién contesta. */
+	.cierre__quien {
+		margin-top: var(--space-5);
+		padding-left: var(--space-2);
 		color: var(--text-muted-light);
-		font-size: 0.75rem;
-		font-weight: var(--fw-medium);
+		font-size: var(--type-meta-size);
 	}
 
-	/* "Escribiendo..." y la respuesta ocupan el mismo lugar: uno se va cuando llega la otra. */
-	.chat__turno {
-		display: grid;
-		justify-items: start;
-	}
+	@media (min-width: 768px) {
+		.cierre__card {
+			padding: var(--space-5) var(--space-4) var(--space-6);
+		}
 
-	.chat__turno > :global(*) {
-		grid-area: 1 / 1;
-	}
+		.cierre__datos {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 0;
+		}
 
-	.escribiendo {
-		display: none;
-	}
+		/* En columnas, los separa una línea vertical en lugar de la horizontal. */
+		.dato,
+		.dato:first-child {
+			padding: 0 var(--space-3);
+			border-top: 0;
+			border-left: 1px solid var(--border-dark);
+		}
 
-	/* El aviso de la auditoría agendada: papel claro sobre la card oscura, montado sobre el
-	   borde de abajo (la regla de profundidad de la marca), como el recordatorio de turnos. */
-	.agendada {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		width: max-content;
-		max-width: calc(100% - 32px);
-		margin: -32px 16px -32px auto;
-		padding: 10px 16px 10px 10px;
-		border-radius: 18px;
-		background: var(--off-white);
-		box-shadow: var(--shadow-elevada);
-		color: var(--navy-700);
-		font-size: 0.8125rem;
-		line-height: 1.3;
-	}
+		.dato:first-child {
+			padding-left: 0;
+			border-left: 0;
+		}
 
-	.agendada strong {
-		display: block;
-		color: var(--navy-950);
-		font-size: 0.9375rem;
-	}
+		.cierre__accion {
+			left: var(--space-4);
+			right: auto;
+		}
 
-	.agendada small {
-		font-size: inherit;
-	}
+		.cierre__accion > :global(*) {
+			padding-inline: var(--space-3);
+		}
 
-	.agendada__icono {
-		display: grid;
-		flex: none;
-		place-items: center;
-		width: 40px;
-		height: 40px;
-		border-radius: 12px;
-		background: var(--cyan-300);
-		color: var(--navy-950);
+		.cierre__quien {
+			padding-left: var(--space-4);
+		}
 	}
 
 	@media (min-width: 1024px) {
 		.cierre {
-			padding-block: var(--space-8);
-		}
-
-		.cierre__grilla {
-			grid-template-columns: 7fr 5fr;
-			align-items: center;
-		}
-
-		.cierre__chat {
-			justify-self: end;
+			padding-block: var(--space-8) calc(var(--space-8) + var(--space-3));
 		}
 	}
 
-	@keyframes escribiendo {
-		0%, 100% { opacity: 0; }
-		15%, 85% { opacity: 1; }
+	/* --- Movimiento --- */
+	/* La sección llega como card con márgenes y se abre de borde a borde. */
+	@keyframes cierre-abre {
+		from { clip-path: inset(0 var(--abre-margen) round var(--radius-card-lg)); }
+		to { clip-path: inset(0 0 round 0); }
 	}
 
-	/* Tres latidos mientras dura "escribiendo...", atados al mismo scroll: nada queda girando
-	   cuando el chat sale de la pantalla. */
-	@keyframes punto {
-		0%, 33%, 66%, 100% { opacity: 0.35; }
-		16%, 50%, 83% { opacity: 1; }
+	@keyframes cierre-renglon {
+		from { transform: translateY(105%); }
 	}
 
-	@keyframes burbuja-llega {
-		from { opacity: 0; transform: translateY(16px) scale(0.96); }
+	@keyframes cierre-dato {
+		from { opacity: 0; transform: translateY(16px); }
 	}
 
-	@keyframes dato-llega {
-		from { opacity: 0; transform: translateY(12px); }
+	@keyframes cierre-icono {
+		from { opacity: 0; transform: scale(0.6) rotate(-12deg); }
 	}
 
-	/* El estado de la cabecera: "escribiendo..." mientras dura, después vuelve "en línea". */
-	/* Primero se va uno y después entra el otro: fundidos a la vez, se superponen las letras. */
-	@keyframes estado-escribe {
-		0%, 8%, 92%, 100% { visibility: hidden; opacity: 0; }
-		16%, 84% { visibility: visible; opacity: 1; }
-	}
-
-	@keyframes estado-linea {
-		0%, 100% { opacity: 1; }
-		8%, 92% { opacity: 0; }
-	}
-
-	/* Los tildes del mensaje pasan de enviado a leído cuando llega la respuesta. */
-	@keyframes tildes-leido {
-		from { color: #cddcf7; }
-	}
-
-	@keyframes agendada-sube {
-		from { opacity: 0; transform: translateY(24px) scale(0.94); }
-	}
-
-	@keyframes cierre-sello {
-		from { transform: scale(0.8) rotate(-12deg); }
-	}
-
-	/* La charla, paso a paso sobre el scroll del chat:
-	   tu mensaje → escribiendo → respuesta → tu día → escribiendo → confirmación → agendada. */
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
-			.cierre__datos li {
-				animation: dato-llega linear both;
+			/* Lineal: la apertura sigue al dedo, sin adelantarse. Relleno backwards: terminado el
+			   tramo, la sección vuelve a no tener clip-path. */
+			.cierre {
+				--abre-margen: var(--space-2);
+				animation: cierre-abre linear backwards;
 				animation-timeline: view();
-				animation-range: entry calc(20% + var(--i) * 15%) entry calc(70% + var(--i) * 15%);
+				animation-range: entry 0% entry 90%;
 			}
 
-			.cierre__chat :global(.chat__mio) {
-				transform-origin: right bottom;
-				animation: burbuja-llega linear both;
-				animation-timeline: --chat;
+			.cierre__renglon > span {
+				animation: cierre-renglon var(--curva-salida) both;
+				animation-timeline: --titular;
+				animation-range: entry 30% cover 30%;
 			}
 
-			.cierre__chat :global(.chat__mio--1) { animation-range: entry 50% entry 100%; }
-			.cierre__chat :global(.chat__mio--2) { animation-range: cover 40% cover 44%; }
-
-			.cierre__chat :global(.chat__respuesta) {
-				transform-origin: left bottom;
-				animation: burbuja-llega linear both;
-				animation-timeline: --chat;
+			.cierre__renglon:nth-child(2) > span {
+				animation-range: entry 60% cover 38%;
 			}
 
-			.chat__turno--1 :global(.chat__respuesta) { animation-range: cover 36% cover 40%; }
-			.chat__turno--2 :global(.chat__respuesta) { animation-range: cover 52% cover 56%; }
-
-			.escribiendo {
-				display: inline-flex;
-				gap: 4px;
-				align-self: center;
-				padding: 12px 14px;
-				border-radius: 18px 18px 18px 6px;
-				background: var(--navy-800);
-				animation: escribiendo linear both;
-				animation-timeline: --chat;
+			.dato {
+				animation: cierre-dato var(--curva-salida) both;
+				animation-timeline: view();
+				animation-range: entry calc(20% + var(--i) * 12%) entry calc(60% + var(--i) * 12%);
 			}
 
-			.escribiendo i {
-				width: 6px;
-				height: 6px;
-				border-radius: 50%;
-				background: var(--text-body-light);
-				animation: punto linear both;
-				animation-timeline: --chat;
+			.dato :global(svg) {
+				animation: cierre-icono var(--curva-salida) both;
+				animation-timeline: view();
+				animation-range: entry calc(40% + var(--i) * 12%) entry calc(80% + var(--i) * 12%);
 			}
+		}
+	}
 
-			.chat__turno--1 .escribiendo,
-			.chat__turno--1 .escribiendo i { animation-range: cover 28% cover 36%; }
-			.chat__turno--2 .escribiendo,
-			.chat__turno--2 .escribiendo i { animation-range: cover 45% cover 52%; }
+	@media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+		.cierre {
+			--abre-margen: var(--space-7);
+		}
+	}
 
-			/* La cabecera dice "escribiendo..." en los dos turnos. Sin relleno: fuera de cada tramo
-			   manda el estilo base. */
-			.chat__estado-escribe {
-				animation: estado-escribe linear none, estado-escribe linear none;
-				animation-timeline: --chat, --chat;
-				animation-range: cover 28% cover 36%, cover 45% cover 52%;
-			}
-
-			.chat__estado-linea {
-				animation: estado-linea linear none, estado-linea linear none;
-				animation-timeline: --chat, --chat;
-				animation-range: cover 28% cover 36%, cover 45% cover 52%;
-			}
-
-			.cierre__chat :global(.chat__mio svg) {
-				animation: tildes-leido linear both;
-				animation-timeline: --chat;
-			}
-
-			.cierre__chat :global(.chat__mio--1 svg) { animation-range: cover 34% cover 36%; }
-			.cierre__chat :global(.chat__mio--2 svg) { animation-range: cover 50% cover 52%; }
-
-			.agendada {
-				transform-origin: right bottom;
-				animation: agendada-sube linear both;
-				animation-timeline: --chat;
-				animation-range: cover 57% cover 62%;
-			}
-
-			.agendada__icono {
-				animation: cierre-sello var(--curva-salida) both;
-				animation-timeline: --chat;
-				animation-range: cover 60% cover 64%;
+	@media (prefers-reduced-motion: reduce) {
+		@supports (animation-timeline: view()) {
+			.cierre__titular,
+			.cierre__card {
+				animation: aparecer linear both;
+				animation-timeline: view();
+				animation-range: entry 0% entry 50%;
 			}
 		}
 	}
