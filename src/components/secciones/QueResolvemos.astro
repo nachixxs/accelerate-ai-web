@@ -108,6 +108,7 @@ const punto = (i: number) => 0.3 + i * 0.25;
 	const seccion = document.querySelector<HTMLElement>('.resolvemos');
 	if (seccion) {
 		const interruptor = seccion.querySelector<HTMLElement>('.interruptor')!;
+		const lista = seccion.querySelector<HTMLElement>('.lista')!;
 		const [hoy, sistema] = seccion.querySelectorAll<HTMLInputElement>('.interruptor input');
 		const filas = [...seccion.querySelectorAll<HTMLElement>('.dolor')];
 		let arrastre: { x: number; p: number; ancho: number; id: number; t: number; v: number } | null = null;
@@ -142,10 +143,17 @@ const punto = (i: number) => 0.3 + i * 0.25;
 			const p = Math.min(1, Math.max(0, arrastre.p + dx / arrastre.ancho));
 			arrastre.v = evento.movementX / Math.max(1, evento.timeStamp - arrastre.t);
 			arrastre.t = evento.timeStamp;
-			seccion.style.setProperty('--p', String(p));
+			// Se escribe solo en donde --p se usa (el interruptor y la lista), no en toda la
+			// sección: si no, cada pointermove recalcula el estilo del botón del pie también.
+			interruptor.style.setProperty('--p', String(p));
+			lista.style.setProperty('--p', String(p));
 			filas.forEach((fila) => fila.classList.toggle('dolor--vuelta', p >= Number(fila.dataset.punto)));
 			elegir(p > 0.5);
 		});
+
+		// Al soltar con el dedo no llega ningún click, así que este listener sacaría el próximo
+		// toque real si quedara colgado esperando el clic fantasma: se saca solo en el próximo tick.
+		const bloquear = (clic: MouseEvent) => clic.preventDefault();
 
 		const soltar = (evento: PointerEvent) => {
 			if (!arrastre || evento.pointerId !== arrastre.id) return;
@@ -153,10 +161,13 @@ const punto = (i: number) => 0.3 + i * 0.25;
 				// Un tirón rápido decide por la dirección, aunque no haya pasado la mitad.
 				if (Math.abs(arrastre.v) > 0.11) elegir(arrastre.v > 0);
 				seccion.classList.remove('resolvemos--arrastrando');
-				seccion.style.removeProperty('--p');
+				interruptor.style.removeProperty('--p');
+				lista.style.removeProperty('--p');
 				filas.forEach((fila) => fila.classList.remove('dolor--vuelta'));
-				// El clic que sigue a un arrastre no tiene que volver a cambiar el radio.
-				interruptor.addEventListener('click', (clic) => clic.preventDefault(), { capture: true, once: true });
+				// El clic que sigue a un arrastre (si llega, con mouse) no tiene que volver a
+				// cambiar el radio.
+				interruptor.addEventListener('click', bloquear, { capture: true, once: true });
+				setTimeout(() => interruptor.removeEventListener('click', bloquear, true), 0);
 			}
 			arrastre = null;
 			moviendo = false;
@@ -191,7 +202,7 @@ const punto = (i: number) => 0.3 + i * 0.25;
 
 	.resolvemos {
 		--p: 0;
-		transition: --p 0.35s var(--curva-cajon);
+		transition: --p 0.25s var(--curva-cajon);
 	}
 
 	.resolvemos:has(.interruptor__sistema:checked) {
@@ -526,13 +537,15 @@ const punto = (i: number) => 0.3 + i * 0.25;
 		}
 	}
 
-	/* --- Movimiento. El cambio es un recorte y no un desplazamiento: queda también con
-	   movimiento reducido. --- */
-	/* Dos anillos que se abren y se apagan. */
+	/* --- Movimiento. La perilla, la chispa y el barrido fila por fila corren también con
+	   movimiento reducido: los dispara quien toca el interruptor, no el scroll. Lo que sigue
+	   (el anillo que invita y la entrada de las filas) sí se apaga con reducción, porque lo
+	   dispara el scroll y no una acción directa. --- */
+	/* Un anillo que se abre y se apaga. */
 	@keyframes invita {
-		0%, 50% { box-shadow: 0 0 0 0 var(--blue-200); opacity: 0; }
+		0%, 50% { scale: 1; opacity: 0; }
 		5%, 55% { opacity: 1; }
-		45%, 95%, 100% { box-shadow: 0 0 0 14px var(--blue-200); opacity: 0; }
+		45%, 95%, 100% { scale: 1.14; opacity: 0; }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
@@ -544,6 +557,7 @@ const punto = (i: number) => 0.3 + i * 0.25;
 				content: '';
 				position: absolute;
 				inset: -1px;
+				border: 2px solid var(--blue-200);
 				border-radius: inherit;
 				pointer-events: none;
 				animation: invita linear both;
