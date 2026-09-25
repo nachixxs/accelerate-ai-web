@@ -1,21 +1,13 @@
 ---
 // SPECS §4.1: qué hacen y para quién en una línea, con el botón visible sin scroll.
 // Portada partida: el texto a la izquierda y el producto a la derecha (debajo en el celular).
-// El producto cuenta la historia como un flujo, de arriba hacia abajo, sin que una card tape a
-// la otra: el chat de WhatsApp arriba, una línea por la que baja el pedido y la planilla de
-// pedidos abajo, con el chip montado sobre su borde. Al cargar, la historia corre una vez en
-// unos 4 segundos: llega el mensaje, el sistema contesta, el pedido baja y aparece en la planilla.
-import Icono from '../Icono.astro';
+// El producto es el tablero de un negocio con varios sistemas adentro (mocks/MockPanel.astro):
+// en escritorio es más ancho que su columna y el borde de la pantalla lo corta, como una app
+// abierta que sigue de largo. El titular no se anima: es lo más grande de la primera pantalla
+// (el LCP) y tiene que pintarse de entrada.
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Glow from '../Glow.astro';
-import Burbuja from '../mocks/Burbuja.astro';
-
-// Datos de ejemplo: la imprenta es el caso real (SPECS §2), los nombres son inventados.
-const pedidos = [
-	{ cliente: 'Estudio Paz', pedido: '200 tarjetas', entrega: 'Jueves', estado: 'produccion' },
-	{ cliente: 'Kiosco Rivas', pedido: '50 afiches', entrega: 'Hoy', estado: 'listo' },
-];
-const ESTADOS = { nuevo: 'Nuevo', produccion: 'En producción', listo: 'Listo' };
+import MockPanel from '../mocks/MockPanel.astro';
 ---
 
 <section id="inicio" class="portada con-glow" aria-labelledby="portada-titulo">
@@ -24,82 +16,20 @@ const ESTADOS = { nuevo: 'Nuevo', produccion: 'En producción', listo: 'Listo' }
 	<div class="contenedor portada__grilla">
 		<div class="portada__texto">
 			<p class="t-eyebrow entrada" style="--orden: 0">Automatización para pymes</p>
-			<h1 id="portada-titulo" class="t-hook entrada" style="--orden: 1">
+			<h1 id="portada-titulo" class="t-hook">
 				Tu equipo deja de <span class="texto-gradiente">copiar y pegar</span>
 			</h1>
-			<p class="t-cuerpo portada__bajada entrada" style="--orden: 2">
+			<p class="t-cuerpo portada__bajada entrada" style="--orden: 1">
 				Armamos sistemas a medida para tu negocio. Empezamos con una auditoría gratis para ver
 				dónde perdés más tiempo.
 			</p>
-			<div class="entrada" style="--orden: 3">
+			<div class="entrada" style="--orden: 2">
 				<BotonWhatsApp />
 			</div>
 		</div>
 
-		<div
-			class="producto entrada"
-			style="--orden: 2"
-			role="img"
-			aria-label="Ejemplo: una clienta pide 500 volantes por WhatsApp, el sistema le confirma y el pedido aparece solo en la planilla de pedidos del día."
-		>
-			<div class="chat">
-				<div class="chat__cabecera">
-					<span class="chat__inicial">L</span>
-					<span>Laura Giménez<small>en línea</small></span>
-				</div>
-				<div class="chat__mensajes">
-					<Burbuja de="recibida" hora="10:42" class="chat__uno">
-						Hola! ¿Me hacen 500 volantes A5 para el viernes?
-					</Burbuja>
-					<div class="chat__turno">
-						<span class="escribiendo"><i></i><i></i><i></i></span>
-						<Burbuja de="enviada" hora="10:42" class="chat__dos">
-							¡Hola, Laura! Sí, quedó cargado para el viernes. Te aviso cuando esté listo.
-						</Burbuja>
-					</div>
-				</div>
-			</div>
-
-			<div class="enlace" aria-hidden="true">
-				<span class="enlace__linea"></span>
-				<span class="enlace__pedido"></span>
-			</div>
-
-			<div class="panel">
-				<span class="chip-portada">
-					<Icono nombre="lightning-duotone" size={16} />
-					Cargado sin que nadie lo tipee
-				</span>
-				<div class="panel__barra">
-					<span class="panel__titulo">Pedidos de hoy</span>
-					<span class="panel__fecha">Martes 14</span>
-				</div>
-				<div class="panel__tabla">
-					<div class="fila fila--cabecera">
-						<span>Cliente</span><span>Entrega</span><span>Estado</span>
-					</div>
-					<div class="fila fila--nueva">
-						<span class="fila__cliente">Laura Giménez<small>500 volantes A5</small></span>
-						<span>Viernes</span>
-						<span class="estado estado--nuevo">{ESTADOS.nuevo}</span>
-					</div>
-					{
-						pedidos.map(({ cliente, pedido, entrega, estado }) => (
-							<div class="fila fila--vieja">
-								<span class="fila__cliente">
-									{cliente}
-									<small>{pedido}</small>
-								</span>
-								<span>{entrega}</span>
-								<span class={`estado estado--${estado}`}>
-									{estado === 'listo' && <Icono nombre="check-bold" size={14} />}
-									{ESTADOS[estado as keyof typeof ESTADOS]}
-								</span>
-							</div>
-						))
-					}
-				</div>
-			</div>
+		<div class="portada__producto">
+			<MockPanel />
 		</div>
 	</div>
 </section>
@@ -111,7 +41,7 @@ const ESTADOS = { nuevo: 'Nuevo', produccion: 'En producción', listo: 'Listo' }
 
 	.portada__grilla {
 		display: grid;
-		gap: var(--space-6);
+		gap: var(--space-5);
 	}
 
 	.portada__texto {
@@ -126,399 +56,30 @@ const ESTADOS = { nuevo: 'Nuevo', produccion: 'En producción', listo: 'Listo' }
 		color: var(--text-body-dark);
 	}
 
-	/* --- El producto: chat arriba a la izquierda, planilla abajo a la derecha y, entre los dos,
-	   la línea por la que baja el pedido. Nada se tapa: el único cruce es el chip sobre el borde
-	   de la planilla (la regla de profundidad de la marca). --- */
-	.producto {
-		--x-enlace: 64%;
-		display: grid;
-		max-width: 560px;
-		width: 100%;
-		justify-self: center;
-	}
-
-	.chat,
-	.panel {
-		border: 1px solid var(--border-dark);
-		border-radius: var(--radius-card-lg);
-		background: var(--surface-card-dark);
-		box-shadow: var(--shadow-card);
-		color: var(--text-body-light);
-	}
-
-	.chat {
-		position: relative;
-		z-index: 1;
-		justify-self: start;
-		width: 88%;
-	}
-
-	.chat__cabecera {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 12px var(--space-2);
-		border-bottom: 1px solid var(--border-dark);
-		color: var(--text-heading-light);
-		font-size: 0.875rem;
-		font-weight: var(--fw-semibold);
-	}
-
-	.chat__cabecera small {
-		display: block;
-		color: var(--cyan-300);
-		font-size: 0.75rem;
-		font-weight: var(--fw-regular);
-	}
-
-	.chat__inicial {
-		display: grid;
-		place-items: center;
-		width: 32px;
-		height: 32px;
-		border-radius: var(--radius-pill);
-		background: var(--blue-900);
-		color: var(--blue-100);
-	}
-
-	.chat__mensajes {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
-		padding: var(--space-2);
-	}
-
-	/* "Escribiendo..." y la respuesta ocupan el mismo lugar: uno se va cuando llega la otra. */
-	.chat__turno {
-		display: grid;
-		justify-items: end;
-	}
-
-	.chat__turno > :global(*) {
-		grid-area: 1 / 1;
-	}
-
-	.escribiendo {
-		display: none;
-	}
-
-	/* La línea entre el chat y la planilla: sale de abajo de la respuesta y termina en el chip. */
-	.enlace {
-		position: relative;
-		height: 56px;
-	}
-
-	.enlace__linea {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: var(--x-enlace);
-		border-left: 2px dashed var(--blue-300);
-	}
-
-	.enlace__pedido {
-		display: none;
-	}
-
-	.panel {
-		position: relative;
-		justify-self: end;
-		width: 92%;
-		padding: var(--space-5) var(--space-2) var(--space-2);
-	}
-
-	/* Chip "acento" de la marca, montado sobre el borde de arriba de la planilla, justo donde
-	   llega la línea. */
-	.chip-portada {
-		position: absolute;
-		top: 0;
-		/* La planilla ocupa el 92 % derecho del producto: se pasa --x-enlace a su propio ancho. */
-		left: calc((var(--x-enlace) - 8%) * 100 / 92);
-		transform: translate(-50%, -50%);
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 10px 16px;
-		border-radius: var(--radius-pill);
-		background: var(--cyan-300);
-		color: var(--navy-950);
-		font-size: 0.8125rem;
-		font-weight: var(--fw-semibold);
-		line-height: 1.2;
-		white-space: nowrap;
-		box-shadow: var(--shadow-elevada);
-	}
-
-	.panel__barra {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		padding-inline: var(--space-1);
-		margin-bottom: var(--space-2);
-	}
-
-	.panel__titulo {
-		color: var(--text-heading-light);
-		font-weight: var(--fw-bold);
-	}
-
-	.panel__fecha,
-	.fila--cabecera {
-		color: var(--text-muted-light);
-		font-size: 0.8125rem;
-	}
-
-	.fila {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		align-items: center;
-		gap: var(--space-2);
-		padding: 10px var(--space-1);
-		border-top: 1px solid var(--border-dark);
-		font-size: 0.875rem;
-		border-radius: 12px;
-	}
-
-	/* En el celular la columna de entrega no entra: queda el cliente y el estado. */
-	.fila > span:nth-child(2) {
-		display: none;
-	}
-
-	.fila--cabecera {
-		border-top: 0;
-		padding-block: 4px 8px;
-	}
-
-	.fila__cliente {
-		display: grid;
-		color: var(--text-heading-light);
-		font-weight: var(--fw-semibold);
-	}
-
-	.fila__cliente small {
-		color: var(--text-muted-light);
-		font-size: 0.8125rem;
-		font-weight: var(--fw-regular);
-	}
-
-	.estado {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		justify-self: end;
-		padding: 5px 10px;
-		border-radius: var(--radius-pill);
-		font-size: 0.75rem;
-		font-weight: var(--fw-semibold);
-		line-height: 1;
-		white-space: nowrap;
-	}
-
-	.estado--nuevo {
-		background: var(--cyan-300);
-		color: var(--navy-950);
-	}
-
-	.estado--produccion {
-		border: 1px solid var(--border-dark);
-		color: var(--blue-300);
-	}
-
-	.estado--listo {
-		background: var(--navy-800);
-		color: var(--text-body-light);
-	}
-
-	@media (min-width: 480px) {
-		.fila {
-			grid-template-columns: 1fr 72px auto;
-		}
-
-		.fila > span:nth-child(2) {
-			display: block;
-		}
-
-		.chat {
-			width: 80%;
-		}
+	.portada__producto {
+		min-width: 0;
 	}
 
 	@media (min-width: 1024px) {
 		.portada {
-			padding-block: var(--space-5) var(--space-7);
+			padding-block: var(--space-6) var(--space-8);
 		}
 
 		.portada__grilla {
-			grid-template-columns: 6fr 5fr;
+			grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
 			align-items: center;
 			gap: var(--space-5);
 		}
 
-		/* La escala del hook a 72 px deja el titular en 3 líneas en media pantalla; a 64 entra en 2. */
+		/* La escala del hook a 72 px deja el titular en 4 líneas en la columna; a 60 entra en 3. */
 		.portada :global(.t-hook) {
-			font-size: clamp(2.5rem, 1.9rem + 2.6vw, 4rem);
+			font-size: clamp(2.75rem, 1.6rem + 2.4vw, 3.75rem);
 		}
 
-		.producto {
-			justify-self: end;
-		}
-
-		.enlace {
-			height: 48px;
-		}
-	}
-
-	/* --- La historia del producto, en orden. Sin prefers-reduced-motion queda todo visible. --- */
-	@keyframes escribiendo {
-		0%, 100% { opacity: 0; }
-		12%, 88% { opacity: 1; }
-	}
-
-	@keyframes punto {
-		0%, 100% { opacity: 0.35; }
-		50% { opacity: 1; }
-	}
-
-	@keyframes punto-scroll {
-		0%, 33%, 66%, 100% { opacity: 0.35; }
-		16%, 50%, 83% { opacity: 1; }
-	}
-
-	/* La línea se dibuja de arriba hacia abajo y el pedido baja por ella hasta el chip. */
-	@keyframes linea-baja {
-		from { clip-path: inset(0 0 100% 0); }
-	}
-
-	@keyframes pedido-baja {
-		from { opacity: 0; transform: translate(-50%, 0) scale(0.9); }
-		20% { opacity: 1; transform: translate(-50%, 0); }
-		to { opacity: 1; transform: translate(-50%, 44px); }
-	}
-
-	@keyframes fila-nueva {
-		from { opacity: 0; transform: translateY(-12px); background-color: rgba(34, 211, 238, 0.2); }
-		40% { opacity: 1; transform: none; background-color: rgba(34, 211, 238, 0.2); }
-		to { background-color: rgba(34, 211, 238, 0); }
-	}
-
-	/* Las filas viejas bajan un lugar para hacerle espacio a la nueva. */
-	@keyframes fila-baja {
-		from { transform: translateY(-56px); }
-	}
-
-	@keyframes chip-llega {
-		from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.chat {
-			animation: entrar-subiendo 0.8s var(--curva-salida) 0.5s both;
-		}
-
-		.chat :global(.chat__uno) {
-			animation: entrar-subiendo 0.5s var(--curva-salida) 1s both;
-		}
-
-		.escribiendo {
-			display: inline-flex;
-			gap: 4px;
-			align-self: center;
-			padding: 12px 14px;
-			border-radius: 18px 18px 6px 18px;
-			background: var(--brand-primary-deep);
-			animation: escribiendo 1s linear 1.6s both;
-		}
-
-		.escribiendo i {
-			width: 6px;
-			height: 6px;
-			border-radius: 50%;
-			background: #eaf1ff;
-			/* 5 vueltas cubren el segundo que dura "escribiendo"; después no queda nada girando. */
-			animation: punto 0.6s ease-in-out 1.6s 5;
-		}
-
-		.escribiendo i:nth-child(2) { animation-delay: 1.75s; }
-		.escribiendo i:nth-child(3) { animation-delay: 1.9s; }
-
-		.chat :global(.chat__dos) {
-			animation: entrar-subiendo 0.5s var(--curva-salida) 2.6s both;
-		}
-
-		.enlace__linea {
-			animation: linea-baja 0.4s var(--curva-salida) 3s both;
-		}
-
-		/* El pedido que baja: un punto cian con el halo del fondo, para que se despegue de la línea. */
-		.enlace__pedido {
-			display: block;
-			position: absolute;
-			top: 0;
-			left: calc(var(--x-enlace) + 1px);
-			width: 12px;
-			height: 12px;
-			border-radius: 50%;
-			background: var(--cyan-400);
-			box-shadow: 0 0 0 4px var(--surface-alt), var(--shadow-elevada);
-			animation: pedido-baja 0.6s var(--curva-cajon) 3.2s both;
-		}
-
-		.chip-portada {
-			animation: chip-llega 0.4s var(--curva-salida) 3.7s both;
-		}
-
-		.fila--nueva {
-			animation: fila-nueva 2.4s var(--curva-salida) 3.8s both;
-		}
-
-		.fila--vieja {
-			animation: fila-baja 0.5s var(--curva-salida) 3.8s both;
-		}
-	}
-
-	/* En el celular el producto queda debajo del botón: si la historia corriera al cargar,
-	   terminaría antes de que llegues. Ahí avanza con el scroll, mientras el producto cruza la
-	   pantalla (cover 0 % = asoma abajo, cover 100 % = se fue por arriba). */
-	@media (prefers-reduced-motion: no-preference) and (max-width: 1023px) {
-		@supports (animation-timeline: view()) {
-			.producto {
-				view-timeline: --producto block;
-			}
-
-			.chat,
-			.chat :global(.chat__uno),
-			.escribiendo,
-			.chat :global(.chat__dos),
-			.enlace__linea,
-			.enlace__pedido,
-			.chip-portada,
-			.fila--nueva,
-			.fila--vieja {
-				animation-delay: 0s;
-				animation-duration: auto;
-				animation-timing-function: linear;
-				animation-timeline: --producto;
-			}
-
-			.chat { animation-range: cover 8% cover 18%; }
-			.chat :global(.chat__uno) { animation-range: cover 16% cover 24%; }
-			.escribiendo { animation-range: cover 24% cover 33%; }
-			.chat :global(.chat__dos) { animation-range: cover 32% cover 38%; }
-			.enlace__linea { animation-range: cover 37% cover 41%; }
-			.enlace__pedido { animation-range: cover 39% cover 46%; }
-			.chip-portada { animation-range: cover 45% cover 49%; }
-			.fila--nueva { animation-range: cover 46% cover 60%; }
-			.fila--vieja { animation-range: cover 46% cover 51%; }
-
-			/* Los puntos laten con el mismo scroll: sin loop infinito fuera de pantalla. */
-			.escribiendo i {
-				animation: punto-scroll linear both;
-				animation-timeline: --producto;
-				animation-range: cover 24% cover 33%;
-			}
-
-			.escribiendo i:nth-child(2) { animation-range: cover 24.5% cover 33.5%; }
-			.escribiendo i:nth-child(3) { animation-range: cover 25% cover 34%; }
+		/* Más ancho que su columna: sigue de largo hacia la derecha y la pantalla lo corta
+		   (la sección recorta con overflow: clip). En pantallas anchas entra entero. */
+		.portada__producto > :global(*) {
+			width: 720px;
 		}
 	}
 </style>

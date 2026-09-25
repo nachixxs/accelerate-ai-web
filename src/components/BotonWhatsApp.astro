@@ -263,7 +263,8 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		outline-offset: 3px;
 	}
 
-	.boton--principal:focus-visible,
+	/* Sobre oscuro, el anillo cian. Sobre claro queda el azul profundo también en el principal: el
+	   cian sobre el fondo claro no llega a 3:1. */
 	:global(.seccion--oscura) .boton:focus-visible {
 		outline-color: var(--brand-accent);
 	}

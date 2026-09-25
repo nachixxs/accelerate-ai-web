@@ -110,3 +110,20 @@ html { scroll-padding-top: 96px; }
 		}
 	}
 }
+
+/* Movimiento reducido: la versión suave. Solo fundidos cortos de opacidad, sin nada que se
+   desplace. Las excepciones (la cinta de rubros y el hover de los botones) viven en su componente. */
+@media (prefers-reduced-motion: reduce) {
+	.entrada {
+		animation: aparecer 0.3s ease-out both;
+		animation-delay: calc(var(--orden, 0) * 60ms);
+	}
+
+	@supports (animation-timeline: view()) {
+		.revelar {
+			animation: aparecer linear both;
+			animation-timeline: view();
+			animation-range: entry 0% entry 50%;
+		}
+	}
+}

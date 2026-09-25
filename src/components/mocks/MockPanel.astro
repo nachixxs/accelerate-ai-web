@@ -1,10 +1,21 @@
 ---
-// Mock de "Paneles para ver tu negocio de un vistazo": un tablero de la semana con tres cifras
-// que cuentan hacia arriba y la curva de ventas por día, que se dibuja con el scroll y marca el
-// pico. Son datos de ejemplo, y lo dice el propio panel: no son resultados de un cliente.
-// Una sola serie, así que un solo color (cian, el acento sobre oscuro) y sin leyenda: el título
-// la nombra. Es una imagen (role="img"), no un gráfico para explorar: sin tooltips.
-// Se anima con el timeline --celda de la card que lo contiene.
+// El producto de la portada: el tablero de un negocio con varios sistemas adentro (órdenes, stock,
+// caja, clientes, presupuestos), no un producto cerrado. Tres cifras que cuentan hacia arriba, la
+// curva de ventas de la semana y los últimos movimientos, donde entra uno nuevo arriba.
+// Son datos de ejemplo, y lo dice el propio tablero: no son resultados de un cliente.
+// Es una imagen (role="img"), no una app para explorar: sin links, tooltips ni foco.
+// En escritorio la historia corre una vez al cargar, en unos 3 segundos. En el celular el tablero
+// queda debajo del botón y avanza con el scroll, con su propio timeline (--tablero).
+import Icono from '../Icono.astro';
+
+const modulos = [
+	{ nombre: 'Resumen', icono: 'squares-four-duotone', activo: true },
+	{ nombre: 'Órdenes', icono: 'clipboard-text-duotone', aviso: 8 },
+	{ nombre: 'Stock', icono: 'package-duotone' },
+	{ nombre: 'Caja', icono: 'cash-register-duotone' },
+	{ nombre: 'Clientes', icono: 'users-three-duotone' },
+	{ nombre: 'Presupuestos', icono: 'file-text-duotone' },
+];
 
 // Ventas por día, en miles de pesos. Suman 1.284,5 (el total de la primera cifra).
 const semana = [
@@ -29,65 +40,135 @@ const area = `${linea} L${x(6)},${ALTO} L${x(0)},${ALTO} Z`;
 const pico = semana.reduce((max, d, i) => (d.miles > semana[max].miles ? i : max), 0);
 
 const cifras = [
-	{ nombre: 'Ventas', fin: 1284500, desde: 1000000, formato: 'millones', variacion: '+12 %' },
-	{ nombre: 'Pedidos', fin: 142, desde: 0, formato: 'simple' },
+	{ nombre: 'Ventas', fin: 1284500, desde: 1000000, formato: 'millones', variacion: '+12 % vs. semana pasada' },
+	{ nombre: 'Órdenes', fin: 142, desde: 0, formato: 'simple' },
 	{ nombre: 'Ticket promedio', fin: 9045, desde: 5000, formato: 'miles' },
 ];
 const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}`;
+
+// El primero es el que llega durante la animación; los otros dos ya estaban.
+const movimientos = [
+	{ icono: 'check-circle-duotone', texto: 'Orden #1043 terminada', detalle: 'Pasó sola a "Para entregar"', hora: '10:42' },
+	{ icono: 'package-duotone', texto: 'Papel A4 bajo el mínimo', detalle: 'El pedido al proveedor ya está armado', hora: '10:15' },
+	{ icono: 'cash-register-duotone', texto: 'Caja del lunes cerrada', detalle: 'Cuadró al peso', hora: 'Ayer' },
+];
 ---
 
 <div
-	class="mock-panel"
+	class="tablero"
 	role="img"
-	aria-label="Ejemplo con datos inventados: un panel con las ventas de la semana, 1.284.500 pesos, 142 pedidos y un ticket promedio de 9.045 pesos, y una curva de ventas por día con el pico el sábado."
+	aria-label="Ejemplo con datos inventados: el tablero de un negocio con órdenes, stock, caja, clientes y presupuestos en un solo lugar. Muestra ventas de la semana por 1.284.500 pesos, 142 órdenes, un ticket promedio de 9.045 pesos, la curva de ventas con el pico el sábado y los últimos movimientos: una orden terminada, un producto bajo el mínimo con el pedido al proveedor armado y la caja del lunes cerrada."
 >
-	<div class="tablero__barra">
-		<strong>Tu negocio esta semana</strong>
-		<span class="tablero__periodo">
-			<span class="tablero__periodo-activo">Semana</span>
-			<span>Mes</span>
+	<span class="tablero__chip">
+		<Icono nombre="lightning-duotone" size={16} />
+		Al día sin pasar nada a mano
+	</span>
+
+	<div class="ventana">
+		<div class="ventana__barra">
+			<strong>Tu negocio</strong>
+			<span class="ventana__buscar">
+				<Icono nombre="magnifying-glass-duotone" size={16} />
+				Buscar orden, cliente o producto
+			</span>
+			<span class="ventana__fecha">Martes 14</span>
+		</div>
+
+		<div class="ventana__cuerpo">
+			<ul class="modulos">
+				{
+					modulos.map(({ nombre, icono, activo, aviso }, i) => (
+						<li class:list={['modulo', { 'modulo--activo': activo }]} style={`--i: ${i}`}>
+							<Icono nombre={icono} size={18} />
+							{nombre}
+							{aviso && <span class="modulo__aviso">{aviso}</span>}
+						</li>
+					))
+				}
+			</ul>
+
+			<div class="ventana__contenido">
+				<div class="contenido__barra">
+					<span class="contenido__titulo">
+						<strong>Esta semana</strong>
+						<small>Datos de ejemplo</small>
+					</span>
+					<span class="periodo">
+						<span class="periodo__activo">Semana</span>
+						<span>Mes</span>
+					</span>
+				</div>
+
+				<dl class="cifras">
+					{
+						cifras.map(({ nombre, fin, desde, formato, variacion }, i) => (
+							<div class="cifra" style={`--i: ${i}`}>
+								<dt>{nombre}</dt>
+								<dd class={`cifra__valor cifra__valor--${formato}`} style={`--fin: ${fin}; --desde: ${desde}`}>
+									<span class="cifra__texto">{texto(fin)}</span>
+								</dd>
+								{variacion && <dd class="cifra__variacion">{variacion}</dd>}
+							</div>
+						))
+					}
+				</dl>
+
+				<div class="grafico">
+					<div class="grafico__lienzo">
+						<svg viewBox={`0 0 ${ANCHO} ${ALTO}`} preserveAspectRatio="none" aria-hidden="true">
+							<defs>
+								<linearGradient id="tablero-area" x1="0" y1="0" x2="0" y2="1">
+									<stop offset="0" stop-color="#173872" />
+									<stop offset="1" stop-color="#111b30" />
+								</linearGradient>
+							</defs>
+							<path class="grafico__area" d={area} fill="url(#tablero-area)" />
+							<path class="grafico__linea" d={linea} pathLength="1" fill="none" vector-effect="non-scaling-stroke" />
+						</svg>
+						<span
+							class="grafico__pico"
+							style={`left: ${(x(pico) / ANCHO) * 100}%; top: ${(y(semana[pico].miles) / ALTO) * 100}%`}
+						>
+							<span class="grafico__etiqueta">{semana[pico].dia} $ {Math.round(semana[pico].miles * 1000).toLocaleString('es-AR')}</span>
+						</span>
+					</div>
+					<div class="grafico__dias">
+						{semana.map(({ dia }, i) => <span class:list={{ 'grafico__dia--pico': i === pico }}>{dia}</span>)}
+					</div>
+				</div>
+
+				<div class="movimientos">
+					<strong class="movimientos__titulo">Últimos movimientos</strong>
+					<ul>
+						{
+							movimientos.map(({ icono, texto, detalle, hora }, i) => (
+								<li class:list={['movimiento', i === 0 ? 'movimiento--nuevo' : 'movimiento--previo']} style={`--i: ${i}`}>
+									<span class="movimiento__icono">
+										<Icono nombre={icono} size={18} />
+									</span>
+									<span class="movimiento__texto">
+										{texto}
+										<small>{detalle}</small>
+									</span>
+									<span class="movimiento__hora">{hora}</span>
+								</li>
+							))
+						}
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="tablero__aviso">
+		<span class="aviso__icono">
+			<Icono nombre="seal-check-duotone" size={20} />
+		</span>
+		<span>
+			Presupuesto #218 aprobado
+			<small>Ya es una orden de trabajo</small>
 		</span>
 	</div>
-
-	<dl class="cifras">
-		{
-			cifras.map(({ nombre, fin, desde, formato, variacion }) => (
-				<div class="cifra">
-					<dt>{nombre}</dt>
-					<dd class={`cifra__valor cifra__valor--${formato}`} style={`--fin: ${fin}; --desde: ${desde}`}>
-						<span class="cifra__texto">{texto(fin)}</span>
-					</dd>
-					{variacion && <dd class="cifra__variacion">{variacion} vs. la semana pasada</dd>}
-				</div>
-			))
-		}
-	</dl>
-
-	<div class="grafico">
-		<div class="grafico__lienzo">
-			<svg viewBox={`0 0 ${ANCHO} ${ALTO}`} preserveAspectRatio="none" aria-hidden="true">
-				<defs>
-					<linearGradient id="panel-area" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0" stop-color="#173872" />
-						<stop offset="1" stop-color="#0f172a" />
-					</linearGradient>
-				</defs>
-				<path class="grafico__area" d={area} fill="url(#panel-area)" />
-				<path class="grafico__linea" d={linea} pathLength="1" fill="none" vector-effect="non-scaling-stroke" />
-			</svg>
-			<span
-				class="grafico__pico"
-				style={`left: ${(x(pico) / ANCHO) * 100}%; top: ${(y(semana[pico].miles) / ALTO) * 100}%`}
-			>
-				<span class="grafico__etiqueta">{semana[pico].dia} $ {Math.round(semana[pico].miles * 1000).toLocaleString('es-AR')}</span>
-			</span>
-		</div>
-		<div class="grafico__dias">
-			{semana.map(({ dia }, i) => <span class:list={{ 'grafico__dia--pico': i === pico }}>{dia}</span>)}
-		</div>
-	</div>
-
-	<p class="tablero__nota">Datos de ejemplo</p>
 </div>
 
 <style>
@@ -102,46 +183,153 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 		pad: 3 '0';
 	}
 
-	.mock-panel {
+	/* --- El tablero: la ventana oscura (la card invertida de la sección) y, montados sobre sus
+	   bordes, el chip de arriba y el aviso claro de abajo (la regla de profundidad de la marca). --- */
+	.tablero {
+		position: relative;
+		padding-block: 20px 40px;
+	}
+
+	.ventana {
+		display: grid;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-card-lg);
+		background: var(--surface-card-dark);
+		box-shadow: 0 32px 80px rgba(15, 36, 80, 0.28), 0 8px 24px rgba(15, 23, 42, 0.12);
+		color: var(--text-body-light);
+		font-size: 0.875rem;
+		line-height: 1.35;
+		overflow: clip;
+	}
+
+	.ventana__barra {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding: 20px;
+		border-bottom: 1px solid var(--border-dark);
+	}
+
+	.ventana__barra strong {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-bold);
+	}
+
+	/* El buscador es decorativo: da escala de app real. En el celular no entra. */
+	.ventana__buscar {
+		display: none;
+		align-items: center;
+		gap: 8px;
+		flex: 1;
+		max-width: 300px;
+		padding: 8px 12px;
+		border: 1px solid var(--border-dark);
+		border-radius: var(--radius-pill);
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+	}
+
+	/* En el celular la fecha deja su lugar al chip montado arriba a la derecha. */
+	.ventana__fecha {
+		display: none;
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+	}
+
+	.ventana__cuerpo {
+		display: grid;
+		min-width: 0;
+	}
+
+	/* --- Los módulos: en el celular, una fila que se corta en el borde (se ve que hay más); desde
+	   640 px, la barra lateral de la app. --- */
+	.modulos {
+		display: flex;
+		gap: 8px;
+		padding: 12px 16px;
+		border-bottom: 1px solid var(--border-dark);
+		overflow: clip;
+		mask-image: linear-gradient(90deg, #000 80%, transparent);
+	}
+
+	.modulo {
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 12px;
+		border-radius: var(--radius-pill);
+		color: var(--text-muted-light);
+		font-weight: var(--fw-medium);
+		white-space: nowrap;
+	}
+
+	.modulo--activo {
+		background: var(--blue-950);
+		color: var(--blue-100);
+	}
+
+	.modulo__aviso {
+		display: grid;
+		place-items: center;
+		min-width: 22px;
+		height: 22px;
+		padding-inline: 6px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-bold);
+		line-height: 1;
+	}
+
+	.ventana__contenido {
 		display: grid;
 		gap: 16px;
+		min-width: 0;
 		padding: 16px;
-		border: 1px solid var(--border-dark);
-		border-radius: var(--radius-card);
-		background: var(--navy-900);
 	}
 
-	.tablero__barra {
+	.contenido__barra {
 		display: flex;
-		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
-		gap: 8px 12px;
-		font-size: 0.875rem;
+		gap: 12px;
 	}
 
-	.tablero__barra strong {
+	/* "Datos de ejemplo" va arriba, junto al título: abajo lo taparía el aviso montado. */
+	.contenido__titulo {
+		display: grid;
+	}
+
+	.contenido__titulo small {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+	}
+
+	.contenido__barra strong,
+	.movimientos__titulo {
 		color: var(--text-heading-light);
 		font-weight: var(--fw-semibold);
 	}
 
-	/* El selector de período del panel: decorativo, el activo con el fill de la marca. */
-	.tablero__periodo {
+	/* El selector de período: decorativo, el activo con el azul profundo (el de la marca es del botón). */
+	.periodo {
 		display: inline-flex;
 		padding: 3px;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-pill);
 		color: var(--text-muted-light);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
 	}
 
-	.tablero__periodo > span {
+	.periodo > span {
 		padding: 4px 10px;
 		border-radius: var(--radius-pill);
 	}
 
-	.tablero__periodo .tablero__periodo-activo {
+	.periodo .periodo__activo {
 		background: var(--brand-primary-deep);
 		color: var(--white);
 	}
@@ -158,9 +346,8 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 		align-content: start;
 		gap: 2px;
 		padding: 12px;
-		border: 1px solid var(--border-dark);
 		border-radius: 14px;
-		background: var(--surface-card-dark);
+		background: var(--navy-850);
 	}
 
 	.cifra:first-child {
@@ -169,7 +356,7 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 
 	.cifra dt {
 		color: var(--text-muted-light);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: var(--fw-medium);
 	}
 
@@ -188,12 +375,12 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 
 	.cifra__variacion {
 		color: var(--cyan-300);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
 	}
 
-	/* --- El gráfico: el SVG se estira al ancho de la card; el trazo no se deforma
-	   (non-scaling-stroke) y el punto del pico es HTML, así queda redondo. --- */
+	/* --- El gráfico: el SVG se estira al ancho; el trazo no se deforma (non-scaling-stroke) y el
+	   punto del pico es HTML, así queda redondo. --- */
 	.grafico {
 		display: grid;
 		gap: 8px;
@@ -201,7 +388,7 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 
 	.grafico__lienzo {
 		position: relative;
-		height: 150px;
+		height: 120px;
 		/* Tres guías horizontales, recesivas: dan escala sin competir con la curva. */
 		background:
 			linear-gradient(var(--border-dark), var(--border-dark)) 0 15% / 100% 1px no-repeat,
@@ -230,7 +417,7 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 		height: 12px;
 		border-radius: 50%;
 		background: var(--cyan-400);
-		box-shadow: 0 0 0 3px var(--navy-900);
+		box-shadow: 0 0 0 3px var(--surface-card-dark);
 		transform: translate(-50%, -50%);
 	}
 
@@ -243,18 +430,18 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 		border-radius: var(--radius-pill);
 		background: var(--cyan-300);
 		color: var(--navy-950);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: var(--fw-bold);
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
-		box-shadow: var(--shadow-elevada);
+		box-shadow: 0 8px 20px rgba(2, 6, 18, 0.4);
 	}
 
 	.grafico__dias {
 		display: grid;
 		grid-template-columns: repeat(7, 1fr);
 		color: var(--text-muted-light);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		text-align: center;
 	}
 
@@ -263,10 +450,127 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 		font-weight: var(--fw-semibold);
 	}
 
-	.tablero__nota {
-		justify-self: end;
+	/* --- Los últimos movimientos: el de arriba es el que llega. --- */
+	.movimientos {
+		display: grid;
+		gap: 8px;
+	}
+
+	.movimientos ul {
+		display: grid;
+		gap: 4px;
+	}
+
+	.movimiento {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: center;
+		gap: 12px;
+		padding: 8px;
+		border-radius: 14px;
+	}
+
+	.movimiento--nuevo {
+		background: rgba(34, 211, 238, 0.08);
+	}
+
+	.movimiento__icono {
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 12px;
+		background: var(--navy-850);
+		color: var(--blue-300);
+	}
+
+	.movimiento--nuevo .movimiento__icono {
+		background: var(--cyan-300);
+		color: var(--navy-950);
+	}
+
+	.movimiento__texto {
+		display: grid;
+		min-width: 0;
+		color: var(--text-heading-light);
+		font-weight: var(--fw-semibold);
+	}
+
+	.movimiento__texto small {
 		color: var(--text-muted-light);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
+		font-weight: var(--fw-regular);
+	}
+
+	.movimiento__hora {
+		align-self: start;
+		padding-top: 2px;
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* --- Lo montado sobre los bordes --- */
+	.tablero__chip {
+		position: absolute;
+		top: 20px;
+		right: 16px;
+		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 10px 16px;
+		border-radius: var(--radius-pill);
+		background: var(--cyan-300);
+		color: var(--navy-950);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-semibold);
+		line-height: 1.2;
+		white-space: nowrap;
+		box-shadow: var(--shadow-elevada);
+		transform: translateY(-50%);
+	}
+
+	/* El aviso claro: papel sobre la ventana oscura, montado sobre el borde de abajo. */
+	.tablero__aviso {
+		position: absolute;
+		right: 16px;
+		bottom: 0;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		max-width: calc(100% - 32px);
+		padding: 12px 16px 12px 12px;
+		border: 1px solid var(--border-light);
+		border-radius: 18px;
+		background: var(--white);
+		color: var(--text-heading-dark);
+		font-size: 0.875rem;
+		font-weight: var(--fw-semibold);
+		line-height: 1.3;
+		box-shadow: var(--shadow-card);
+	}
+
+	.tablero__aviso > span:last-child {
+		display: grid;
+	}
+
+	.tablero__aviso small {
+		color: var(--text-muted-dark);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-regular);
+	}
+
+	.aviso__icono {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 12px;
+		background: var(--blue-50);
+		color: var(--brand-primary-deep);
 	}
 
 	@media (min-width: 480px) {
@@ -277,68 +581,191 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 		.cifra:first-child {
 			grid-column: auto;
 		}
+	}
+
+	/* Desde 640 px, la app completa: barra lateral de módulos y buscador. */
+	@media (min-width: 640px) {
+		.ventana__buscar {
+			display: inline-flex;
+		}
+
+		.ventana__fecha {
+			display: block;
+		}
+
+		.ventana__barra strong {
+			min-width: 152px;
+		}
+
+		.ventana__cuerpo {
+			grid-template-columns: 184px minmax(0, 1fr);
+		}
+
+		.modulos {
+			flex-direction: column;
+			gap: 4px;
+			padding: 16px 12px;
+			border-right: 1px solid var(--border-dark);
+			border-bottom: 0;
+			mask-image: none;
+		}
+
+		.modulo {
+			border-radius: 12px;
+		}
+
+		.modulo__aviso {
+			margin-left: auto;
+		}
+
+		.ventana__contenido {
+			padding: 20px;
+		}
 
 		.grafico__lienzo {
-			height: 170px;
+			height: 140px;
+		}
+
+		.tablero__chip {
+			right: auto;
+			left: 216px;
+		}
+
+		.tablero {
+			padding-bottom: 20px;
+		}
+
+		/* Con la barra lateral, el aviso se monta sobre el borde izquierdo, en el lugar libre que
+		   queda abajo de los módulos: así se ve en la primera pantalla. */
+		.tablero__aviso {
+			top: 51%;
+			right: auto;
+			bottom: auto;
+			left: -24px;
 		}
 	}
 
-	/* --- Movimiento --- */
-	@keyframes dibujar-linea {
-		from { stroke-dashoffset: 1; }
+	@media (min-width: 1024px) {
+		.cifra__valor {
+			font-size: 1.5rem;
+		}
+
+		.tablero__aviso {
+			left: -40px;
+		}
 	}
 
-	@keyframes aparecer {
+	/* --- Movimiento. Sin prefers-reduced-motion queda todo visible y quieto. --- */
+	@keyframes tablero-llega {
+		from { opacity: 0; transform: perspective(1600px) translateY(40px) rotateX(10deg); }
+	}
+
+	@keyframes tablero-aparece {
 		from { opacity: 0; }
 	}
 
-	@keyframes pico-llega {
-		from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+	@keyframes tablero-sube {
+		from { opacity: 0; transform: translateY(12px); }
 	}
 
-	@keyframes etiqueta-llega {
-		from { opacity: 0; transform: translateY(6px); }
+	@keyframes tablero-desde-izquierda {
+		from { opacity: 0; transform: translateX(-12px); }
 	}
 
-	@keyframes contar {
+	@keyframes tablero-linea {
+		from { stroke-dashoffset: 1; }
+	}
+
+	@keyframes tablero-pico {
+		from { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+	}
+
+	@keyframes tablero-contar {
 		from { --v: var(--desde); }
 		to { --v: var(--fin); }
 	}
 
+	/* El movimiento nuevo entra desde arriba y su fondo cian se apaga despacio; los otros dos
+	   bajan un lugar para hacerle espacio. */
+	@keyframes tablero-nuevo {
+		from { opacity: 0; transform: translateY(-16px); }
+	}
+
+	@keyframes tablero-fondo-se-apaga {
+		from { background-color: rgba(34, 211, 238, 0.24); }
+	}
+
+	@keyframes tablero-baja-un-lugar {
+		from { transform: translateY(calc(-100% - 4px)); }
+	}
+
+	@keyframes tablero-chip {
+		from { opacity: 0; transform: translateY(-50%) scale(0.9); }
+	}
+
+	@keyframes tablero-aviso {
+		from { opacity: 0; transform: translateY(24px) scale(0.96); }
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
-		@supports (animation-timeline: view()) {
-			.grafico__linea {
-				animation: dibujar-linea linear both;
-				animation-timeline: --celda;
-				animation-range: entry 55% cover 45%;
-			}
-
-			.grafico__area {
-				animation: aparecer linear both;
-				animation-timeline: --celda;
-				animation-range: entry 70% cover 45%;
-			}
-
-			.grafico__pico {
-				animation: pico-llega linear both;
-				animation-timeline: --celda;
-				animation-range: cover 40% cover 46%;
-			}
-
-			.grafico__etiqueta {
-				animation: etiqueta-llega linear both;
-				animation-timeline: --celda;
-				animation-range: cover 44% cover 50%;
-			}
+		.ventana {
+			transform-origin: 50% 100%;
+			animation: tablero-llega 1s var(--curva-salida) 0.2s both;
 		}
 
-		/* Las cifras cuentan hacia arriba con un contador de CSS. El texto real queda en el HTML
-		   para lectores y navegadores sin soporte; donde el contador anda, lo reemplaza. */
-		@supports (animation-timeline: view()) and (width: mod(10px, 3px)) {
+		.modulo {
+			animation: tablero-desde-izquierda 0.5s var(--curva-salida) both;
+			animation-delay: calc(0.6s + var(--i) * 60ms);
+		}
+
+		.cifra {
+			animation: tablero-sube 0.5s var(--curva-salida) both;
+			animation-delay: calc(0.6s + var(--i) * 80ms);
+		}
+
+		.grafico__linea {
+			animation: tablero-linea 1.2s var(--curva-cruce) 0.9s both;
+		}
+
+		.grafico__area {
+			animation: tablero-aparece 0.8s var(--curva-salida) 1.5s both;
+		}
+
+		.grafico__pico {
+			animation: tablero-pico 0.4s var(--curva-salida) 1.9s both;
+		}
+
+		.grafico__etiqueta {
+			animation: tablero-sube 0.4s var(--curva-salida) 2s both;
+		}
+
+		.movimiento--previo {
+			animation:
+				tablero-sube 0.5s var(--curva-salida) calc(1s + var(--i) * 80ms) both,
+				tablero-baja-un-lugar 0.5s var(--curva-cajon) 2.3s both;
+		}
+
+		.movimiento--nuevo {
+			animation:
+				tablero-nuevo 0.5s var(--curva-salida) 2.35s both,
+				tablero-fondo-se-apaga 2s var(--curva-salida) 2.35s both;
+		}
+
+		.tablero__chip {
+			animation: tablero-chip 0.4s var(--curva-salida) 2.7s both;
+		}
+
+		.tablero__aviso {
+			animation: tablero-aviso 0.6s var(--curva-salida) 3s both;
+		}
+	}
+
+	/* Las cifras cuentan hacia arriba con un contador de CSS. El texto real queda en el HTML
+	   para lectores y navegadores sin soporte; donde el contador anda, lo reemplaza. */
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (width: mod(10px, 3px)) {
 			.cifra__valor {
-				animation: contar linear both;
-				animation-timeline: --celda;
-				animation-range: entry 50% cover 42%;
+				animation: tablero-contar 1.4s var(--curva-salida) 0.7s both;
 			}
 
 			.cifra__texto {
@@ -362,6 +789,78 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 					u calc(mod(var(--v), 1000));
 				content: '$ ' counter(m) '.' counter(k, tres-cifras) '.' counter(u, tres-cifras);
 			}
+		}
+	}
+
+	/* En el celular el tablero queda debajo del botón: si la historia corriera al cargar,
+	   terminaría antes de que llegues. En tablet ya se ve casi entero en la primera pantalla y
+	   corre al cargar, como en escritorio. En el celular cada parte se arma cuando entra en pantalla, con su
+	   propio timeline: lo que ya se ve al cargar (la ventana, los módulos, el chip) entra con el
+	   tiempo, y lo que está más abajo espera a que llegues, en cualquier alto de pantalla. */
+	@media (prefers-reduced-motion: no-preference) and (max-width: 639px) {
+		@supports (animation-timeline: view()) {
+			.cifras { view-timeline: --tablero-cifras block; }
+			.grafico { view-timeline: --tablero-grafico block; }
+			.movimientos { view-timeline: --tablero-movimientos block; }
+
+			.cifra,
+			.cifra__valor,
+			.grafico__linea,
+			.grafico__area,
+			.grafico__pico,
+			.grafico__etiqueta,
+			.movimiento--previo,
+			.movimiento--nuevo,
+			.tablero__aviso {
+				animation-delay: 0s;
+				animation-duration: auto;
+			}
+
+			.cifra,
+			.cifra__valor {
+				animation-timeline: --tablero-cifras;
+			}
+
+			.cifra { animation-range: entry 20% entry 90%; }
+			.cifra__valor { animation-range: entry 60% cover 50%; }
+
+			.grafico__linea,
+			.grafico__area,
+			.grafico__pico,
+			.grafico__etiqueta {
+				animation-timeline: --tablero-grafico;
+			}
+
+			.grafico__linea { animation-range: entry 40% cover 50%; }
+			.grafico__area { animation-range: entry 90% cover 50%; }
+			.grafico__pico { animation-range: cover 45% cover 52%; }
+			.grafico__etiqueta { animation-range: cover 50% cover 56%; }
+
+			.movimiento--previo,
+			.movimiento--nuevo {
+				animation-timeline: --tablero-movimientos;
+			}
+
+			.movimiento--previo { animation-range: entry 20% entry 70%, cover 30% cover 42%; }
+			.movimiento--nuevo { animation-range: cover 30% cover 42%, cover 30% cover 60%; }
+
+			.tablero__aviso {
+				animation-timeline: view();
+				animation-range: entry 30% entry 100%;
+			}
+		}
+	}
+
+	/* Movimiento reducido: la versión suave. Solo fundidos cortos, sin nada que se desplace ni
+	   cuente. */
+	@media (prefers-reduced-motion: reduce) {
+		.ventana {
+			animation: tablero-aparece 0.4s ease-out 0.1s both;
+		}
+
+		.tablero__chip,
+		.tablero__aviso {
+			animation: tablero-aparece 0.4s ease-out 0.5s both;
 		}
 	}
 </style>
