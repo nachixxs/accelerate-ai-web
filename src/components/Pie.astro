@@ -1,10 +1,10 @@
 ---
 // El pie, fuera de <main> para que siga siendo el landmark del pie. Mismo fondo oscuro que la
 // sección de cierre, así se leen como un solo bloque; los separa la estela: las tres capas de
-// velocidad de la A (atrás, medio, frente) que cruzan el ancho con el scroll, una detrás de
-// la otra, como arranca el isotipo.
-// Tres columnas: la marca, las secciones y el contacto. El imagotipo va a 200-232 px, como en el
-// encabezado: los 280 px de mínimo de la marca son sobre el lienzo de 1080 (ver Encabezado.astro).
+// velocidad de la A (atrás, medio, frente), cortadas en diagonal como en el isotipo, que se
+// descubren con el scroll una detrás de la otra (clip-path).
+// Tres columnas: la frase de la marca, las secciones y el contacto. Abajo de todo, el imagotipo
+// grande, cortado por el borde de la página: es el logo del pie (por eso lleva el alt).
 import { Image } from 'astro:assets';
 // El contacto, como en minificando: una línea discreta por canal (ícono, canal y dato), no un
 // número grande. WhatsApp primero porque es el canal principal; después el mail de cada socio.
@@ -34,7 +34,6 @@ const links = [
 	<div class="contenedor">
 		<div class="pie__grilla">
 			<div class="pie__bloque pie__marca" style="--i: 0">
-				<Image src={imagotipo} alt="Accelerate.ai" width={464} class="pie__logo" />
 				<p>Sistemas a medida para pymes que repiten tareas todos los días.</p>
 			</div>
 
@@ -75,6 +74,10 @@ const links = [
 				<Icono nombre="arrow-up-bold" size={18} />
 			</a>
 		</div>
+
+		<div class="pie__firma">
+			<Image src={imagotipo} alt="Accelerate.ai" width={962} class="pie__logo" />
+		</div>
 	</div>
 </footer>
 
@@ -90,9 +93,10 @@ const links = [
 		gap: 3px;
 	}
 
+	/* Cada capa termina en diagonal, con la inclinación de la A. */
 	.pie__estela span {
-		height: 3px;
-		transform-origin: left;
+		height: 4px;
+		clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
 	}
 
 	/* Escalonadas como la estela de la A: la de atrás cruza todo el ancho, las de adelante se
@@ -114,13 +118,24 @@ const links = [
 	}
 
 	.pie__marca p {
-		max-width: 32ch;
-		color: var(--text-body-light);
-		font-size: 1rem;
+		max-width: 22ch;
+		color: var(--text-heading-light);
+		font-size: var(--type-label-size);
+		font-weight: var(--fw-semibold);
+		line-height: 1.25;
+	}
+
+	/* El imagotipo grande, cortado por el borde de abajo: se ve el 62 % de su alto. El ancho
+	   tope es el del PNG (962 px), para no estirarlo. */
+	.pie__firma {
+		max-width: 962px;
+		aspect-ratio: 962 / 104;
+		overflow: clip;
 	}
 
 	.pie__logo {
-		width: 200px;
+		display: block;
+		width: 100%;
 		height: auto;
 	}
 
@@ -201,7 +216,7 @@ const links = [
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-2);
-		padding-block: var(--space-2) var(--space-3);
+		padding-block: var(--space-2) var(--space-5);
 		border-top: 1px solid var(--border-dark);
 	}
 
@@ -274,24 +289,20 @@ const links = [
 			grid-template-columns: 1fr;
 		}
 
-		.pie__logo {
-			width: 232px;
-		}
 	}
 
-	@keyframes estela-cruza {
-		from { transform: scaleX(0); }
+	@keyframes pie-estela {
+		from { clip-path: polygon(0 0, 0 0, -8px 100%, 0 100%); }
+		to { clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
 	}
 
-	@keyframes bloque-sube {
+	@keyframes pie-bloque {
 		from { opacity: 0; transform: translateY(24px); }
 	}
 
-	@keyframes logo-arranca {
-		from {
-			clip-path: inset(0 100% 0 0);
-			transform: translateX(-12%);
-		}
+	/* El imagotipo sube desde el borde que lo corta. */
+	@keyframes pie-logo {
+		from { transform: translateY(100%); }
 	}
 
 	/* El pie es lo último de la página: los tramos terminan antes de que termine de entrar, así
@@ -299,7 +310,7 @@ const links = [
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
 			.pie__estela span {
-				animation: estela-cruza var(--curva-salida) both;
+				animation: pie-estela var(--curva-salida) both;
 				animation-timeline: --pie;
 			}
 
@@ -308,15 +319,15 @@ const links = [
 			.pie__estela span:nth-child(3) { animation-range: entry 10% entry 46%; }
 
 			.pie__bloque {
-				animation: bloque-sube linear both;
+				animation: pie-bloque linear both;
 				animation-timeline: --pie;
 				animation-range: entry calc(20% + var(--i) * 12%) entry calc(55% + var(--i) * 12%);
 			}
 
 			.pie__logo {
-				animation: logo-arranca var(--curva-salida) both;
+				animation: pie-logo var(--curva-salida) both;
 				animation-timeline: --pie;
-				animation-range: entry 25% entry 65%;
+				animation-range: entry 55% entry 100%;
 			}
 		}
 	}
