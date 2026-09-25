@@ -1,5 +1,6 @@
 # Configuración de Orca: https://www.onorca.dev/docs/model/worktrees
 # Al crear cada worktree instala sus propias dependencias (node_modules no se comparte).
+# Los .md internos (fuera de git) los copia Orca desde el checkout principal: .worktreeinclude.
 scripts:
   setup: npm ci
 setupAgentStartupPolicy: wait-for-setup

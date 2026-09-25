@@ -1,0 +1,6 @@
+# Archivos ignorados por git que Orca copia a cada worktree nuevo (solo rutas literales).
+# Son los documentos internos del proyecto: desde af025f6 no van a GitHub.
+CLAUDE.md
+ESTADO.md
+REVISION-TEXTOS.md
+SPECS.md
