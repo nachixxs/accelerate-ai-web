@@ -9,7 +9,7 @@ import Icono from '../Icono.astro';
 
 // Tope de la barra: el doble del mínimo, o las unidades si son más.
 const productos = [
-	{ nombre: 'Cartulina A4 250 g', rubro: 'Papel', unidades: 1240, minimo: 500 },
+	{ nombre: 'Cartulina A4 250\u00a0g', rubro: 'Papel', unidades: 1240, minimo: 500 },
 	{ nombre: 'Tinta negra XL', rubro: 'Insumos', unidades: 3, minimo: 6 },
 	{ nombre: 'Vinilo blanco mate', rubro: 'Rollos', unidades: 18, minimo: 8 },
 	{ nombre: 'Anillos 12 mm', rubro: 'Encuadernación', unidades: 40, minimo: 50 },
@@ -17,6 +17,9 @@ const productos = [
 	const tope = Math.max(p.minimo * 2, p.unidades * 1.15);
 	return { ...p, nivel: Math.min(p.unidades / tope, 1), marca: p.minimo / tope, bajo: p.unidades < p.minimo };
 });
+
+// El pedido sugerido: lo que quedó bajo el mínimo, hasta el doble del mínimo.
+const pedido = productos.filter((p) => p.bajo).map((p) => ({ nombre: p.nombre, cantidad: p.minimo * 2 }));
 ---
 
 <div
@@ -70,8 +73,7 @@ const productos = [
 			Pedido sugerido
 		</span>
 		<ul>
-			<li><span>Tinta negra XL</span><span>× 12</span></li>
-			<li><span>Anillos 12 mm</span><span>× 100</span></li>
+			{pedido.map(({ nombre, cantidad }) => <li><span>{nombre}</span><span>×&nbsp;{cantidad}</span></li>)}
 		</ul>
 		<span class="pedido__proveedor">Proveedor: Insumos del Sur</span>
 	</div>
@@ -83,7 +85,7 @@ const productos = [
 		position: relative;
 		display: grid;
 		gap: 12px;
-		padding: 16px 16px 96px;
+		padding: 16px 16px 0;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-card);
 		background: var(--navy-900);
@@ -216,14 +218,15 @@ const productos = [
 		font-size: 0.8125rem;
 	}
 
-	/* El pedido sugerido: papel claro, montado sobre el borde de abajo y un poco girado. */
+	/* El pedido sugerido: papel claro, montado sobre el borde de abajo y un poco girado. Cierra
+	   el mock en el flujo, con margen negativo: con letra grande el mock crece y el pedido no tapa
+	   ni la nota ni los productos. */
 	.pedido {
-		position: absolute;
-		right: 16px;
-		bottom: -24px;
+		justify-self: end;
 		display: grid;
 		gap: 8px;
-		width: min(260px, calc(100% - 32px));
+		width: min(260px, 100%);
+		margin-bottom: -24px;
 		padding: 16px;
 		border-radius: 18px;
 		background: var(--off-white);

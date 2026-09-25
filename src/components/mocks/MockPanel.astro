@@ -40,7 +40,7 @@ const area = `${linea} L${x(6)},${ALTO} L${x(0)},${ALTO} Z`;
 const pico = semana.reduce((max, d, i) => (d.miles > semana[max].miles ? i : max), 0);
 
 const cifras = [
-	{ nombre: 'Ventas', fin: 1284500, desde: 1000000, formato: 'millones', variacion: '+12 % vs. semana pasada' },
+	{ nombre: 'Ventas', fin: 1284500, desde: 1000000, formato: 'millones', variacion: '+12 % vs. semana pasada' },
 	{ nombre: 'Órdenes', fin: 142, desde: 0, formato: 'simple' },
 	{ nombre: 'Ticket promedio', fin: 9045, desde: 5000, formato: 'miles' },
 ];
@@ -48,7 +48,7 @@ const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}
 
 // El primero es el que llega durante la animación; los otros dos ya estaban.
 const movimientos = [
-	{ icono: 'check-circle-duotone', texto: 'Orden #1043 terminada', detalle: 'Pasó sola a "Para entregar"', hora: '10:42' },
+	{ icono: 'check-circle-duotone', texto: 'Orden #1043 terminada', detalle: 'Pasó sola a “Para entregar”', hora: '10:42' },
 	{ icono: 'package-duotone', texto: 'Papel A4 bajo el mínimo', detalle: 'El pedido al proveedor ya está armado', hora: '10:15' },
 	{ icono: 'cash-register-duotone', texto: 'Caja del lunes cerrada', detalle: 'Cuadró al peso', hora: 'Ayer' },
 ];
@@ -118,8 +118,8 @@ const movimientos = [
 						<svg viewBox={`0 0 ${ANCHO} ${ALTO}`} preserveAspectRatio="none" aria-hidden="true">
 							<defs>
 								<linearGradient id="tablero-area" x1="0" y1="0" x2="0" y2="1">
-									<stop offset="0" stop-color="#173872" />
-									<stop offset="1" stop-color="#111b30" />
+									<stop offset="0" style="stop-color: var(--blue-900)" />
+									<stop offset="1" style="stop-color: var(--surface-card-dark)" />
 								</linearGradient>
 							</defs>
 							<path class="grafico__area" d={area} fill="url(#tablero-area)" />
@@ -660,10 +660,6 @@ const movimientos = [
 		from { opacity: 0; transform: perspective(1600px) translateY(40px) rotateX(10deg); }
 	}
 
-	@keyframes tablero-aparece {
-		from { opacity: 0; }
-	}
-
 	@keyframes tablero-sube {
 		from { opacity: 0; transform: translateY(12px); }
 	}
@@ -728,7 +724,7 @@ const movimientos = [
 		}
 
 		.grafico__area {
-			animation: tablero-aparece 0.8s var(--curva-salida) 1.5s both;
+			animation: aparecer 0.8s var(--curva-salida) 1.5s both;
 		}
 
 		.grafico__pico {
@@ -853,12 +849,12 @@ const movimientos = [
 	   cuente. */
 	@media (prefers-reduced-motion: reduce) {
 		.ventana {
-			animation: tablero-aparece 0.4s ease-out 0.1s both;
+			animation: aparecer 0.4s ease-out 0.1s both;
 		}
 
 		.tablero__chip,
 		.tablero__aviso {
-			animation: tablero-aparece 0.4s ease-out 0.5s both;
+			animation: aparecer 0.4s ease-out 0.5s both;
 		}
 	}
 </style>

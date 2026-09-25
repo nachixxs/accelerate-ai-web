@@ -33,7 +33,7 @@ const auditoria = [
 					<h3 class="t-label">Auditoría gratis</h3>
 					<p>Una charla de 30 a 45&nbsp;minutos sobre cómo se mueve tu negocio. Salimos con un problema concreto para resolver.</p>
 				</div>
-				<div class="pantalla pantalla--1" aria-hidden="true">
+				<div class="pantalla pantalla--1 fundir" aria-hidden="true">
 					<span class="pantalla__titulo">Dónde se va el tiempo</span>
 					<ul class="auditoria">
 						{
@@ -60,7 +60,7 @@ const auditoria = [
 					<h3 class="t-label">Propuesta con dos números</h3>
 					<p>Lo que cuesta armarlo y lo que cuesta por mes, con la fecha de entrega.</p>
 				</div>
-				<div class="pantalla pantalla--2 pantalla--invertida" aria-hidden="true">
+				<div class="pantalla pantalla--2 pantalla--invertida fundir" aria-hidden="true">
 					<span class="pantalla__titulo">Propuesta</span>
 					<dl class="propuesta">
 						<div style="--i: 0"><dt>Armado</dt><dd>un pago</dd></div>
@@ -80,7 +80,7 @@ const auditoria = [
 					<h3 class="t-label">Construcción en 1 a 3&nbsp;semanas</h3>
 					<p>A mitad de camino te mostramos cómo va, para ajustar antes de terminar.</p>
 				</div>
-				<div class="pantalla pantalla--3" aria-hidden="true">
+				<div class="pantalla pantalla--3 fundir" aria-hidden="true">
 					<span class="pantalla__titulo">Construcción</span>
 					<div class="semanas">
 						<span class="semanas__demo"><Icono nombre="flag-duotone" size={14} /> Demo</span>
@@ -102,7 +102,7 @@ const auditoria = [
 					<h3 class="t-label">Soporte todos los meses</h3>
 					<p>Arreglamos lo que falle y mejoramos el sistema a medida que tu negocio cambia.</p>
 				</div>
-				<div class="pantalla pantalla--4" aria-hidden="true">
+				<div class="pantalla pantalla--4 fundir" aria-hidden="true">
 					<span class="pantalla__titulo">Soporte</span>
 					<div class="soporte">
 						<p class="soporte__pedido">¿Podemos sumar el CUIT en las órdenes?</p>
@@ -173,8 +173,7 @@ const auditoria = [
 		position: relative;
 		display: grid;
 		grid-template-columns: var(--marca) minmax(0, 1fr);
-		column-gap: var(--space-3);
-		row-gap: var(--space-3);
+		gap: var(--space-3);
 	}
 
 	/* Encendida es la de base: sin movimiento (o en Firefox) todo se ve completo. Apagada es una
@@ -182,7 +181,6 @@ const auditoria = [
 	.paso__marca {
 		position: relative;
 		z-index: 1;
-		isolation: isolate;
 		display: grid;
 		place-items: center;
 		width: var(--marca);
@@ -339,7 +337,6 @@ const auditoria = [
 	}
 
 	.propuesta dd {
-		margin: 0;
 		color: var(--p-acento);
 		font-weight: var(--fw-semibold);
 	}
@@ -430,7 +427,7 @@ const auditoria = [
 		gap: 8px;
 		border-bottom-right-radius: 6px;
 		background: var(--brand-primary-deep);
-		color: #eaf1ff;
+		color: var(--blue-50);
 	}
 
 	.soporte__quien {
@@ -480,10 +477,6 @@ const auditoria = [
 		from, to { color: var(--brand-primary-deep); }
 	}
 
-	@keyframes proceso-entra {
-		from { opacity: 0; transform: translateY(16px); }
-	}
-
 	@keyframes proceso-barra {
 		from { transform: scaleX(0); }
 	}
@@ -528,7 +521,7 @@ const auditoria = [
 		@supports (animation-timeline: view()) {
 			.pantalla {
 				view-timeline: --pantalla block;
-				animation: proceso-entra var(--curva-salida) both;
+				animation: entrar-corto var(--curva-salida) both;
 				animation-timeline: view();
 				animation-range: entry 10% entry 80%;
 			}
@@ -576,9 +569,10 @@ const auditoria = [
 		14%, 100% { opacity: 1; transform: none; }
 	}
 
-	/* El texto del paso activo se aclara del resto. */
+	/* El texto del paso activo se aclara del resto. 0.76 es el piso: sobre este fondo deja el
+	   cuerpo en el gris de --text-muted-dark, que todavía pasa AA. */
 	@keyframes proceso-texto-activo {
-		0%, 100% { opacity: 0.4; }
+		0%, 100% { opacity: 0.76; }
 		12%, 88% { opacity: 1; }
 	}
 
@@ -589,7 +583,7 @@ const auditoria = [
 				grid-template-rows: repeat(4, auto);
 				column-gap: var(--space-4);
 				row-gap: 0;
-				--fija-arriba: max(112px, calc(50vh - 200px));
+				--fija-arriba: max(112px, calc(50vh - var(--fija-alto) / 2));
 				--fija-alto: 400px;
 			}
 
@@ -597,11 +591,8 @@ const auditoria = [
 				display: contents;
 			}
 
-			.paso:nth-child(1) > * { grid-row: 1; }
-			.paso:nth-child(2) > * { grid-row: 2; }
-			.paso:nth-child(3) > * { grid-row: 3; }
-			.paso:nth-child(4) > * { grid-row: 4; }
-
+			/* Marca y texto no llevan fila: con su columna fija, la grilla los pone solos en la
+			   fila siguiente de cada paso. Las pantallas y el marco ocupan todas las filas. */
 			.paso__marca {
 				grid-column: 1;
 			}
@@ -635,8 +626,8 @@ const auditoria = [
 				box-shadow: var(--shadow-card);
 			}
 
+			/* La paleta de .pantalla--invertida, para las cuatro; sin fondo, lo pone el marco. */
 			.pantalla {
-				--p-fondo: var(--surface-card-dark);
 				--p-borde: var(--border-dark);
 				--p-titulo: var(--text-heading-light);
 				--p-texto: var(--text-body-light);
@@ -646,7 +637,7 @@ const auditoria = [
 				--p-chip-fondo: var(--cyan-300);
 				--p-chip-texto: var(--navy-950);
 				grid-column: 3;
-				grid-row: 1 / -1 !important;
+				grid-row: 1 / -1;
 				align-self: start;
 				position: sticky;
 				top: var(--fija-arriba);
@@ -678,7 +669,7 @@ const auditoria = [
 			}
 
 			.pantalla--2 .propuesta div {
-				animation: proceso-entra var(--curva-salida) both;
+				animation: entrar-corto var(--curva-salida) both;
 				animation-timeline: --paso-2;
 				animation-range: cover calc(8% + var(--i) * 8%) cover calc(24% + var(--i) * 8%);
 			}
@@ -696,14 +687,14 @@ const auditoria = [
 			}
 
 			.pantalla--3 .tareas li {
-				animation: proceso-entra var(--curva-salida) both;
+				animation: entrar-corto var(--curva-salida) both;
 				animation-timeline: --paso-3;
 				animation-range: cover calc(20% + var(--i) * 14%) cover calc(30% + var(--i) * 14%);
 			}
 
 			.pantalla--4 .soporte p,
 			.pantalla--4 .soporte__mejora {
-				animation: proceso-entra var(--curva-salida) both;
+				animation: entrar-corto var(--curva-salida) both;
 				animation-timeline: --paso-4;
 			}
 
@@ -713,14 +704,4 @@ const auditoria = [
 		}
 	}
 
-	/* Movimiento reducido: la versión suave. Cada visual se funde al entrar, sin desplazarse. */
-	@media (prefers-reduced-motion: reduce) {
-		@supports (animation-timeline: view()) {
-			.pantalla {
-				animation: aparecer linear both;
-				animation-timeline: view();
-				animation-range: entry 0% entry 50%;
-			}
-		}
-	}
 </style>

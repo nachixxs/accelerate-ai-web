@@ -22,7 +22,7 @@ h1, h2, h3 { color: var(--text-heading-dark); }
 .seccion--oscura ::selection { background: var(--blue-800); color: var(--white); }
 html { scrollbar-color: var(--slate-300) var(--surface-alt); caret-color: var(--brand-primary-deep); }
 
-/* El encabezado fijo (72px) no tapa lo que se muestra: ni el título al que lleva un link ni el
+/* El encabezado fijo (80px: la cápsula de 64 más 8 de cada lado) no tapa lo que se muestra: ni el título al que lleva un link ni el
    elemento que recibe el foco con Tab. */
 html { scroll-padding-top: 96px; }
 
@@ -93,6 +93,10 @@ body { timeline-scope: --cta-portada, --s-resolvemos, --s-sistemas, --s-proceso,
 	--curva-salida: cubic-bezier(0.16, 1, 0.3, 1);
 	--curva-cajon: cubic-bezier(0.32, 0.72, 0, 1);
 	--curva-cruce: cubic-bezier(0.77, 0, 0.175, 1);
+
+	/* Sombras de las cards sobre el fondo oscuro: las de tokens/ están teñidas para el claro. */
+	--shadow-card-oscura: 0 24px 60px rgba(2, 6, 18, 0.45);
+	--shadow-elevada-oscura: 0 16px 36px rgba(2, 6, 18, 0.45);
 }
 
 @keyframes entrar-subiendo {
@@ -101,6 +105,24 @@ body { timeline-scope: --cta-portada, --s-resolvemos, --s-sistemas, --s-proceso,
 
 @keyframes aparecer {
 	from { opacity: 0; }
+}
+
+/* La entrada corta, para piezas chicas dentro de un mock o una card. */
+@keyframes entrar-corto {
+	from { opacity: 0; transform: translateY(16px); }
+}
+
+/* El hover de los botones de WhatsApp (BotonWhatsApp y el del encabezado): un brillo que los
+   cruza y el logo que se balancea. */
+@keyframes brillo-cruza {
+	from { transform: translateX(-100%); }
+	to { transform: translateX(100%); }
+}
+
+@keyframes globo-suena {
+	20% { transform: rotate(-14deg); }
+	45% { transform: rotate(10deg); }
+	70% { transform: rotate(-5deg); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -124,7 +146,9 @@ body { timeline-scope: --cta-portada, --s-resolvemos, --s-sistemas, --s-proceso,
 }
 
 /* Movimiento reducido: la versión suave. Solo fundidos cortos de opacidad, sin nada que se
-   desplace. Las excepciones (la cinta de rubros y el hover de los botones) viven en su componente. */
+   desplace. .fundir es para lo que con movimiento tiene su propia entrada (en su componente) y
+   con movimiento reducido solo se funde. Las excepciones (la cinta de rubros y el hover de los
+   botones) viven en su componente. */
 @media (prefers-reduced-motion: reduce) {
 	.entrada {
 		animation: aparecer 0.3s ease-out both;
@@ -132,7 +156,8 @@ body { timeline-scope: --cta-portada, --s-resolvemos, --s-sistemas, --s-proceso,
 	}
 
 	@supports (animation-timeline: view()) {
-		.revelar {
+		.revelar,
+		.fundir {
 			animation: aparecer linear both;
 			animation-timeline: view();
 			animation-range: entry 0% entry 50%;

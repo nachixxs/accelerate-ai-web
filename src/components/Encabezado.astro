@@ -57,7 +57,7 @@ const links = [
 				<a class="capsula__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
 					<span class="capsula__cta-cara">
 						<Icono nombre="si:whatsapp" size={20} />
-						<span class="capsula__cta-texto">Escribinos por WhatsApp</span>
+						<span class="capsula__cta-texto solo-lector">Escribinos por WhatsApp</span>
 					</span>
 				</a>
 
@@ -68,37 +68,40 @@ const links = [
 			</div>
 		</div>
 	</div>
-
-	<div id="menu" class="menu" popover>
-		<div class="menu__barra">
-			<Image src={imagotipo} alt="" width={352} class="menu__logo" />
-			<button class="capsula__menu capsula__menu--cerrar" type="button" popovertarget="menu" popovertargetaction="hide">
-				<Icono nombre="x-bold" size={18} />
-				Cerrar
-			</button>
-		</div>
-		<nav aria-label="Secciones">
-			<ol class="menu__lista">
-				{
-					links.map(({ href, texto }, i) => (
-						<li style={`--i: ${i}`}>
-							<a href={href}>
-								<span class="menu__numero">{String(i + 1).padStart(2, '0')}</span>
-								{texto}
-								<Icono nombre="arrow-right-bold" size={16} class="menu__flecha" />
-							</a>
-						</li>
-					))
-				}
-			</ol>
-		</nav>
-		<a class="menu__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
-			<Icono nombre="si:whatsapp" size={22} />
-			Escribinos por WhatsApp
-		</a>
-		<p class="menu__nota">Te contesta Ignacio o Gabriel</p>
-	</div>
 </header>
+
+{/* El menú va fuera del <header>: vive en la capa superior (popover) y así no hereda el
+   pointer-events: none del encabezado. */}
+<div id="menu" class="menu" popover>
+	<div class="menu__barra">
+		<Image src={imagotipo} alt="" width={352} class="menu__logo" />
+		<button class="capsula__menu capsula__menu--cerrar" type="button" popovertarget="menu" popovertargetaction="hide">
+			<Icono nombre="x-bold" size={18} />
+			Cerrar
+		</button>
+	</div>
+	<nav aria-label="Secciones">
+		<ol class="menu__lista">
+			{
+				links.map(({ href, texto }, i) => (
+					<li style={`--i: ${i}`}>
+						<a href={href}>
+							<span class="menu__numero" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+							{texto}
+							<Icono nombre="arrow-right-bold" size={16} class="menu__flecha" />
+						</a>
+					</li>
+				))
+			}
+		</ol>
+	</nav>
+	<a class="menu__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
+		<Icono nombre="si:whatsapp" size={22} />
+		Escribinos por WhatsApp
+	</a>
+	<p class="menu__nota">Te contesta Ignacio o Gabriel</p>
+</div>
+
 
 <script is:inline>
 	const menu = document.getElementById('menu');
@@ -161,6 +164,7 @@ const links = [
 	.capsula__logo img {
 		width: 140px;
 		height: auto;
+		transition: transform 0.3s var(--curva-salida);
 	}
 
 	/* --- Links de escritorio. La sección en pantalla queda marcada con la pastilla y el punto. --- */
@@ -257,15 +261,6 @@ const links = [
 		background: var(--navy-800);
 	}
 
-	.capsula__cta-texto {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
-	}
-
 	/* --- El botón del menú: pastilla blanca con borde; "Cerrar" en navy. --- */
 	.capsula__menu {
 		display: inline-flex;
@@ -290,18 +285,9 @@ const links = [
 		color: var(--white);
 	}
 
-	.capsula__menu:focus-visible,
-	.capsula__cta:focus-visible,
-	.menu a:focus-visible {
-		outline: 3px solid var(--brand-primary-deep);
-		outline-offset: 3px;
-	}
-
 	/* --- El menú: una card blanca en el lugar de la cápsula, como si se abriera hacia abajo. --- */
-	/* pointer-events vuelve a auto: el encabezado lo apaga y se hereda. */
 	.menu {
 		position: fixed;
-		pointer-events: auto;
 		inset: 8px 8px auto;
 		width: auto;
 		max-width: 480px;
@@ -309,11 +295,12 @@ const links = [
 		margin: 0 0 0 auto;
 		padding: 8px;
 		overflow: auto;
+		overscroll-behavior: contain;
 		border: 1px solid var(--border-light);
 		border-radius: var(--radius-card-lg);
 		background: var(--white);
 		color: var(--text-heading-dark);
-		box-shadow: 0 24px 60px rgba(15, 36, 80, 0.22);
+		box-shadow: var(--shadow-card);
 	}
 
 	.menu::backdrop {
@@ -402,10 +389,12 @@ const links = [
 			padding-inline: 20px;
 		}
 
+		/* Desde 640 px el texto del botón se ve: deja de ser solo para lectores de pantalla. */
 		.capsula__cta-texto {
 			position: static;
 			width: auto;
 			height: auto;
+			margin: 0;
 			overflow: visible;
 			clip: auto;
 		}
@@ -463,11 +452,11 @@ const links = [
 		}
 
 		.capsula__cta:hover .capsula__cta-cara::before {
-			animation: encabezado-brillo 0.6s var(--curva-cruce);
+			animation: brillo-cruza 0.6s var(--curva-cruce);
 		}
 
 		.capsula__cta:hover :global(svg) {
-			animation: encabezado-globo 0.45s var(--curva-cruce);
+			animation: globo-suena 0.45s var(--curva-cruce);
 		}
 
 		@media (prefers-reduced-motion: no-preference) {
@@ -476,21 +465,6 @@ const links = [
 				transform: translateX(4px);
 			}
 		}
-	}
-
-	.capsula__logo img {
-		transition: transform 0.3s var(--curva-salida);
-	}
-
-	@keyframes encabezado-brillo {
-		from { transform: translateX(-100%); }
-		to { transform: translateX(100%); }
-	}
-
-	@keyframes encabezado-globo {
-		20% { transform: rotate(-14deg); }
-		45% { transform: rotate(10deg); }
-		70% { transform: rotate(-5deg); }
 	}
 
 	/* Entrada del logo al cargar: se descubre de izquierda a derecha, arrancando rápido, como las
@@ -599,7 +573,29 @@ const links = [
 		}
 	}
 
-	/* --- El menú abre y cierra con transición (display y overlay discretos), sin JavaScript. --- */
+	/* --- El menú abre y cierra con transición (display y overlay discretos), sin JavaScript.
+	   Para todos, un fundido; con movimiento, además baja un poco desde la cápsula. --- */
+	.menu,
+	.menu::backdrop {
+		opacity: 0;
+		transition:
+			opacity 0.2s ease-out,
+			display 0.2s allow-discrete,
+			overlay 0.2s allow-discrete;
+	}
+
+	.menu:popover-open,
+	.menu:popover-open::backdrop {
+		opacity: 1;
+	}
+
+	@starting-style {
+		.menu:popover-open,
+		.menu:popover-open::backdrop {
+			opacity: 0;
+		}
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
 		.menu,
 		.menu::backdrop {
@@ -611,34 +607,17 @@ const links = [
 		}
 
 		.menu {
-			opacity: 0;
 			transform: translateY(-8px) scale(0.98);
 			transform-origin: top right;
 		}
 
 		.menu:popover-open {
-			opacity: 1;
 			transform: none;
 		}
 
 		@starting-style {
 			.menu:popover-open {
-				opacity: 0;
 				transform: translateY(-8px) scale(0.98);
-			}
-		}
-
-		.menu::backdrop {
-			opacity: 0;
-		}
-
-		.menu:popover-open::backdrop {
-			opacity: 1;
-		}
-
-		@starting-style {
-			.menu:popover-open::backdrop {
-				opacity: 0;
 			}
 		}
 
@@ -649,31 +628,4 @@ const links = [
 		}
 	}
 
-	/* Movimiento reducido: el menú solo se funde. */
-	@media (prefers-reduced-motion: reduce) {
-		.menu,
-		.menu::backdrop {
-			transition:
-				opacity 0.2s ease-out,
-				display 0.2s allow-discrete,
-				overlay 0.2s allow-discrete;
-		}
-
-		.menu,
-		.menu::backdrop {
-			opacity: 0;
-		}
-
-		.menu:popover-open,
-		.menu:popover-open::backdrop {
-			opacity: 1;
-		}
-
-		@starting-style {
-			.menu:popover-open,
-			.menu:popover-open::backdrop {
-				opacity: 0;
-			}
-		}
-	}
 </style>

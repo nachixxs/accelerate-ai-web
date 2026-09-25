@@ -26,7 +26,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		clase: 'proceso',
 		antes: 2,
 		despues: 1,
-		ordenes: [{ numero: 1041, cliente: 'Club Norte', trabajo: 'Banner 3 × 1 m', fecha: 'Hoy', quien: 'JM', avance: 70 }],
+		ordenes: [{ numero: 1041, cliente: 'Club Norte', trabajo: 'Banner 3 × 1 m', fecha: 'Hoy', quien: 'JM', avance: 70 }],
 		hueco: true,
 	},
 	{
@@ -106,7 +106,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 					{hueco && <div class="hueco" />}
 
 					{clase === 'entregar' && (
-						<div class="hueco">
+						<div class="hueco hueco--recibe">
 							<div class="orden orden--cruza">
 								<div class="orden__arriba">
 									<span class="orden__numero">#1044</span>
@@ -133,12 +133,12 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		}
 	</div>
 
+	<p class="ordenes__nota">Datos de ejemplo</p>
+
 	<span class="ordenes__chip">
 		<Icono nombre="lightning-duotone" size={16} />
-		Terminada: pasa sola a "Para entregar"
+		Terminada: pasa sola a “Para entregar”
 	</span>
-
-	<p class="ordenes__nota">Datos de ejemplo</p>
 </div>
 
 <style>
@@ -148,7 +148,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		position: relative;
 		display: grid;
 		gap: 16px;
-		padding: 16px 16px 28px;
+		padding: 16px 16px 0;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-card);
 		background: var(--navy-900);
@@ -195,6 +195,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 
 	.columna {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		align-content: start;
 		gap: 10px;
 		min-width: 0;
@@ -220,7 +221,6 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		gap: 8px;
 		color: var(--text-heading-light);
 		font-weight: var(--fw-semibold);
-		white-space: nowrap;
 	}
 
 	.columna__punto {
@@ -334,14 +334,13 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 
 	/* El lugar vacío: en "En proceso" queda donde estaba la orden; en "Para entregar" la recibe. */
 	.hueco {
-		position: relative;
 		min-height: 136px;
 		border: 1px dashed var(--navy-700);
 		border-radius: 14px;
 	}
 
 	/* En el flujo, tapando el hueco que la recibe: si el texto baja de línea, el hueco crece con ella. */
-	.hueco:has(.orden--cruza) {
+	.hueco--recibe {
 		display: grid;
 		min-height: 0;
 	}
@@ -351,17 +350,17 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		margin: -1px;
 		z-index: 1;
 		border-color: var(--blue-800);
-		box-shadow: 0 16px 36px rgba(2, 6, 18, 0.45);
+		box-shadow: var(--shadow-elevada-oscura);
 	}
 
+	/* El chip cierra el mock, montado sobre el borde de abajo: va en el flujo con un margen
+	   negativo de medio chip, así con letra grande el mock crece y no tapa la nota. */
 	.ordenes__chip {
-		position: absolute;
-		right: 16px;
-		bottom: 0;
+		justify-self: end;
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		max-width: calc(100% - 32px);
+		margin-bottom: -18px;
 		padding: 10px 16px;
 		border-radius: var(--radius-pill);
 		background: var(--cyan-300);
@@ -370,7 +369,6 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		font-weight: var(--fw-semibold);
 		line-height: 1.2;
 		box-shadow: var(--shadow-elevada);
-		transform: translateY(50%);
 	}
 
 	.ordenes__nota {
@@ -391,10 +389,6 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 	}
 
 	/* --- Movimiento --- */
-	@keyframes ordenes-entra {
-		from { opacity: 0; transform: translateY(16px); }
-	}
-
 	/* La orden arranca en "En proceso" (una columna a la izquierda), se levanta, cruza y se
 	   apoya en su lugar. */
 	@keyframes ordenes-cruza {
@@ -417,13 +411,13 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 	}
 
 	@keyframes ordenes-chip {
-		from { opacity: 0; transform: translateY(50%) scale(0.9); }
+		from { opacity: 0; transform: translateY(12px) scale(0.9); }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
 			.orden:not(.orden--cruza) {
-				animation: ordenes-entra var(--curva-salida) both;
+				animation: entrar-corto var(--curva-salida) both;
 				animation-timeline: --celda;
 				animation-range: entry calc(20% + var(--i) * 8%) entry calc(60% + var(--i) * 8%);
 			}

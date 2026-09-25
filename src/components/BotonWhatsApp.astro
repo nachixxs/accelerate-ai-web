@@ -200,27 +200,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		box-shadow: var(--shadow-card);
 	}
 
-	@keyframes boton-brillo {
-		from {
-			transform: translateX(-100%);
-		}
-		to {
-			transform: translateX(100%);
-		}
-	}
-
-	@keyframes globo-suena {
-		20% {
-			transform: rotate(-14deg);
-		}
-		45% {
-			transform: rotate(10deg);
-		}
-		70% {
-			transform: rotate(-5deg);
-		}
-	}
-
+	/* brillo-cruza y globo-suena están en global.css: los comparte el botón del encabezado. */
 	@media (hover: hover) and (pointer: fine) {
 		.boton {
 			transition:
@@ -254,7 +234,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		}
 
 		.boton:hover .boton__brillo::before {
-			animation: boton-brillo 0.6s var(--curva-cruce);
+			animation: brillo-cruza 0.6s var(--curva-cruce);
 		}
 	}
 

@@ -56,7 +56,7 @@ const links = [
 									</span>
 									<span class="pie__contacto-texto">
 										<span class="pie__contacto-canal">{canal}</span>
-										<span class="pie__contacto-dato">{dato}</span>
+										<span class="pie__contacto-dato" translate="no">{dato}</span>
 									</span>
 								</a>
 							</li>
@@ -68,7 +68,7 @@ const links = [
 		</div>
 
 		<div class="pie__base">
-			<p class="pie__legal">© {anio} Accelerate.ai. Todos los derechos reservados.</p>
+			<p class="pie__legal">© {anio} <span translate="no">Accelerate.ai</span>. Todos los derechos reservados.</p>
 			<a class="pie__arriba" href="#inicio">
 				Volver arriba
 				<Icono nombre="arrow-up-bold" size={18} />
@@ -269,14 +269,9 @@ const links = [
 		}
 	}
 
-	.pie a:focus-visible {
-		outline: 3px solid var(--brand-accent);
-		outline-offset: 3px;
+	/* El anillo (cian) sale de .seccion--oscura; acá solo se redondea. */
+	.pie :is(.pie__link, .pie__contacto):focus-visible {
 		border-radius: 4px;
-	}
-
-	.pie .pie__arriba:focus-visible {
-		border-radius: var(--radius-pill);
 	}
 
 	@media (min-width: 768px) {
@@ -294,10 +289,6 @@ const links = [
 	@keyframes pie-estela {
 		from { clip-path: polygon(0 0, 0 0, -8px 100%, 0 100%); }
 		to { clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
-	}
-
-	@keyframes pie-bloque {
-		from { opacity: 0; transform: translateY(24px); }
 	}
 
 	/* El imagotipo sube desde el borde que lo corta. */
@@ -319,7 +310,7 @@ const links = [
 			.pie__estela span:nth-child(3) { animation-range: entry 10% entry 46%; }
 
 			.pie__bloque {
-				animation: pie-bloque linear both;
+				animation: entrar-subiendo linear both;
 				animation-timeline: --pie;
 				animation-range: entry calc(20% + var(--i) * 12%) entry calc(55% + var(--i) * 12%);
 			}

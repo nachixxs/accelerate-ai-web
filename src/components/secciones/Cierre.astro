@@ -22,13 +22,13 @@ const datos = [
 	<Glow tono="cian" esquina="abajo-izq" />
 
 	<div class="contenedor">
-		<h2 id="cierre-titulo" class="cierre__titular">
+		<h2 id="cierre-titulo" class="cierre__titular fundir">
 			<span class="cierre__renglon"><span>Empezá por la</span></span>
 			<span class="cierre__renglon"><span class="texto-gradiente">auditoría gratis</span></span>
 		</h2>
 		<p class="t-cuerpo cierre__bajada revelar">Una charla para encontrar el proceso que más tiempo te hace perder.</p>
 
-		<div class="cierre__card">
+		<div class="cierre__card fundir">
 			<ul class="cierre__datos">
 				{
 					datos.map(({ icono, titulo, texto }, i) => (
@@ -50,6 +50,7 @@ const datos = [
 
 <style>
 	.cierre {
+		--abre-margen: var(--space-2);
 		padding-bottom: var(--space-8);
 	}
 
@@ -58,7 +59,7 @@ const datos = [
 		display: grid;
 		max-width: 15ch;
 		view-timeline: --titular block;
-		font-size: clamp(3rem, 1.25rem + 7vw, 6.5rem);
+		font-size: clamp(3rem, 1.25rem + 7vw, 6rem);
 		font-weight: var(--type-hook-weight);
 		line-height: 0.95;
 		letter-spacing: -0.03em;
@@ -84,15 +85,15 @@ const datos = [
 		color: var(--text-body-light);
 	}
 
-	/* La card de los tres datos. Deja abajo lugar para el botón, que se monta sobre su borde. */
+	/* La card de los tres datos. Sin padding abajo: el botón cierra la card y se monta sobre
+	   su borde. */
 	.cierre__card {
-		position: relative;
 		margin-top: var(--space-6);
-		padding: var(--space-4) var(--space-3) var(--space-6);
+		padding: var(--space-4) var(--space-3) 0;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-card-lg);
 		background: var(--surface-card-dark);
-		box-shadow: 0 24px 60px rgba(2, 6, 18, 0.45);
+		box-shadow: var(--shadow-card-oscura);
 	}
 
 	.cierre__datos {
@@ -130,15 +131,13 @@ const datos = [
 		font-size: var(--type-meta-size);
 	}
 
-	/* El botón, mitad adentro y mitad afuera del borde de abajo. */
-	/* En el celular va a lo ancho, con menos aire a los lados para que entre en un renglón. */
+	/* El botón, mitad adentro y mitad afuera del borde de abajo: es el último elemento de la
+	   card, con un margen negativo de medio botón (56 px de alto). Va en el flujo, así con letra
+	   grande la card crece y nada queda tapado. En el celular va a lo ancho, con menos aire a los
+	   lados para que entre en un renglón. */
 	.cierre__accion {
-		position: absolute;
-		left: var(--space-2);
-		right: var(--space-2);
-		bottom: 0;
 		display: grid;
-		translate: 0 50%;
+		margin: var(--space-4) calc(var(--space-2) - var(--space-3)) -28px;
 	}
 
 	.cierre__accion > :global(*) {
@@ -154,8 +153,12 @@ const datos = [
 	}
 
 	@media (min-width: 768px) {
+		.cierre {
+			--abre-margen: var(--space-7);
+		}
+
 		.cierre__card {
-			padding: var(--space-5) var(--space-4) var(--space-6);
+			padding: var(--space-5) var(--space-4) 0;
 		}
 
 		.cierre__datos {
@@ -164,8 +167,7 @@ const datos = [
 		}
 
 		/* En columnas, los separa una línea vertical en lugar de la horizontal. */
-		.dato,
-		.dato:first-child {
+		.dato {
 			padding: 0 var(--space-3);
 			border-top: 0;
 			border-left: 1px solid var(--border-dark);
@@ -177,8 +179,8 @@ const datos = [
 		}
 
 		.cierre__accion {
-			left: var(--space-4);
-			right: auto;
+			justify-items: start;
+			margin-inline: 0;
 		}
 
 		.cierre__accion > :global(*) {
@@ -207,23 +209,36 @@ const datos = [
 		from { transform: translateY(105%); }
 	}
 
-	@keyframes cierre-dato {
-		from { opacity: 0; transform: translateY(16px); }
-	}
-
 	@keyframes cierre-icono {
 		from { opacity: 0; transform: scale(0.6) rotate(-12deg); }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
-			/* Lineal: la apertura sigue al dedo, sin adelantarse. Relleno backwards: terminado el
-			   tramo, la sección vuelve a no tener clip-path. */
+			/* Lo que se recorta es solo el fondo, una capa de color plano: recortar la sección
+			   entera volvía a rasterizar los glows (blur de 90 px) en cada cuadro del scroll. Los
+			   glows llegan con opacidad, que no cuesta. Lineal: la apertura sigue al dedo. Relleno
+			   backwards: terminado el tramo, la capa vuelve a no tener clip-path. */
 			.cierre {
-				--abre-margen: var(--space-2);
+				background: none;
+				view-timeline: --cierre block;
+			}
+
+			.cierre::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				z-index: -1;
+				background: var(--surface-dark);
 				animation: cierre-abre linear backwards;
-				animation-timeline: view();
+				animation-timeline: --cierre;
 				animation-range: entry 0% entry 90%;
+			}
+
+			.cierre > :global(.glow) {
+				animation: aparecer linear both;
+				animation-timeline: --cierre;
+				animation-range: entry 50% entry 100%;
 			}
 
 			.cierre__renglon > span {
@@ -237,7 +252,7 @@ const datos = [
 			}
 
 			.dato {
-				animation: cierre-dato var(--curva-salida) both;
+				animation: entrar-corto var(--curva-salida) both;
 				animation-timeline: view();
 				animation-range: entry calc(20% + var(--i) * 12%) entry calc(60% + var(--i) * 12%);
 			}
@@ -250,20 +265,4 @@ const datos = [
 		}
 	}
 
-	@media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
-		.cierre {
-			--abre-margen: var(--space-7);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		@supports (animation-timeline: view()) {
-			.cierre__titular,
-			.cierre__card {
-				animation: aparecer linear both;
-				animation-timeline: view();
-				animation-range: entry 0% entry 50%;
-			}
-		}
-	}
 </style>
