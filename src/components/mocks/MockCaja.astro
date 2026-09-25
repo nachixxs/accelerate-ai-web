@@ -46,6 +46,7 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 			</span>
 		</div>
 	</div>
+	<p class="mock-caja__nota">Datos de ejemplo</p>
 </div>
 
 <script>
@@ -59,9 +60,15 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 	.mock-caja {
 		display: grid;
 		justify-items: center;
+		gap: 16px;
 		cursor: pointer;
 		user-select: none;
 		-webkit-user-select: none;
+	}
+
+	.mock-caja__nota {
+		color: var(--text-muted-light);
+		font-size: 0.8125rem;
 	}
 
 	/* El ticket es papel: off-white (la marca no usa #fff puro), con el borde de abajo dentado. */
