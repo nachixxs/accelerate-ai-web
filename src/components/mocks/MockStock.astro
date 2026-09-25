@@ -50,10 +50,13 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 					</span>
 					<span class="producto__estado">
 						{bajo ? (
-							<button type="button" class="producto__reponer" data-nuevo={repuesto} data-factor={factor} aria-label={`Reponer ${nombre}`}>
-								<Icono nombre="warning-duotone" size={14} />
-								Reponer
-							</button>
+							<>
+								<button type="button" class="producto__reponer" data-nuevo={repuesto} data-factor={factor} aria-label={`Reponer ${nombre}`}>
+									<Icono nombre="warning-duotone" size={14} />
+									Reponer
+								</button>
+								<span class="producto__ok" hidden tabindex="-1">Al día</span>
+							</>
 						) : (
 							<span class="producto__ok">Al día</span>
 						)}
@@ -90,13 +93,17 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 	contarAlVer([...document.querySelectorAll<HTMLElement>('.producto__cifra')], unidades);
 
 	// Reponer: llena la barra (con `scale`, no `transform`, que ya anima el scroll), cuenta las
-	// unidades hasta el nuevo stock, pasa el estado a "Al día" y tacha el ítem en el pedido.
+	// unidades hasta el nuevo stock, pasa el estado a "Al día" y tacha el ítem en el pedido. El
+	// botón y el "Al día" ya están en el HTML (con estilos scoped de Astro): el script solo
+	// alterna `hidden`, sin crear elementos (un <span> creado a mano no tiene el atributo
+	// data-astro-cid-* y se queda sin estilos).
 	document.querySelectorAll<HTMLButtonElement>('.producto__reponer').forEach((boton) => {
 		boton.addEventListener('click', () => {
 			const fila = boton.closest<HTMLLIElement>('.producto');
 			const relleno = fila?.querySelector<HTMLElement>('.producto__relleno');
 			const cifra = fila?.querySelector<HTMLElement>('.producto__cifra');
-			if (!fila || !relleno || !cifra) return;
+			const ok = fila?.querySelector<HTMLElement>('.producto__ok');
+			if (!fila || !relleno || !cifra || !ok) return;
 
 			const nuevo = Number(boton.dataset.nuevo);
 			const desde = Number(cifra.dataset.valor ?? 0);
@@ -105,10 +112,9 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 
 			fila.classList.remove('producto--bajo');
 			relleno.style.scale = `${boton.dataset.factor} 1`;
-			const ok = Object.assign(document.createElement('span'), { className: 'producto__ok', textContent: 'Al día' });
+			boton.hidden = true;
+			ok.hidden = false;
 			// El botón desaparece: si tenía el foco del teclado, que no se pierda en <body>.
-			if (teniaFoco) ok.tabIndex = -1;
-			boton.replaceWith(ok);
 			if (teniaFoco) ok.focus({ preventScroll: true });
 			pedido?.classList.add('pedido__item--repuesto');
 			cifra.dataset.valor = String(nuevo);
@@ -206,6 +212,14 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 	.producto__ok {
 		border: 1px solid var(--border-dark);
 		color: var(--text-muted-light);
+	}
+
+	/* [hidden] del user-agent pierde contra el display: inline-flex de arriba (mismo origen
+	   autor gana siempre a UA): hay que repetirlo a mano para el botón y el "Al día" que
+	   arrancan ocultos. */
+	.producto__ok[hidden],
+	.producto__reponer[hidden] {
+		display: none;
 	}
 
 	/* Botón real: sin bordes de navegador, con el área táctil de 44 px en un pseudo-elemento
