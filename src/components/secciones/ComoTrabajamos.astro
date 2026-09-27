@@ -238,12 +238,18 @@ const auditoria = [
 	}
 
 	/* Alineado con el texto de los pasos (marca + el gap de .paso), no centrado como el resto de
-	   los CTA de la página los tiene a la izquierda. */
+	   los CTA de la página los tiene a la izquierda. Debajo de 480px la sangría no entra (el botón
+	   se parte en 2 líneas): ahí queda a la izquierda como el resto de los CTA de sección. */
 	.proceso__pie {
 		display: flex;
 		justify-content: flex-start;
-		padding-left: calc(var(--marca) + var(--space-3));
 		margin-top: var(--space-6);
+	}
+
+	@media (min-width: 480px) {
+		.proceso__pie {
+			padding-left: calc(var(--marca) + var(--space-3));
+		}
 	}
 
 	/* --- El riel y los pasos (celular primero) ---
