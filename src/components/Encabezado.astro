@@ -135,6 +135,17 @@ const links = [
 </script>
 
 <style>
+	/* Con el menú abierto, el fondo no scrollea: el popover no es modal y, con rueda o trackpad,
+	   la página se movía detrás de la card (con el dedo ya lo frenan overscroll-behavior y el
+	   toque que cierra). scrollbar-gutter: stable solo acá, junto con el overflow: hidden que
+	   saca la barra: reserva su ancho nada más en ese instante, para que no salte. Puesto siempre
+	   en :root, en vez de solo acá, angosta la página en todos los anchos (incluido el celular,
+	   sin barra real) y ahí sí desborda contenido ajustado, como el pedido sugerido de stock. */
+	:global(html:has(#menu:popover-open)) {
+		overflow: hidden;
+		scrollbar-gutter: stable;
+	}
+
 	/* El encabezado no tiene fondo propio: la página pasa por detrás, alrededor de la cápsula.
 	   Solo la cápsula recibe clics. */
 	.encabezado {
