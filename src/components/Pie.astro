@@ -38,8 +38,8 @@ const links = [
 				<p>Sistemas a medida para pymes que repiten tareas todos los días.</p>
 			</div>
 
-			<nav class="pie__bloque" aria-labelledby="pie-secciones" style="--i: 1">
-				<h2 id="pie-secciones" class="pie__titulo">Secciones</h2>
+			<nav class="pie__bloque" aria-label="Secciones del sitio" style="--i: 1">
+				<h2 class="pie__titulo">Secciones</h2>
 				<ul class="pie__links">
 					{links.map(({ href, texto }) => <li><a class="pie__link" href={href}>{texto}</a></li>)}
 				</ul>
@@ -59,6 +59,7 @@ const links = [
 										<span class="pie__contacto-canal">{canal}</span>
 										<span class="pie__contacto-dato" translate="no">{dato}</span>
 									</span>
+									{externo && <span class="solo-lector"> (abre WhatsApp)</span>}
 								</a>
 							</li>
 						))
@@ -157,6 +158,13 @@ const links = [
 		transition: color 0.2s, background-size 0.25s var(--curva-salida);
 	}
 
+	/* Feedback al apretar: cambia de color rápido; al soltar, vuelve con la transición de arriba
+	   (0.2s), más lenta que la de presionar. */
+	.pie__link:active {
+		color: var(--cyan-300);
+		transition: color 0.12s var(--curva-salida);
+	}
+
 	.pie__contactos {
 		display: grid;
 		gap: var(--space-1);
@@ -180,6 +188,18 @@ const links = [
 		border-radius: 12px;
 		color: var(--cyan-300);
 		transition: border-color 0.2s;
+	}
+
+	/* Feedback al apretar, igual que el hover pero más rápido: al soltar vuelve con la transición
+	   de reposo de cada elemento (0.2s), más lenta que la de presionar (0.12s). */
+	.pie__contacto:active .pie__contacto-icono {
+		border-color: var(--cyan-300);
+		transition: border-color 0.12s var(--curva-salida);
+	}
+
+	.pie__contacto:active .pie__contacto-dato {
+		color: var(--text-heading-light);
+		transition: color 0.12s var(--curva-salida);
 	}
 
 	.pie__contacto-texto {
@@ -228,7 +248,14 @@ const links = [
 		color: var(--text-heading-light);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
-		transition: border-color 0.2s;
+		transition: border-color 0.2s, scale 0.2s var(--curva-salida);
+	}
+
+	/* Feedback al apretar: se achica y al soltar vuelve con la transición de arriba (0.2s), más
+	   lenta que la de presionar (0.12s). */
+	.pie__arriba:active {
+		scale: 0.97;
+		transition: scale 0.12s var(--curva-salida);
 	}
 
 	.pie__arriba :global(svg) {
@@ -266,10 +293,17 @@ const links = [
 		border-radius: 4px;
 	}
 
+	/* Entre 768 y 1023 el mail no entra en una columna de 1.25fr (queda "…gmail.co" / "m"): 2
+	   columnas, con la marca a lo ancho arriba y secciones + contacto abajo. Las 3 columnas una
+	   al lado de la otra recién entran desde 1024. */
 	@media (min-width: 768px) {
 		.pie__grilla {
-			grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.25fr);
+			grid-template-columns: 1fr 1fr;
 			gap: var(--space-4);
+		}
+
+		.pie__marca {
+			grid-column: 1 / -1;
 		}
 
 		.pie__links {
@@ -282,6 +316,16 @@ const links = [
 			flex-direction: row;
 			align-items: flex-end;
 			justify-content: space-between;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.pie__grilla {
+			grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr);
+		}
+
+		.pie__marca {
+			grid-column: auto;
 		}
 	}
 

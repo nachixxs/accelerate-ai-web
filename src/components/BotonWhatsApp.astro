@@ -24,6 +24,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 <a class:list={['boton', `boton--${variante}`, clase]} href={whatsappUrl(mensaje)} target="_blank" rel="noopener">
 	{(variante === 'principal' || variante === 'secundario') && <span class="boton__brillo" aria-hidden="true"></span>}
 	{texto}
+	<span class="solo-lector"> (abre WhatsApp)</span>
 	{variante === 'principal' ? <Icono nombre="si:whatsapp" size={24} class="boton__icono" /> : <Icono nombre="arrow-right-bold" size={20} class="boton__icono" />}
 </a>
 
@@ -37,9 +38,9 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		justify-content: center;
 		gap: var(--space-1);
 		min-height: 48px;
-		padding: 12px var(--space-3);
+		padding: 12px max(1.5rem, 24px);
 		border-radius: var(--radius-pill);
-		font-size: var(--type-meta-size);
+		font-size: 1.0625rem;
 		font-weight: var(--fw-semibold);
 		line-height: 1.2;
 		-webkit-tap-highlight-color: transparent;
@@ -50,7 +51,8 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		transition:
 			background-color 0.2s,
 			border-color 0.2s,
-			color 0.2s;
+			color 0.2s,
+			scale 0.2s var(--curva-salida);
 	}
 
 	.boton :global(.boton__icono) {
@@ -60,7 +62,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 	/* 19px en 700 cuenta como texto grande para WCAG: blanco sobre #2971f2 pide 3:1 y da 4,4:1. */
 	.boton--principal {
 		min-height: 56px;
-		padding: var(--space-2) var(--space-3);
+		padding: var(--space-2) max(1.5rem, 24px);
 		background: var(--brand-primary);
 		color: var(--white);
 		font-size: 1.1875rem;
@@ -90,6 +92,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 	:global(.seccion--oscura) .boton--secundario {
 		background: var(--cyan-300);
 		color: var(--navy-950);
+		box-shadow: var(--shadow-elevada-oscura);
 	}
 
 	:global(.seccion--oscura) .boton--contorno {
@@ -211,6 +214,10 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		box-shadow: var(--shadow-card);
 	}
 
+	:global(.seccion--oscura) .boton--secundario::after {
+		box-shadow: var(--shadow-card-oscura);
+	}
+
 	/* brillo-cruza y globo-suena están en global.css: los comparte el botón del encabezado. */
 	@media (hover: hover) and (pointer: fine) {
 		.boton {
@@ -218,6 +225,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 				background-color 0.2s,
 				border-color 0.2s,
 				color 0.2s,
+				scale 0.2s var(--curva-salida),
 				transform 0.25s var(--curva-salida);
 		}
 
