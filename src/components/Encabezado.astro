@@ -29,7 +29,7 @@ const links = [
 			<span class="capsula__fondo" aria-hidden="true"></span>
 
 			<a href="#inicio" class="capsula__logo">
-				<Image src={imagotipo} alt="Accelerate.ai" width={352} loading="eager" />
+				<Image src={imagotipo} alt="Accelerate.ai" width={160} densities={[1, 2, 3]} loading="eager" />
 			</a>
 
 			<nav aria-label="Secciones" class="capsula__nav">
@@ -76,7 +76,7 @@ const links = [
    pointer-events: none del encabezado. */}
 <div id="menu" class="menu" popover>
 	<div class="menu__barra">
-		<Image src={imagotipo} alt="" width={352} class="menu__logo" />
+		<Image src={imagotipo} alt="" width={140} densities={[1, 2, 3]} class="menu__logo" />
 		<button class="capsula__menu capsula__menu--cerrar" type="button" popovertarget="menu" popovertargetaction="hide">
 			<Icono nombre="x-bold" size={18} />
 			Cerrar
