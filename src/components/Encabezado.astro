@@ -88,7 +88,6 @@ const links = [
 				links.map(({ href, texto }, i) => (
 					<li style={`--i: ${i}`}>
 						<a href={href}>
-							<span class="menu__numero" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
 							{texto}
 							<Icono nombre="arrow-right-bold" size={16} class="menu__flecha" />
 						</a>
@@ -378,14 +377,6 @@ const links = [
 
 	.menu__lista a:active {
 		background: var(--blue-50);
-	}
-
-	.menu__numero {
-		min-width: 2ch;
-		color: var(--slate-500);
-		font-size: 0.8125rem;
-		font-weight: var(--fw-semibold);
-		font-variant-numeric: tabular-nums;
 	}
 
 	.menu :global(.menu__flecha) {
