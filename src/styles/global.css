@@ -57,7 +57,10 @@ body { timeline-scope: --s-resolvemos, --s-sistemas, --s-proceso, --s-somos, --s
 
 /* Ancho de lectura y margen lateral: 16px en el celular, 32px desde tablet. */
 .contenedor { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: var(--space-2); }
-.seccion { padding-block: var(--space-7); }
+/* Espacio de sección propio de la web, en múltiplos de 8 (el --space-7 de 90 px es del lienzo
+   de redes). Lo usan también las secciones que no llevan .seccion. */
+:root { --espacio-seccion: 80px; }
+.seccion { padding-block: var(--espacio-seccion); }
 
 /* Los dos fondos de la marca: claro (el del body) y oscuro, para el cierre. */
 .seccion--oscura { background: var(--surface-dark); color: var(--text-body-light); }
@@ -79,8 +82,8 @@ body { timeline-scope: --s-resolvemos, --s-sistemas, --s-proceso, --s-somos, --s
 .encabezado-seccion .t-cuerpo { color: var(--text-body-dark); }
 
 @media (min-width: 768px) {
+	:root { --espacio-seccion: 120px; }
 	.contenedor { padding-inline: var(--space-4); }
-	.seccion { padding-block: var(--space-8); }
 }
 
 /* --- Movimiento ---
