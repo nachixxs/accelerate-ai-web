@@ -176,10 +176,12 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		gap: 4px;
 	}
 
-	/* Cada fila: nombre y estado arriba, la barra con el mínimo y las unidades abajo. */
+	/* Cada fila: nombre y estado arriba, la barra con el mínimo y las unidades abajo. Columna fija
+	   (no `auto`): si no, cada fila reserva un ancho distinto para el estado y la cifra (según su
+	   propio contenido) y la barra de al lado termina en otro x en cada fila. */
 	.producto {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) 7.5rem;
 		align-items: center;
 		gap: 8px 12px;
 		padding: 10px 12px;
@@ -449,6 +451,15 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		.producto__nivel { grid-column: 2; grid-row: 1; }
 		.producto__unidades { grid-column: 2; grid-row: 2; justify-self: start; }
 		.producto__estado { grid-column: 3; grid-row: 1 / span 2; }
+
+		/* Con la cifra pegada a la izquierda (como la barra de arriba), el ancho reservado para
+		   que no la mueva el conteo (--digitos) no le suma una sangría distinta a cada fila: la
+		   cifra empieza siempre en el mismo x y lo que sobra de la reserva queda después, antes
+		   de "/ mín.". Con text-align: end (el de la fila apilada de abajo) quedaba al revés: la
+		   cifra pegada a la barra pero con una sangría distinta según cuánto le sobrara. */
+		.producto__cifra {
+			text-align: start;
+		}
 	}
 
 	/* --- Movimiento --- */
