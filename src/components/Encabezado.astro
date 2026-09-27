@@ -567,17 +567,24 @@ const links = [
 		to { transform: translateY(4px); }
 	}
 
-	/* La sección en pantalla: pastilla, punto y texto en azul. */
+	/* La sección en pantalla: pastilla, punto y texto en azul. Fundido en los bordes del rango
+	   (0/4/96/100 %) en vez de from/to constantes: antes prendía y apagaba de golpe, y el
+	   scale(0) del punto nunca se interpolaba. El texto interpola color (no hay una capa aparte
+	   para atenuar con opacity); el gris y el azul de la marca dan AA a mitad de camino, porque
+	   los dos son oscuros sobre la pastilla clara. */
 	@keyframes encabezado-activo {
-		from, to { color: var(--brand-primary-deep); }
+		0%, 100% { color: var(--text-body-dark); }
+		4%, 96% { color: var(--brand-primary-deep); }
 	}
 
 	@keyframes encabezado-activo-fondo {
-		from, to { opacity: 1; }
+		0%, 100% { opacity: 0; }
+		4%, 96% { opacity: 1; }
 	}
 
 	@keyframes encabezado-activo-punto {
-		from, to { opacity: 1; transform: scale(1); }
+		0%, 100% { opacity: 0; transform: scale(0); }
+		4%, 96% { opacity: 1; transform: scale(1); }
 	}
 
 	@supports (animation-timeline: scroll()) {
