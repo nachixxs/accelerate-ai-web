@@ -150,8 +150,22 @@ const auditoria = [
 	let observador: IntersectionObserver | null = null;
 	const enBanda = new Set<HTMLElement>();
 
+	// El sello "Aprobada" (pantalla 2): en escritorio se estampa cuando esa pantalla pasa a
+	// activa, no por su propio observador (con el observador se estampaba con la pantalla todavía
+	// en opacidad 0, B3). Con reducción no se agrega ninguna clase, como hoy.
+	const sello = document.querySelector<HTMLElement>('.propuesta__sello');
+	let selloEstampado = false;
+	function estamparSello() {
+		if (selloEstampado || !sello) return;
+		selloEstampado = true;
+		sello.classList.remove('proceso-sello-espera');
+		sello.classList.add('proceso-sello-entra');
+	}
+
 	// En la franja del medio puede haber dos pasos a la vez (la transición entre uno y otro):
 	// se activa el que tiene el centro más cerca del centro de la pantalla, nunca dos juntos.
+	// Si ninguno está en la franja (antes del paso 1 o después del 4), se queda con el extremo
+	// que corresponde: nunca se vacía la tarjeta fija (B2).
 	function elegirActiva() {
 		pantallas.forEach((p) => p.classList.remove('pantalla--activa'));
 		let elegido: HTMLElement | null = null;
@@ -161,7 +175,13 @@ const auditoria = [
 			const d = Math.abs((r.top + r.bottom) / 2 - innerHeight / 2);
 			if (d < distancia) { distancia = d; elegido = paso; }
 		}
-		if (elegido) pantallas[pasos.indexOf(elegido)]?.classList.add('pantalla--activa');
+		if (!elegido && pasos.length) {
+			elegido = pasos[0].getBoundingClientRect().top > innerHeight / 2 ? pasos[0] : pasos[pasos.length - 1];
+		}
+		if (!elegido) return;
+		const activa = pantallas[pasos.indexOf(elegido)];
+		activa?.classList.add('pantalla--activa');
+		if (activa?.classList.contains('pantalla--2') && !movimientoReducido()) estamparSello();
 	}
 
 	function activar() {
@@ -192,15 +212,17 @@ const auditoria = [
 	// El sello "Aprobada" entraba atado a un tramo de scroll de 48-83px: con un scroll rápido se
 	// salta entero. Ahora es una entrada por tiempo, disparada una sola vez cuando se ve. Sin JS,
 	// o con movimiento reducido, no se agrega ninguna clase y el CSS lo deja en su estado final.
-	const sello = document.querySelector<HTMLElement>('.propuesta__sello');
+	// En escritorio (con tarjeta fija) el disparo va por elegirActiva(), arriba: acá el observador
+	// queda solo para el celular y la tablet, donde el sello está junto a su paso, en el flujo.
 	if (sello && !movimientoReducido()) {
 		sello.classList.add('proceso-sello-espera');
+	}
+	if (sello && !movimientoReducido() && !anchoFijo.matches) {
 		const observadorSello = new IntersectionObserver(
 			(entradas) => {
 				if (!entradas[0].isIntersecting) return;
 				observadorSello.disconnect();
-				sello.classList.remove('proceso-sello-espera');
-				sello.classList.add('proceso-sello-entra');
+				estamparSello();
 			},
 			{ threshold: 0.6 },
 		);
