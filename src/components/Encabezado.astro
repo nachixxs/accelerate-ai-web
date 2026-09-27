@@ -582,9 +582,16 @@ const links = [
 		4%, 96% { opacity: 1; }
 	}
 
+	/* Nada aparece de la nada: entra desde la mitad de su tamaño, no desde 0. Con reducción, el
+	   punto ya está en su tamaño final y solo funde la opacidad (nada se escala). */
 	@keyframes encabezado-activo-punto {
-		0%, 100% { opacity: 0; transform: scale(0); }
+		0%, 100% { opacity: 0; transform: scale(0.5); }
 		4%, 96% { opacity: 1; transform: scale(1); }
+	}
+
+	@keyframes encabezado-activo-punto-reducido {
+		0%, 100% { opacity: 0; }
+		4%, 96% { opacity: 1; }
 	}
 
 	@supports (animation-timeline: scroll()) {
@@ -600,17 +607,26 @@ const links = [
 			animation-range: exit-crossing 0% exit-crossing 100%;
 		}
 
-		.capsula__nav a::after {
-			animation: encabezado-activo-punto linear none;
-			animation-timeline: var(--timeline);
-			animation-range: exit-crossing 0% exit-crossing 100%;
-		}
-
 		@media (prefers-reduced-motion: no-preference) {
+			.capsula__nav a::after {
+				animation: encabezado-activo-punto linear none;
+				animation-timeline: var(--timeline);
+				animation-range: exit-crossing 0% exit-crossing 100%;
+			}
+
 			.capsula {
 				animation: encabezado-flota linear both;
 				animation-timeline: scroll();
 				animation-range: 0 96px;
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.capsula__nav a::after {
+				transform: scale(1);
+				animation: encabezado-activo-punto-reducido linear none;
+				animation-timeline: var(--timeline);
+				animation-range: exit-crossing 0% exit-crossing 100%;
 			}
 		}
 	}

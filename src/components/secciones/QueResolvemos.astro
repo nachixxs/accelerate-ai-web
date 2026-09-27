@@ -261,7 +261,11 @@ const punto = (i: number) => 0.3 + i * 0.25;
 		min-width: 0;
 	}
 
+	/* container-type acá y no en .interruptor: en Chrome, un <fieldset> con container-type no
+	   vuelve a evaluar el @container de más abajo cuando solo cambia la letra (el ancho en px no
+	   se mueve). Puesto en un div normal, si reacciona. */
 	.resolvemos__intro {
+		container-type: inline-size;
 		display: grid;
 		justify-items: start;
 		align-content: start;
@@ -277,6 +281,7 @@ const punto = (i: number) => 0.3 + i * 0.25;
 	   costado arrastra la perilla; el que sube o baja, la página. --- */
 	.interruptor {
 		position: relative;
+		width: 100%;
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		margin: var(--space-1) 0 0;
@@ -321,18 +326,10 @@ const punto = (i: number) => 0.3 + i * 0.25;
 		padding-inline: var(--space-2);
 		border-radius: var(--radius-pill);
 		font-weight: var(--fw-semibold);
-		white-space: normal;
+		white-space: nowrap;
 		text-align: center;
 		cursor: pointer;
 		-webkit-tap-highlight-color: transparent;
-		/* Feedback al presionar: opacity sola, sin pisar el gradiente de texto de abajo. Al
-		   soltar, más lento que al presionar (ver :active). */
-		transition: opacity 0.2s var(--curva-salida);
-	}
-
-	.interruptor label:active {
-		opacity: 0.7;
-		transition: opacity 0.08s var(--curva-salida);
 	}
 
 	/* El texto es blanco justo donde está la perilla y oscuro donde no. Cada label mide lo mismo
@@ -355,6 +352,24 @@ const punto = (i: number) => 0.3 + i * 0.25;
 	@media (min-width: 640px) {
 		.interruptor label {
 			padding-inline: var(--space-3);
+		}
+	}
+
+	/* A 360, "Con un sistema" con nowrap pide 18px más de los que quedan libres: se los saca de
+	   acá, no de partir la palabra en dos líneas. */
+	@media (max-width: 399px) {
+		.interruptor label {
+			padding-inline: 8px;
+			gap: 4px;
+		}
+	}
+
+	/* Con letra grande el ancho del interruptor no cambia (es de layout, no de contenido) pero la
+	   fuente sí, así que "em" corre con ella: recién ahí, si de verdad no entra en una línea,
+	   corta a dos (mismo truco que MockStock, container-type + em). */
+	@container (max-width: 17em) {
+		.interruptor label {
+			white-space: normal;
 		}
 	}
 

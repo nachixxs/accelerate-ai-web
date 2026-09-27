@@ -27,9 +27,10 @@ h1, h2, h3 { color: var(--text-heading-dark); }
 p, li, dd { text-wrap: pretty; }
 
 /* tokens/base.css:5 pone el link en el azul claro al :hover, pensado para mouse: en táctil ese
-   color queda pegado después de tocar. Se neutraliza acá porque el token es copia de la marca. */
+   color queda pegado después de tocar. Se neutraliza acá porque el token es copia de la marca.
+   .saltar queda afuera: es blanco sobre navy, y ese azul le baja el contraste (2,85:1). */
 @media (hover: none) {
-	a:hover { color: var(--brand-primary-deep); }
+	a:not(.saltar):hover { color: var(--brand-primary-deep); }
 }
 
 :focus-visible { outline: 3px solid var(--brand-primary-deep); outline-offset: 3px; }

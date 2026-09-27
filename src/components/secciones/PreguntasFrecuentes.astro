@@ -111,13 +111,6 @@ const preguntas = [
 		-webkit-user-select: none;
 	}
 
-	/* Feedback al presionar, sin gatear por reducción: lo dispara quien toca. Al soltar, más
-	   lento que al presionar (patrón de BotonWhatsApp). */
-	summary:active {
-		scale: 0.98;
-		transition: scale 0.12s var(--curva-salida);
-	}
-
 	summary::-webkit-details-marker {
 		display: none;
 	}
@@ -155,6 +148,17 @@ const preguntas = [
 		transform: rotate(180deg);
 	}
 
+	/* Feedback al presionar en el círculo, no en la fila: la marca no usa escalas al presionar,
+	   y una fila de 682 px temblaba con un scale chico. Gana al estado abierto por orden (misma
+	   especificidad) para que también se note al cerrar. Presionar es más rápido que soltar
+	   (mismo patrón que BotonWhatsApp). */
+	.pregunta:has(summary:active) .pregunta__flecha {
+		border-color: var(--brand-primary-deep);
+		background: var(--blue-50);
+		color: var(--brand-primary-deep);
+		transition-duration: 0.12s;
+	}
+
 	.pregunta p {
 		padding-bottom: var(--space-4);
 	}
@@ -177,11 +181,9 @@ const preguntas = [
 		}
 	}
 
-	/* Los cambios de color no mueven nada: quedan también con movimiento reducido. El scale
-	   base es la vuelta al soltar (0.2s); el de :active de arriba, más rápido, la pisa al
-	   presionar. */
+	/* Los cambios de color no mueven nada: quedan también con movimiento reducido. */
 	summary {
-		transition: color 0.2s, scale 0.2s var(--curva-salida);
+		transition: color 0.2s;
 	}
 
 	.pregunta__flecha {
@@ -236,17 +238,18 @@ const preguntas = [
 		}
 	}
 
-	/* Con reducción: nada se desplaza, solo un fundido corto de opacidad (igual que .fundir
-	   de global.css). El alto sigue abriendo de golpe (no hay block-size acá): es el salto
-	   nativo de <details>, no movimiento nuestro. */
+	/* Con reducción: solo al abrir hay un fundido corto de opacidad (igual que .fundir de
+	   global.css); la transición vive en [open], no en la base, así que al cerrar no hay nada
+	   que animar y la fila salta al alto cerrado de una, como el <details> nativo. El alto
+	   sigue abriendo de golpe (no hay block-size acá): es el salto nativo, no movimiento nuestro. */
 	@media (prefers-reduced-motion: reduce) {
 		.pregunta::details-content {
 			opacity: 0;
-			transition: opacity 0.2s, content-visibility 0.2s allow-discrete;
 		}
 
 		.pregunta[open]::details-content {
 			opacity: 1;
+			transition: opacity 0.2s, content-visibility 0.2s allow-discrete;
 		}
 
 		@starting-style {
