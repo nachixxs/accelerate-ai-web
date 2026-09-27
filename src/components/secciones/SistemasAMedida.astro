@@ -349,16 +349,31 @@ const tipos = [
 			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 
+		/* La reserva entre nombre y bajada es por fila, no por página: cada li toma las 3 filas
+		   del subgrid de la pared (ícono, nombre, bajada), así que la bajada arranca en el mismo
+		   lugar en las 4 columnas sea cual sea el alto del nombre en esa fila. */
+		.pared__lista li {
+			display: grid;
+			grid-row: span 3;
+			grid-template-rows: subgrid;
+		}
+
 		/* En cuatro columnas, el ícono arriba y el texto abajo. */
 		.tipo {
+			grid-row: 1 / -1;
 			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: subgrid;
 			gap: var(--space-3);
 			padding: var(--space-3);
 		}
 
-		/* Los nombres de 1 o 2 líneas dejan la bajada a la misma altura en toda la fila. */
-		.tipo__nombre {
-			min-height: 2lh;
+		.tipo__icono {
+			grid-row: 1;
+		}
+
+		.tipo__textos {
+			grid-row: 2 / -1;
+			grid-template-rows: subgrid;
 		}
 	}
 
