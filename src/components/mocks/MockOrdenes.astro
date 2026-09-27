@@ -169,7 +169,9 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 					chip.classList.remove('ordenes__chip--espera');
 					chip.classList.add('ordenes__chip--vista');
 				},
-				{ threshold: 0.6 },
+				// El chip cuenta algo que ya pasó: dispara cuando el cruce (atado al scroll) ya terminó
+				// en todos los anchos, no al 60 % de visible.
+				{ rootMargin: '0px 0px -36% 0px' },
 			);
 			observadorChip.observe(chip);
 		}
@@ -185,10 +187,16 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 			const cuenta = columna.querySelector<HTMLElement>('.cuenta__despues');
 			if (!cuenta) return;
 			cuenta.textContent = String(Number(cuenta.textContent) + delta);
-			cuenta.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], {
-				duration: 200,
-				easing: curvaSalida,
-			});
+			// Easing por cuadro (no toda la curva de salida junta): si no, el pico llega a los
+			// ~16 ms y la vuelta se arrastra el resto de los 200 ms.
+			cuenta.animate(
+				[
+					{ transform: 'scale(1)', easing: 'ease-out' },
+					{ transform: 'scale(1.12)', easing: 'ease-in-out' },
+					{ transform: 'scale(1)' },
+				],
+				{ duration: 200 },
+			);
 		};
 
 		// FLIP completo: antes de mover la carta, mide todo lo que puede correrse en las dos
@@ -546,6 +554,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		border: 1px dashed var(--navy-700);
 		border-radius: 12px;
 		opacity: 0;
+		transition: translate 0.2s var(--curva-salida);
 	}
 
 	/* En el flujo, tapando el hueco que la recibe: si el texto baja de línea, el hueco crece con ella.
@@ -680,7 +689,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 			.hueco:not(.hueco--recibe) {
 				animation: ordenes-hueco linear both;
 				animation-timeline: --celda;
-				animation-range: cover 30% cover 58%;
+				animation-range: cover 45% cover 60%;
 			}
 
 			.orden__avance-cruza {

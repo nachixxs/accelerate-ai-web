@@ -57,8 +57,10 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 	const montos = [...document.querySelectorAll<HTMLElement>('.ticket__monto')];
 	contarAlVer(montos, pesos);
 
-	// El sello se estampa por tiempo al verse (no por un tramo corto de scroll), coordinado con
-	// el mismo punto en que arranca el conteo: el mismo elemento y el mismo umbral que contarAlVer.
+	// El sello se estampa por tiempo al verse (no por un tramo corto de scroll), con su propio
+	// observador: el sello queda bastante más abajo que la primera fila del ticket, así que
+	// observarlo a él directamente (entero y por encima del 85 % de la pantalla) evita que se
+	// estampe mientras todavía está fuera de la vista.
 	const sello = document.querySelector<HTMLElement>('.ticket__sello');
 	if (sello && montos.length && !movimientoReducido()) {
 		sello.classList.add('ticket__sello--espera');
@@ -69,9 +71,9 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 				sello.classList.remove('ticket__sello--espera');
 				sello.classList.add('ticket__sello--vista');
 			},
-			{ threshold: 0.6 },
+			{ threshold: 1, rootMargin: '0px 0px -15% 0px' },
 		);
-		observador.observe(montos[0]);
+		observador.observe(sello);
 	}
 </script>
 
