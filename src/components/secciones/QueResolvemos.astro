@@ -19,7 +19,7 @@ const dolores = [
 		frase: 'Me entero de lo que falta cuando ya falta.',
 		detalle: 'Nadie sabe bien qué queda en el depósito hasta que un cliente lo pide y no hay.',
 		solucion: 'Sabés qué reponer antes de quedarte sin nada.',
-		como: 'Cada venta descuenta del stock, y cuando algo baja del mínimo el pedido al proveedor ya está armado.',
+		como: 'Cada venta descuenta del stock y el pedido al proveedor sale solo.',
 	},
 	{
 		icono: 'note-pencil-duotone',
@@ -111,7 +111,7 @@ const punto = (i: number) => 0.3 + i * 0.25;
 		const lista = seccion.querySelector<HTMLElement>('.lista')!;
 		const [hoy, sistema] = seccion.querySelectorAll<HTMLInputElement>('.interruptor input');
 		const filas = [...seccion.querySelectorAll<HTMLElement>('.dolor')];
-		let arrastre: { x: number; p: number; ancho: number; id: number; t: number; v: number } | null = null;
+		let arrastre: { x: number; y: number; p: number; ancho: number; id: number; t: number; v: number } | null = null;
 		let moviendo = false;
 
 		const elegir = (conSistema: boolean) => {
@@ -122,6 +122,7 @@ const punto = (i: number) => 0.3 + i * 0.25;
 			if (evento.button !== 0 || arrastre) return;
 			arrastre = {
 				x: evento.clientX,
+				y: evento.clientY,
 				p: sistema.checked ? 1 : 0,
 				ancho: interruptor.offsetWidth / 2 - 4,
 				id: evento.pointerId,
@@ -134,7 +135,10 @@ const punto = (i: number) => 0.3 + i * 0.25;
 			if (!arrastre || evento.pointerId !== arrastre.id) return;
 			const dx = evento.clientX - arrastre.x;
 			if (!moviendo) {
-				if (Math.abs(dx) < 4) return;
+				// Con el dedo, unos 5px de costado alcanzan para camuflarse de scroll vertical:
+				// hasta que dx no supera a dy, no se toma como un gesto horizontal de verdad.
+				const dy = evento.clientY - arrastre.y;
+				if (Math.abs(dx) < 4 || Math.abs(dx) <= Math.abs(dy)) return;
 				// Recién ahora se captura el puntero: con un clic simple, el clic le llega al label.
 				moviendo = true;
 				interruptor.setPointerCapture(evento.pointerId);
@@ -155,25 +159,36 @@ const punto = (i: number) => 0.3 + i * 0.25;
 		// toque real si quedara colgado esperando el clic fantasma: se saca solo en el próximo tick.
 		const bloquear = (clic: MouseEvent) => clic.preventDefault();
 
+		// Cierra el arrastre hacia el lado decidido y deja que la sección transicione del p
+		// soltado al valor final, en vez de saltar.
+		const finalizar = (conSistema: boolean) => {
+			elegir(conSistema);
+			// El --p de la sección ya saltó al valor final sin transición (elegir() de arriba
+			// cambia el radio y con él el :has() de la sección), aunque solo el interruptor y la
+			// lista mostraban el p soltado. Se pasa ese p soltado a la sección primero (todavía
+			// con resolvemos--arrastrando puesta, sin transición) y se fuerza el estilo, para que
+			// recién después, al sacar la clase y el --p de acá, transicione de p a ese valor
+			// final en vez de saltar.
+			const p = interruptor.style.getPropertyValue('--p');
+			seccion.style.setProperty('--p', p);
+			interruptor.style.removeProperty('--p');
+			lista.style.removeProperty('--p');
+			filas.forEach((fila) => fila.classList.remove('dolor--vuelta'));
+			getComputedStyle(seccion).getPropertyValue('--p');
+			seccion.classList.remove('resolvemos--arrastrando');
+			seccion.style.removeProperty('--p');
+			// La perilla llega enseguida, pero sin esto las filas esperarían los delays pensados
+			// para el clic y quedarían quietas un rato.
+			seccion.classList.add('resolvemos--soltando');
+			setTimeout(() => seccion.classList.remove('resolvemos--soltando'), 400);
+		};
+
 		const soltar = (evento: PointerEvent) => {
 			if (!arrastre || evento.pointerId !== arrastre.id) return;
 			if (moviendo) {
-				// Un tirón rápido decide por la dirección, aunque no haya pasado la mitad.
-				if (Math.abs(arrastre.v) > 0.11) elegir(arrastre.v > 0);
-				// El --p de la sección ya saltó al valor final sin transición (cada elegir() de
-				// arriba cambia el radio y con él el :has() de la sección), aunque solo el
-				// interruptor y la lista mostraban el p soltado. Se pasa ese p soltado a la
-				// sección primero (todavía con resolvemos--arrastrando puesta, sin transición) y
-				// se fuerza el estilo, para que recién después, al sacar la clase y el --p de
-				// acá, transicione de p a ese valor final en vez de saltar.
-				const p = interruptor.style.getPropertyValue('--p');
-				seccion.style.setProperty('--p', p);
-				interruptor.style.removeProperty('--p');
-				lista.style.removeProperty('--p');
-				filas.forEach((fila) => fila.classList.remove('dolor--vuelta'));
-				getComputedStyle(seccion).getPropertyValue('--p');
-				seccion.classList.remove('resolvemos--arrastrando');
-				seccion.style.removeProperty('--p');
+				// Un tirón rápido decide por la dirección, aunque no haya pasado la mitad. Si no
+				// hubo tirón, ya quedó elegido por posición en el último pointermove.
+				finalizar(Math.abs(arrastre.v) > 0.11 ? arrastre.v > 0 : sistema.checked);
 				// El clic que sigue a un arrastre (si llega, con mouse) no tiene que volver a
 				// cambiar el radio.
 				interruptor.addEventListener('click', bloquear, { capture: true, once: true });
@@ -183,8 +198,18 @@ const punto = (i: number) => 0.3 + i * 0.25;
 			moviendo = false;
 		};
 
+		const cancelar = (evento: PointerEvent) => {
+			if (!arrastre || evento.pointerId !== arrastre.id) return;
+			// Un pointercancel (por ejemplo, el navegador toma como scroll un gesto que parecía
+			// diagonal) vuelve a la elección de antes de arrastrar: lo que haya pasado en el
+			// camino no cuenta, ni el tirón.
+			if (moviendo) finalizar(arrastre.p === 1);
+			arrastre = null;
+			moviendo = false;
+		};
+
 		interruptor.addEventListener('pointerup', soltar);
-		interruptor.addEventListener('pointercancel', soltar);
+		interruptor.addEventListener('pointercancel', cancelar);
 	}
 </script>
 
@@ -226,7 +251,14 @@ const punto = (i: number) => 0.3 + i * 0.25;
 
 	.resolvemos__grilla {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-5);
+	}
+
+	/* Con letra grande, la columna implícita crecía a lo que pedía el interruptor y ensanchaba
+	   la página entera: minmax(0, 1fr) fuerza a los hijos a achicarse en vez de empujar. */
+	.resolvemos__grilla > * {
+		min-width: 0;
 	}
 
 	.resolvemos__intro {
@@ -246,7 +278,7 @@ const punto = (i: number) => 0.3 + i * 0.25;
 	.interruptor {
 		position: relative;
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		margin: var(--space-1) 0 0;
 		padding: 4px;
 		border: 1px solid var(--border-light);
@@ -289,9 +321,18 @@ const punto = (i: number) => 0.3 + i * 0.25;
 		padding-inline: var(--space-2);
 		border-radius: var(--radius-pill);
 		font-weight: var(--fw-semibold);
-		white-space: nowrap;
+		white-space: normal;
+		text-align: center;
 		cursor: pointer;
 		-webkit-tap-highlight-color: transparent;
+		/* Feedback al presionar: opacity sola, sin pisar el gradiente de texto de abajo. Al
+		   soltar, más lento que al presionar (ver :active). */
+		transition: opacity 0.2s var(--curva-salida);
+	}
+
+	.interruptor label:active {
+		opacity: 0.7;
+		transition: opacity 0.08s var(--curva-salida);
 	}
 
 	/* El texto es blanco justo donde está la perilla y oscuro donde no. Cada label mide lo mismo
@@ -333,6 +374,20 @@ const punto = (i: number) => 0.3 + i * 0.25;
 	@media (hover: hover) and (pointer: fine) {
 		.interruptor label:not(:has(input:checked)):hover {
 			--tinta: var(--brand-primary-deep);
+		}
+	}
+
+	/* Alto contraste de Windows: el texto recortado (background-clip: text) y el fondo de la
+	   perilla se pierden. Un outline en el label elegido deja ver cuál está activo. */
+	@media (forced-colors: active) {
+		.interruptor__marca {
+			background: Highlight;
+			forced-color-adjust: none;
+		}
+
+		:where(.interruptor label:has(input:checked)) {
+			outline: 2px solid Highlight;
+			outline-offset: -2px;
 		}
 	}
 
@@ -390,6 +445,12 @@ const punto = (i: number) => 0.3 + i * 0.25;
 		transition:
 			--tachar 0.2s var(--curva-salida) calc(350ms + var(--i) * 90ms),
 			--vuelta 0.35s var(--curva-salida) calc(var(--i) * 90ms);
+	}
+
+	/* Al soltar un arrastre la perilla ya llegó, pero sin esto las filas esperarían los delays
+	   pensados para el clic (hasta 530ms quietas). Los apaga por 400ms para que acompañen. */
+	.resolvemos.resolvemos--soltando .dolor {
+		transition-delay: 0s;
 	}
 
 	/* Las reglas de los radios van en :where() para pesar menos que las del arrastre, que tienen
@@ -451,6 +512,12 @@ const punto = (i: number) => 0.3 + i * 0.25;
 	.dolor__frase {
 		color: var(--text-heading-dark);
 		font-weight: var(--fw-semibold);
+	}
+
+	/* La comilla de apertura mide 0,482em: colgada para que la frase arranque alineada con el
+	   resto del texto. Solo la cara "hoy" lleva comilla. */
+	.hoy .dolor__frase {
+		text-indent: -0.48em;
 	}
 
 	.dolor__detalle {
@@ -528,7 +595,7 @@ const punto = (i: number) => 0.3 + i * 0.25;
 
 	@media (min-width: 1024px) {
 		.resolvemos__grilla {
-			grid-template-columns: 5fr 7fr;
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
 			gap: var(--space-6);
 		}
 
@@ -555,7 +622,10 @@ const punto = (i: number) => 0.3 + i * 0.25;
 	@keyframes invita {
 		0%, 50% { scale: 1; opacity: 0; }
 		5%, 55% { opacity: 1; }
-		45%, 95%, 100% { scale: 1.14; opacity: 0; }
+		/* El pico va más ancho en y que en x: a x = 1.09, en 328px de interruptor, no pasa
+		   los 16px de margen de la página (a 1.14 se salía 23px por lado). */
+		45%, 95% { scale: 1.09 1.2; opacity: 0; }
+		100% { scale: 1; opacity: 0; }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
