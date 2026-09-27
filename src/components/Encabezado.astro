@@ -245,6 +245,9 @@ const links = [
 		display: inline-flex;
 		border-radius: var(--radius-pill);
 		-webkit-tap-highlight-color: transparent;
+		/* Con esto en la base, soltar también transiciona (antes solo existía dentro de :active,
+		   así que la escala volvía a 1 de un salto). */
+		transition: scale 0.2s var(--curva-salida);
 	}
 
 	.capsula__cta-cara {
@@ -325,6 +328,14 @@ const links = [
 		font-weight: var(--fw-semibold);
 		cursor: pointer;
 		-webkit-tap-highlight-color: transparent;
+		-webkit-user-select: none;
+		user-select: none;
+		transition: scale 0.2s var(--curva-salida);
+	}
+
+	.capsula__menu:active {
+		scale: 0.97;
+		transition: scale 0.12s var(--curva-salida);
 	}
 
 	.capsula__menu--cerrar {
