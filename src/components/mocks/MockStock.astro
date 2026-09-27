@@ -20,7 +20,11 @@ const productos = [
 	const tope = Math.max(p.minimo * 2, p.unidades * 1.15);
 	const nivel = Math.min(p.unidades / tope, 1);
 	const bajo = p.unidades < p.minimo;
-	return { ...p, i, nivel, marca: p.minimo / tope, bajo, repuesto: p.minimo * 2, factor: bajo ? (1 / nivel).toFixed(3) : '1' };
+	const repuesto = p.minimo * 2;
+	// Ancho reservado para la cifra que cuenta: el mayor largo entre el valor de hoy y el que
+	// queda después de reponer, así ninguno de los dos conteos corre el layout (CLS).
+	const digitos = Math.max(p.unidades.toLocaleString('es-AR').length, bajo ? repuesto.toLocaleString('es-AR').length : 0);
+	return { ...p, i, nivel, marca: p.minimo / tope, bajo, repuesto, factor: bajo ? (1 / nivel).toFixed(3) : '1', digitos };
 });
 
 // El pedido sugerido: lo que quedó bajo el mínimo, hasta el doble del mínimo.
@@ -30,7 +34,7 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 <div
 	class="stock"
 	role="group"
-	aria-label="Ejemplo con datos inventados: el stock de cuatro productos con su nivel y su mínimo. La tinta negra y los anillos quedaron bajo el mínimo y dicen reponer, y ya está armado el pedido sugerido al proveedor con esos dos productos."
+	aria-label="Ejemplo de stock, con datos inventados"
 >
 	<div class="stock__barra">
 		<strong>Stock</strong>
@@ -42,7 +46,7 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 
 	<ul class="stock__lista">
 		{
-			productos.map(({ nombre, rubro, unidades, minimo, nivel, marca, bajo, repuesto, factor, i }) => (
+			productos.map(({ nombre, rubro, unidades, minimo, nivel, marca, bajo, repuesto, factor, digitos, i }) => (
 				<li class:list={['producto', { 'producto--bajo': bajo }]} style={`--i: ${i}`} data-idx={i}>
 					<span class="producto__nombre">
 						{nombre}
@@ -55,7 +59,7 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 									<Icono nombre="warning-duotone" size={14} />
 									Reponer
 								</button>
-								<span class="producto__ok" hidden tabindex="-1">Al día</span>
+								<span class="producto__ok" hidden tabindex="-1" aria-label={`${nombre} al día, ${repuesto.toLocaleString('es-AR')} unidades`}>Al día</span>
 							</>
 						) : (
 							<span class="producto__ok">Al día</span>
@@ -66,7 +70,8 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 						<span class="producto__minimo" />
 					</span>
 					<span class="producto__unidades">
-						<span class="producto__cifra" data-valor={unidades}>{unidades.toLocaleString('es-AR')}</span> <small>/ mín. {minimo.toLocaleString('es-AR')}</small>
+						<span class="producto__cifra" data-valor={unidades} aria-hidden="true" style={`--digitos: ${digitos}`}>{unidades.toLocaleString('es-AR')}</span>
+						<span class="solo-lector">{unidades.toLocaleString('es-AR')} unidades</span> <small>/ mín. {minimo.toLocaleString('es-AR')}</small>
 					</span>
 				</li>
 			))
@@ -88,15 +93,16 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 </div>
 
 <script>
-	import { contarAlVer, unidades, movimientoReducido, contar } from '../../scripts/contar';
+	import { contarAlVer, unidades, contar } from '../../scripts/contar';
 
 	contarAlVer([...document.querySelectorAll<HTMLElement>('.producto__cifra')], unidades);
 
 	// Reponer: llena la barra (con `scale`, no `transform`, que ya anima el scroll), cuenta las
-	// unidades hasta el nuevo stock, pasa el estado a "Al día" y tacha el ítem en el pedido. El
-	// botón y el "Al día" ya están en el HTML (con estilos scoped de Astro): el script solo
-	// alterna `hidden`, sin crear elementos (un <span> creado a mano no tiene el atributo
-	// data-astro-cid-* y se queda sin estilos).
+	// unidades hasta el nuevo stock, pasa el estado a "Al día" y tacha el ítem en el pedido. Corre
+	// igual con movimiento reducido, porque lo dispara quien interactúa. El botón y el "Al día" ya
+	// están en el HTML (con estilos scoped de Astro): el script solo alterna `hidden`, sin crear
+	// elementos (un <span> creado a mano no tiene el atributo data-astro-cid-* y se queda sin
+	// estilos).
 	document.querySelectorAll<HTMLButtonElement>('.producto__reponer').forEach((boton) => {
 		boton.addEventListener('click', () => {
 			const fila = boton.closest<HTMLLIElement>('.producto');
@@ -119,10 +125,9 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 			pedido?.classList.add('pedido__item--repuesto');
 			cifra.dataset.valor = String(nuevo);
 
-			if (movimientoReducido()) cifra.textContent = unidades(nuevo);
 			// 500 ms: el mismo tiempo que tarda la barra en llenarse (`.producto__relleno`), para que
 			// lleguen juntas.
-			else contar(cifra, desde, nuevo, unidades, 500);
+			contar(cifra, desde, nuevo, unidades, 500);
 		});
 	});
 </script>
@@ -167,18 +172,27 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 
 	.stock__lista {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 4px;
 	}
 
 	/* Cada fila: nombre y estado arriba, la barra con el mínimo y las unidades abajo. */
 	.producto {
 		display: grid;
-		grid-template-columns: 1fr auto;
+		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: center;
 		gap: 8px 12px;
 		padding: 10px 12px;
-		border-radius: 14px;
+		border-radius: var(--radius-badge);
 		background: var(--navy-850);
+	}
+
+	/* Con la letra muy grande (o si un ancestro le come ancho), ni una fila de 2 columnas entra:
+	   el estado pasa a su propia fila, debajo del nombre. */
+	@container (max-width: 300px) {
+		.producto {
+			grid-template-columns: minmax(0, 1fr);
+		}
 	}
 
 	.producto__nombre {
@@ -214,6 +228,19 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 	.producto__ok {
 		border: 1px solid var(--border-dark);
 		color: var(--text-muted-light);
+		opacity: 1;
+		translate: 0 0;
+		transition:
+			opacity 0.2s,
+			translate 0.2s var(--curva-salida),
+			display 0.2s allow-discrete;
+	}
+
+	@starting-style {
+		.producto__ok {
+			opacity: 0;
+			translate: 0 2px;
+		}
 	}
 
 	/* [hidden] del user-agent pierde contra el display: inline-flex de arriba (mismo origen
@@ -224,29 +251,33 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		display: none;
 	}
 
-	/* Botón real: sin bordes de navegador, con el área táctil de 44 px en un pseudo-elemento
-	   (el pill se ve chico a propósito). Cian, nunca el azul del CTA de WhatsApp. */
+	/* Botón real: sin bordes de navegador, con el área táctil de 44 px en una banda del ancho
+	   del botón (el pill se ve chico a propósito). Cian, nunca el azul del CTA de WhatsApp. */
 	.producto__reponer {
 		position: relative;
 		border: 0;
-		font: inherit;
+		font-family: inherit;
 		cursor: pointer;
+		user-select: none;
+		-webkit-user-select: none;
 		background: var(--cyan-300);
 		color: var(--navy-950);
+		transition: scale 0.2s var(--curva-salida);
 	}
 
 	.producto__reponer::before {
 		content: '';
 		position: absolute;
-		inset: 50%;
-		width: 44px;
+		inset: 50% 0 auto;
 		height: 44px;
-		translate: -50% -50%;
+		translate: 0 -50%;
 	}
 
 	@media (hover: hover) and (pointer: fine) {
 		.producto__reponer {
-			transition: background-color 0.2s;
+			transition:
+				background-color 0.2s,
+				scale 0.2s var(--curva-salida);
 		}
 
 		.producto__reponer:hover {
@@ -283,6 +314,12 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		background: var(--cyan-400);
 	}
 
+	/* Evita que mantener apretado el botón seleccione el texto de la fila. */
+	.producto--bajo {
+		user-select: none;
+		-webkit-user-select: none;
+	}
+
 	/* La marca del mínimo: una rayita clara que cruza la barra. */
 	.producto__minimo {
 		position: absolute;
@@ -303,6 +340,14 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		white-space: nowrap;
 	}
 
+	/* El ancho queda reservado (--digitos, calculado en el frontmatter con el mayor largo entre
+	   hoy y lo que queda tras reponer) para que contar no corra el layout (CLS). */
+	.producto__cifra {
+		display: inline-block;
+		min-inline-size: calc(var(--digitos) * 1ch);
+		text-align: end;
+	}
+
 	.stock__nota {
 		color: var(--text-muted-light);
 		font-size: 0.8125rem;
@@ -318,11 +363,11 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		width: min(260px, 100%);
 		margin-bottom: -24px;
 		padding: 16px;
-		border-radius: 18px;
+		border-radius: var(--radius-card);
 		background: var(--off-white);
 		color: var(--text-body-dark);
 		font-size: 0.875rem;
-		box-shadow: var(--shadow-card);
+		box-shadow: var(--shadow-elevada-oscura);
 		transform: rotate(1.5deg);
 	}
 
@@ -358,14 +403,31 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 	}
 
 	/* El ítem repuesto se tacha en el pedido, en vez de desarmar la lista. Color de token en vez de
-	   opacidad: con opacidad el texto queda en ≈3,3:1, bajo el mínimo AA de 4,5:1. */
+	   opacidad: con opacidad el texto queda en ≈3,3:1, bajo el mínimo AA de 4,5:1. La raya se
+	   dibuja con un pseudo-elemento en vez de `text-decoration`, que no se puede transicionar. */
 	.pedido li.pedido__item--repuesto,
 	.pedido li.pedido__item--repuesto span:last-child {
 		color: var(--text-muted-dark);
 	}
 
-	.pedido li.pedido__item--repuesto span {
-		text-decoration: line-through;
+	.pedido li span {
+		position: relative;
+	}
+
+	.pedido li span::after {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		top: 50%;
+		height: 1px;
+		background: currentColor;
+		transform-origin: left;
+		scale: 0 1;
+		transition: scale 0.3s var(--curva-salida);
+	}
+
+	.pedido li.pedido__item--repuesto span::after {
+		scale: 1 1;
 	}
 
 	.pedido__proveedor {
@@ -373,10 +435,12 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		font-size: 0.8125rem;
 	}
 
-	/* Consulta de contenedor: la card mide distinto según la grilla, no según la pantalla. */
+	/* Consulta de contenedor: la card mide distinto según la grilla, no según la pantalla. La
+	   tercera columna es de ancho fijo (no `auto`): si no, "Al día" y "Reponer" corren la barra a
+	   distinto punto en cada fila. */
 	@container (min-width: 420px) {
 		.producto {
-			grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+			grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 7.5rem;
 		}
 
 		.producto__nombre { grid-column: 1; grid-row: 1 / span 2; }
@@ -411,7 +475,8 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 			.producto__estado {
 				animation: stock-aparece var(--curva-salida) both;
 				animation-timeline: --celda;
-				animation-range: cover calc(38% + var(--i) * 3%) cover calc(44% + var(--i) * 3%);
+				/* 16 % de rango (contra 6 % antes): a 360 y a 1280 dura 160 px de scroll o más. */
+				animation-range: cover calc(34% + var(--i) * 3%) cover calc(50% + var(--i) * 3%);
 			}
 
 			.pedido {
@@ -419,13 +484,6 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 				animation-timeline: --celda;
 				animation-range: cover 50% cover 60%;
 			}
-		}
-	}
-
-	/* Con movimiento reducido, el clic en "Reponer" salta directo al estado final. */
-	@media (prefers-reduced-motion: reduce) {
-		.producto__relleno {
-			transition: none;
 		}
 	}
 </style>
