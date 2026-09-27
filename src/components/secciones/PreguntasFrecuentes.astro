@@ -78,7 +78,7 @@ const preguntas = [
 	.preguntas__intro {
 		display: grid;
 		justify-items: start;
-		gap: var(--space-2);
+		gap: var(--space-3);
 		align-content: start;
 	}
 
@@ -107,6 +107,15 @@ const preguntas = [
 		cursor: pointer;
 		list-style: none;
 		-webkit-tap-highlight-color: transparent;
+		user-select: none;
+		-webkit-user-select: none;
+	}
+
+	/* Feedback al presionar, sin gatear por reducción: lo dispara quien toca. Al soltar, más
+	   lento que al presionar (patrón de BotonWhatsApp). */
+	summary:active {
+		scale: 0.98;
+		transition: scale 0.12s var(--curva-salida);
 	}
 
 	summary::-webkit-details-marker {
@@ -168,9 +177,11 @@ const preguntas = [
 		}
 	}
 
-	/* Los cambios de color no mueven nada: quedan también con movimiento reducido. */
+	/* Los cambios de color no mueven nada: quedan también con movimiento reducido. El scale
+	   base es la vuelta al soltar (0.2s); el de :active de arriba, más rápido, la pisa al
+	   presionar. */
 	summary {
-		transition: color 0.2s;
+		transition: color 0.2s, scale 0.2s var(--curva-salida);
 	}
 
 	.pregunta__flecha {
@@ -213,6 +224,57 @@ const preguntas = [
 			transform: none;
 			transition-duration: 0.2s, 0.3s;
 			transition-delay: 60ms;
+		}
+
+		/* Sin esto, la primera apertura no tenía un "desde": el <p> de un <details> cerrado
+		   nunca tuvo estilo calculado, así que no había nada de dónde partir la transición. */
+		@starting-style {
+			.pregunta[open] p {
+				opacity: 0;
+				transform: translateY(-6px);
+			}
+		}
+	}
+
+	/* Con reducción: nada se desplaza, solo un fundido corto de opacidad (igual que .fundir
+	   de global.css). El alto sigue abriendo de golpe (no hay block-size acá): es el salto
+	   nativo de <details>, no movimiento nuestro. */
+	@media (prefers-reduced-motion: reduce) {
+		.pregunta::details-content {
+			opacity: 0;
+			transition: opacity 0.2s, content-visibility 0.2s allow-discrete;
+		}
+
+		.pregunta[open]::details-content {
+			opacity: 1;
+		}
+
+		@starting-style {
+			.pregunta[open]::details-content {
+				opacity: 0;
+			}
+		}
+	}
+
+	/* Sin interpolate-size (Safari, Firefox) el alto salta de 0 a auto de golpe, con o sin
+	   ::details-content. Un fundido de opacidad en el contenido disimula el salto, sin tocar
+	   nada en Chrome (que sí tiene interpolate-size y ya funde por la regla de arriba). */
+	@supports not (interpolate-size: allow-keywords) {
+		@media (prefers-reduced-motion: no-preference) {
+			.pregunta::details-content {
+				opacity: 0;
+				transition: opacity 0.2s, content-visibility 0.2s allow-discrete;
+			}
+
+			.pregunta[open]::details-content {
+				opacity: 1;
+			}
+
+			@starting-style {
+				.pregunta[open]::details-content {
+					opacity: 0;
+				}
+			}
 		}
 	}
 </style>
