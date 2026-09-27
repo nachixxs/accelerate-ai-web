@@ -6,8 +6,10 @@
 // cuando la punta la alcanza. En escritorio, a la derecha, una sola card invertida queda fija y
 // cambia de pantalla según el paso que está a media pantalla. En el celular no hay nada fijo:
 // cada paso lleva su visual abajo, en card clara (la propuesta es la única invertida).
-// Sin soporte de animaciones atadas al scroll, o con movimiento reducido, la card fija no existe:
-// cada visual queda al lado de su paso, completo y quieto.
+// La tarjeta fija corre en los dos modos de movimiento (decisión del usuario, 2026-09-27): con
+// movimiento, el cambio de pantalla va atado al scroll; con movimiento reducido, o sin soporte de
+// animaciones atadas al scroll, es un fundido de opacidad que dispara el script al elegir la
+// pantalla activa. En el celular no hay nada fijo: cada visual queda al lado de su paso.
 import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
@@ -119,6 +121,7 @@ const auditoria = [
 				</div>
 			</li>
 		</ol>
+		<span class="linea__relleno" aria-hidden="true"></span>
 		<span class="linea__punto" aria-hidden="true"></span>
 		</div>
 
@@ -135,17 +138,14 @@ const auditoria = [
 <script>
 	import { movimientoReducido } from '../../scripts/contar';
 
-	// La tarjeta fija (escritorio, con movimiento y con scroll-timeline) apila las cuatro
-	// pantallas en la misma celda: sin esto el mouse siempre cae sobre la última del DOM. Acá se
-	// marca cuál está a media pantalla (pantalla--activa); el CSS le da el pointer-events. Donde
-	// no hay tarjeta fija, cada pantalla ya está sola junto a su paso y no hace falta nada.
+	// La tarjeta fija (escritorio, en los dos modos de movimiento) apila las cuatro pantallas en
+	// la misma celda: sin esto el mouse siempre cae sobre la última del DOM. Acá se marca cuál
+	// está a media pantalla (pantalla--activa); el CSS le da el pointer-events y, con movimiento
+	// reducido o sin soporte de scroll-timeline, también el fundido de opacidad.
 	const pasos = [...document.querySelectorAll<HTMLElement>('.proceso .paso__texto')];
 	const pantallas = [...document.querySelectorAll<HTMLElement>('.proceso .pantalla')];
 	const anchoFijo = matchMedia('(min-width: 1024px)');
-	const conTarjetaFija = () =>
-		!movimientoReducido() &&
-		anchoFijo.matches &&
-		CSS.supports('(animation-timeline: view()) and (timeline-scope: none)');
+	const conTarjetaFija = () => anchoFijo.matches;
 
 	let observador: IntersectionObserver | null = null;
 	const enBanda = new Set<HTMLElement>();
@@ -188,23 +188,48 @@ const auditoria = [
 
 	anchoFijo.addEventListener('change', () => (conTarjetaFija() ? activar() : desactivar()));
 	activar();
+
+	// El sello "Aprobada" entraba atado a un tramo de scroll de 48-83px: con un scroll rápido se
+	// salta entero. Ahora es una entrada por tiempo, disparada una sola vez cuando se ve. Sin JS,
+	// o con movimiento reducido, no se agrega ninguna clase y el CSS lo deja en su estado final.
+	const sello = document.querySelector<HTMLElement>('.propuesta__sello');
+	if (sello && !movimientoReducido()) {
+		sello.classList.add('proceso-sello-espera');
+		const observadorSello = new IntersectionObserver(
+			(entradas) => {
+				if (!entradas[0].isIntersecting) return;
+				observadorSello.disconnect();
+				sello.classList.remove('proceso-sello-espera');
+				sello.classList.add('proceso-sello-entra');
+			},
+			{ threshold: 0.6 },
+		);
+		observadorSello.observe(sello);
+	}
 </script>
 
 <style>
+	/* --marca vive en la sección (la comparten .proceso__riel y .proceso__pie, que son hermanos:
+	   una custom property solo pasa a los descendientes, no entre hermanos). */
+	.proceso {
+		--marca: 48px;
+	}
+
+	/* Alineado con el texto de los pasos (marca + el gap de .paso), no centrado como el resto de
+	   los CTA de la página los tiene a la izquierda. */
 	.proceso__pie {
 		display: flex;
-		justify-content: center;
+		justify-content: flex-start;
+		padding-left: calc(var(--marca) + var(--space-3));
 		margin-top: var(--space-6);
 	}
 
 	/* --- El riel y los pasos (celular primero) ---
-	   El envoltorio lleva --marca (la comparten .linea y .linea__punto, que ahora son hermanos:
-	   una custom property solo pasa a los descendientes, no entre hermanos) y el margen que
-	   antes tenía .linea, para que el punto pueda medirse contra la misma caja sin offsets. */
+	   El envoltorio lleva el margen que antes tenía .linea, para que el punto pueda medirse
+	   contra la misma caja sin offsets. */
 	.proceso__riel {
 		position: relative;
 		margin-top: var(--space-6);
-		--marca: 48px;
 		/* .linea declara el timeline --proceso; .linea__punto es su hermano, no su descendiente,
 		   así que necesita este scope para poder usarlo (igual que --paso-N con las pantallas). */
 		timeline-scope: --proceso;
@@ -218,10 +243,9 @@ const auditoria = [
 		timeline-scope: --paso-1, --paso-2, --paso-3, --paso-4;
 	}
 
-	/* El riel y su relleno, a la altura del centro de las marcas; se desvanecen al final: el
-	   soporte sigue. */
-	.linea::before,
-	.linea::after {
+	/* El riel sin relleno, a la altura del centro de las marcas; se desvanece al final: el soporte
+	   sigue. */
+	.linea::before {
 		content: '';
 		position: absolute;
 		top: calc(var(--marca) / 2);
@@ -229,20 +253,36 @@ const auditoria = [
 		left: calc(var(--marca) / 2 - 1px);
 		width: 2px;
 		mask-image: linear-gradient(#000 80%, transparent);
-	}
-
-	.linea::before {
 		background: var(--border-light);
 	}
 
-	.linea::after {
+	/* El relleno del riel: una ventana que no se mueve (mismo tamaño y máscara que el riel) con
+	   el color adentro, en transform. Antes esto era un clip-path animado en .linea::after: en el
+	   hilo principal costaba casi toda la pintura del scroll con movimiento reducido. Con
+	   transform el costo lo asume el compositor. Sin ella (o sin soporte) queda al final, como
+	   el riel ya lleno (el ::before no lleva ninguna traslación fuera de la animación). */
+	.linea__relleno {
+		position: absolute;
+		top: calc(var(--marca) / 2);
+		bottom: 0;
+		left: calc(var(--marca) / 2 - 1px);
+		width: 2px;
+		overflow: clip;
+		mask-image: linear-gradient(#000 80%, transparent);
+		pointer-events: none;
+	}
+
+	.linea__relleno::before {
+		content: '';
+		position: absolute;
+		inset: 0;
 		background: var(--brand-primary-deep);
 	}
 
-	/* El punto que viaja con la punta del relleno: el mismo truco que .linea::after (una caja del
-	   alto del riel que se traslada el 100% de su propia altura), pero con translate en vez de
-	   transform para no pisar ninguna otra animación. Sin ella (o sin soporte) queda al final,
-	   como el riel ya lleno. */
+	/* El punto que viaja con la punta del relleno: el mismo truco que .linea__relleno::before (una
+	   caja del alto del riel que se traslada el 100% de su propia altura), pero con translate en
+	   vez de transform para no pisar ninguna otra animación. Sin ella (o sin soporte) queda al
+	   final, como el riel ya lleno. */
 	.linea__punto {
 		position: absolute;
 		top: calc(var(--marca) / 2);
@@ -465,6 +505,24 @@ const auditoria = [
 		rotate: -3deg;
 	}
 
+	/* El sello entra con un fundido corto la primera vez que se ve (no atado al scroll: ver el
+	   script). "espera" es el estado antes de verse, que solo pone el JS: sin él (o con
+	   movimiento reducido, que ni lo agrega) el sello queda en su estado final de una. */
+	@keyframes proceso-sello-entra {
+		/* scale (la propiedad, no transform) para no pisar el rotate: -3deg de la base. */
+		from { opacity: 0; scale: 1.3; }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.propuesta__sello.proceso-sello-espera {
+			opacity: 0;
+		}
+
+		.propuesta__sello.proceso-sello-entra {
+			animation: proceso-sello-entra 450ms var(--curva-salida) both;
+		}
+	}
+
 	/* 3. Construcción: las tres semanas, la bandera de la demo a mitad de camino y las tareas. */
 	.semanas {
 		position: relative;
@@ -483,7 +541,9 @@ const auditoria = [
 		border-radius: 8px;
 		background: var(--blue-100);
 		color: var(--blue-900);
-		font-size: 0.8125rem;
+		/* min() y no rem solo: "letra grande" (Android/iOS) infla el rem pero no el vw, así que
+		   el tope en vw evita que "Semana" desborde su tramo cuando crece la fuente del sistema. */
+		font-size: min(0.8125rem, 3.6vw);
 		font-weight: var(--fw-semibold);
 		text-align: center;
 	}
@@ -533,13 +593,13 @@ const auditoria = [
 	.soporte p {
 		max-width: 30ch;
 		padding: 10px 14px;
-		border-radius: 18px;
+		border-radius: var(--radius-card);
 	}
 
 	.soporte__pedido {
 		justify-self: start;
 		border: 1px solid var(--p-borde);
-		border-bottom-left-radius: 6px;
+		border-bottom-left-radius: var(--radius-input);
 		color: var(--p-titulo);
 	}
 
@@ -548,7 +608,7 @@ const auditoria = [
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		border-bottom-right-radius: 6px;
+		border-bottom-right-radius: var(--radius-input);
 		background: var(--brand-primary-deep);
 		color: var(--blue-50);
 	}
@@ -566,38 +626,31 @@ const auditoria = [
 		font-weight: var(--fw-bold);
 	}
 
-	/* --- Escritorio sin la card fija (movimiento reducido o sin soporte): cada visual al lado de
-	   su paso. --- */
+	/* --- Escritorio, tamaño de marca y espacio entre pasos: comunes a los dos modos de
+	   movimiento. La tarjeta fija (grilla, marco, pantallas) va más abajo, junto con el resto de
+	   lo que le corresponde a >=1024px. --- */
 	@media (min-width: 1024px) {
-		.proceso__riel {
+		.proceso {
 			--marca: 56px;
 		}
 
 		.linea {
-			gap: var(--space-7);
+			gap: var(--espacio-seccion);
 		}
 
-		.paso {
-			grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
-			column-gap: var(--space-4);
-			align-items: start;
-		}
-
-		.pantalla {
-			grid-column: 3;
-			grid-row: 1;
-			width: 100%;
+		.proceso__pie {
+			padding-left: calc(var(--marca) + var(--space-4));
 		}
 	}
 
 	/* --- Movimiento --- */
-	/* Recorte de arriba a abajo y no scaleY: con scaleY el mask-image de arriba (el desvanecido del
+	/* De -100% a 0 y no scaleY: con scaleY el mask-image de .linea__relleno (el desvanecido del
 	   final) se escalaba junto con la caja, así que la punta del relleno siempre se apagaba un 20%
-	   y quedaba despegada del punto. Con clip-path la caja no cambia de tamaño: el mask solo se ve
-	   cerca del final real del riel, y el borde recortado coincide con el punto en todo el recorrido. */
+	   y quedaba despegada del punto. Acá la ventana (.linea__relleno, con overflow: clip) no
+	   cambia de tamaño ni se mueve: solo se traslada el ::before de adentro, así que el mask se ve
+	   siempre en el mismo lugar y el borde recortado coincide con el punto en todo el recorrido. */
 	@keyframes proceso-llenar {
-		from { clip-path: inset(0 0 100% 0); }
-		to { clip-path: inset(0); }
+		from { translate: 0 -100%; }
 	}
 
 	@keyframes proceso-apagada {
@@ -618,11 +671,7 @@ const auditoria = [
 		to { clip-path: inset(0 0 0 0); }
 	}
 
-	@keyframes proceso-sello {
-		from { opacity: 0; transform: scale(1.3); }
-	}
-
-	/* El punto viaja de punta a punta del riel, junto con .linea::after. */
+	/* El punto viaja de punta a punta del riel, junto con .linea__relleno::before. */
 	@keyframes proceso-punto-viaja {
 		from { translate: 0 0%; }
 	}
@@ -641,7 +690,7 @@ const auditoria = [
 	   no-preference, más abajo. */
 	@supports (animation-timeline: view()) {
 		/* La punta del relleno va a media pantalla. */
-		.linea::after {
+		.linea__relleno::before {
 			animation: proceso-llenar linear both;
 			animation-timeline: --proceso;
 			animation-range: cover 50vh cover calc(100% - 50vh);
@@ -667,11 +716,13 @@ const auditoria = [
 			animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
 		}
 
-		/* El pulso del anillo, en la misma marca en la que la punta enciende el ícono. */
+		/* El pulso del anillo, en la misma marca en la que la punta enciende el ícono. Rango de
+		   160px (no los 48 de antes): con un scroll rápido, un tramo más corto se salteaba entero
+		   y el anillo quedaba a mitad de camino si el usuario paraba justo ahí. */
 		.paso__marca::after {
 			animation: proceso-anillo var(--curva-salida) both;
 			animation-timeline: view();
-			animation-range: cover calc(50vh - 8px) cover calc(50vh + 40px);
+			animation-range: cover calc(50vh - 8px) cover calc(50vh + 152px);
 		}
 	}
 
@@ -695,12 +746,6 @@ const auditoria = [
 				animation: proceso-tramo var(--curva-salida) both;
 				animation-timeline: --pantalla;
 				animation-range: cover calc(30% + var(--i) * 8%) cover calc(40% + var(--i) * 8%);
-			}
-
-			.propuesta__sello {
-				animation: proceso-sello var(--curva-salida) both;
-				animation-timeline: --pantalla;
-				animation-range: cover 40% cover 48%;
 			}
 		}
 	}
@@ -746,33 +791,124 @@ const auditoria = [
 		12%, 100% { opacity: 1; }
 	}
 
+	/* --- La tarjeta fija: para los dos modos de movimiento (decisión del usuario, 2026-09-27).
+	   Los pasos pierden su caja (display: contents) y sus partes pasan a la grilla de la lista:
+	   marca y texto en una fila por paso, las cuatro pantallas apiladas en la tercera columna,
+	   fijas a media pantalla. Con movimiento reducido, o sin soporte de scroll-timeline, el
+	   cambio de pantalla es un fundido de opacidad que dispara la clase pantalla--activa (la pone
+	   el script); con movimiento y soporte, ese fundido lo reemplaza el bloque de más abajo, que
+	   además ata el texto activo y el contenido de cada pantalla al scroll. --- */
+	@media (min-width: 1024px) {
+		.linea {
+			grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
+			grid-template-rows: repeat(4, auto);
+			column-gap: var(--space-4);
+			row-gap: 0;
+			--fija-arriba: max(112px, calc(50vh - var(--fija-alto) / 2));
+			--fija-alto: 400px;
+		}
+
+		.paso {
+			display: contents;
+		}
+
+		/* Marca y texto no llevan fila: con su columna fija, la grilla los pone solos en la
+		   fila siguiente de cada paso. Las pantallas y el marco ocupan todas las filas. */
+		.paso__marca {
+			grid-column: 1;
+		}
+
+		.paso__texto {
+			grid-column: 2;
+			min-height: 70vh;
+			padding-bottom: var(--space-6);
+		}
+
+		/* El marco: la única card invertida, fija. Es el ::before del primer paso, que con
+		   display: contents igual genera su caja y cae en la grilla de la lista. Las cuatro
+		   pantallas van encima, transparentes: solo cambia el contenido. */
+		.paso:first-child::before {
+			content: '';
+			grid-column: 3;
+			grid-row: 1 / -1;
+			align-self: start;
+			position: sticky;
+			top: var(--fija-arriba);
+			height: var(--fija-alto);
+			border: 1px solid var(--border-dark);
+			border-radius: var(--radius-card);
+			background: var(--surface-card-dark);
+			box-shadow: var(--shadow-card);
+		}
+
+		/* La paleta de .pantalla--invertida, para las cuatro; sin fondo, lo pone el marco. El
+		   fundido de opacidad de acá abajo es el que vale con movimiento reducido o sin soporte
+		   de scroll-timeline; con soporte y movimiento, el bloque siguiente lo reemplaza por la
+		   animación atada al scroll. */
+		.pantalla {
+			--p-borde: var(--border-dark);
+			--p-titulo: var(--text-heading-light);
+			--p-texto: var(--text-body-light);
+			--p-suave: var(--text-muted-light);
+			--p-riel: var(--navy-800);
+			--p-acento: var(--cyan-300);
+			--p-chip-fondo: var(--cyan-300);
+			--p-chip-texto: var(--navy-950);
+			grid-column: 3;
+			grid-row: 1 / -1;
+			align-self: start;
+			position: sticky;
+			top: var(--fija-arriba);
+			max-width: none;
+			height: var(--fija-alto);
+			padding: var(--space-5) var(--space-4);
+			gap: var(--space-3);
+			border-color: transparent;
+			background: none;
+			font-size: 1.0625rem;
+			box-shadow: none;
+			opacity: 0;
+			transition: translate 0.2s var(--curva-salida), border-color 0.2s var(--curva-salida), opacity 0.3s var(--curva-salida);
+			/* Las cuatro están apiladas en la misma celda: sin esto, el mouse siempre cae
+			   sobre la última del DOM. El script marca cuál está a media pantalla (o, sin
+			   soporte de scroll-timeline, cuál está más cerca del centro). */
+			pointer-events: none;
+		}
+
+		/* Sin JS (o antes de que el observer elija una), se ve la primera pantalla. */
+		.pantalla--1 {
+			opacity: 1;
+		}
+
+		.pantalla--activa {
+			opacity: 1;
+			pointer-events: auto;
+		}
+
+		.pantalla--1:not(.pantalla--activa) {
+			opacity: 0;
+		}
+
+		.pantalla__titulo {
+			font-size: var(--type-label-size);
+		}
+
+		/* Con la tarjeta fija el marco (::before) no se mueve: si la pantalla sube 4px en
+		   hover queda un doble borde abajo. Acá solo cambia el borde. Excepción de movimiento
+		   pedida por el usuario: el hover de la tarjeta fija corre también con reducción. */
+		@media (hover: hover) and (pointer: fine) {
+			.pantalla:hover {
+				translate: none;
+			}
+		}
+	}
+
 	/* Las pantallas usan los timelines de sus hermanos (--paso-N), que necesitan timeline-scope:
-	   sin él quedarían las cuatro visibles y encimadas en la card. */
+	   sin él quedarían las cuatro visibles y encimadas en la card. Todo esto reemplaza, para
+	   quien tiene soporte y no pidió menos movimiento, el fundido simple de arriba. */
 	@media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
 		@supports (animation-timeline: view()) and (timeline-scope: none) {
-			.linea {
-				grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
-				grid-template-rows: repeat(4, auto);
-				column-gap: var(--space-4);
-				row-gap: 0;
-				--fija-arriba: max(112px, calc(50vh - var(--fija-alto) / 2));
-				--fija-alto: 400px;
-			}
-
-			.paso {
-				display: contents;
-			}
-
-			/* Marca y texto no llevan fila: con su columna fija, la grilla los pone solos en la
-			   fila siguiente de cada paso. Las pantallas y el marco ocupan todas las filas. */
-			.paso__marca {
-				grid-column: 1;
-			}
-
 			.paso__texto {
-				grid-column: 2;
-				min-height: 70vh;
-				padding-bottom: var(--space-6);
 				view-timeline: var(--paso) block;
 				view-timeline-inset: 45% 45%;
 				animation: proceso-texto-activo linear both;
@@ -782,64 +918,14 @@ const auditoria = [
 			.paso:first-child .paso__texto { animation-name: proceso-texto-primero; }
 			.paso:last-child .paso__texto { animation-name: proceso-texto-ultimo; }
 
-			/* El marco: la única card invertida, fija. Es el ::before del primer paso, que con
-			   display: contents igual genera su caja y cae en la grilla de la lista. Las cuatro
-			   pantallas van encima, transparentes: solo cambia el contenido. */
-			.paso:first-child::before {
-				content: '';
-				grid-column: 3;
-				grid-row: 1 / -1;
-				align-self: start;
-				position: sticky;
-				top: var(--fija-arriba);
-				height: var(--fija-alto);
-				border: 1px solid var(--border-dark);
-				border-radius: var(--radius-card);
-				background: var(--surface-card-dark);
-				box-shadow: var(--shadow-card);
-			}
-
-			/* La paleta de .pantalla--invertida, para las cuatro; sin fondo, lo pone el marco. */
 			.pantalla {
-				--p-borde: var(--border-dark);
-				--p-titulo: var(--text-heading-light);
-				--p-texto: var(--text-body-light);
-				--p-suave: var(--text-muted-light);
-				--p-riel: var(--navy-800);
-				--p-acento: var(--cyan-300);
-				--p-chip-fondo: var(--cyan-300);
-				--p-chip-texto: var(--navy-950);
-				grid-column: 3;
-				grid-row: 1 / -1;
-				align-self: start;
-				position: sticky;
-				top: var(--fija-arriba);
-				max-width: none;
-				height: var(--fija-alto);
-				padding: var(--space-5) var(--space-4);
-				gap: var(--space-3);
-				border-color: transparent;
-				background: none;
-				font-size: 1.0625rem;
-				box-shadow: none;
 				animation: proceso-pantalla linear both;
-				/* Las cuatro están apiladas en la misma celda: sin esto, el mouse siempre cae
-				   sobre la última del DOM. El script marca cuál está a media pantalla. */
-				pointer-events: none;
-			}
-
-			.pantalla--activa {
-				pointer-events: auto;
 			}
 
 			.pantalla--1 { animation-name: proceso-pantalla-primera; animation-timeline: --paso-1; }
 			.pantalla--2 { animation-timeline: --paso-2; }
 			.pantalla--3 { animation-timeline: --paso-3; }
 			.pantalla--4 { animation-name: proceso-pantalla-ultima; animation-timeline: --paso-4; }
-
-			.pantalla__titulo {
-				font-size: var(--type-label-size);
-			}
 
 			/* Cada pantalla se arma mientras su paso cruza la mitad. */
 			.pantalla--1 .auditoria__barra > span {
@@ -852,12 +938,6 @@ const auditoria = [
 				animation: entrar-corto var(--curva-salida) both;
 				animation-timeline: --paso-2;
 				animation-range: cover calc(8% + var(--i) * 8%) cover calc(24% + var(--i) * 8%);
-			}
-
-			.pantalla--2 .propuesta__sello {
-				animation: proceso-sello var(--curva-salida) both;
-				animation-timeline: --paso-2;
-				animation-range: cover 40% cover 50%;
 			}
 
 			.pantalla--3 .semanas__tramo {
@@ -881,14 +961,6 @@ const auditoria = [
 			.pantalla--4 .soporte__pedido { animation-range: cover 8% cover 20%; }
 			.pantalla--4 .soporte__respuesta { animation-range: cover 22% cover 34%; }
 			.pantalla--4 .soporte__mejora { animation-range: cover 36% cover 46%; }
-
-			/* Con la tarjeta fija el marco (::before) no se mueve: si la pantalla sube 4px en
-			   hover queda un doble borde abajo. Acá solo cambia el borde. */
-			@media (hover: hover) and (pointer: fine) {
-				.pantalla:hover {
-					translate: none;
-				}
-			}
 		}
 	}
 
