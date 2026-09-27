@@ -187,9 +187,11 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		background: var(--navy-850);
 	}
 
-	/* Con la letra muy grande (o si un ancestro le come ancho), ni una fila de 2 columnas entra:
-	   el estado pasa a su propia fila, debajo del nombre. */
-	@container (max-width: 300px) {
+	/* Con la letra grande (o si un ancestro le come ancho), ni una fila de 2 columnas entra: el
+	   estado pasa a su propia fila, debajo del nombre. En `em` (no `px`): el ancho del contenedor
+	   no lo mueve la letra, así que la condición tiene que crecer con ella para no activarse
+	   también a letra normal. */
+	@container (max-width: 16em) {
 		.producto {
 			grid-template-columns: minmax(0, 1fr);
 		}
