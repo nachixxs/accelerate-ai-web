@@ -117,7 +117,7 @@ const movimientos = [
 							<div class="cifra" style={`--i: ${i}`}>
 								<dt>{nombre}</dt>
 								<dd class={`cifra__valor cifra__valor--${formato}`} style={`--fin: ${fin}; --desde: ${desde}`}>
-									<span class="cifra__texto" data-valor={fin}>{texto(fin)}</span>
+									<span class="cifra__texto" data-valor={fin} data-desde={desde}>{texto(fin)}</span>
 								</dd>
 								{variacion && <dd class="cifra__variacion">{variacion}</dd>}
 							</div>
@@ -190,7 +190,12 @@ const movimientos = [
 	// en el frontmatter, para que no se corte entre el "$" y el número mientras cuenta.
 	if (matchMedia('(max-width: 639px)').matches) {
 		const formato = (n: number) => `${n > 999 ? '$ ' : ''}${Math.round(n).toLocaleString('es-AR')}`;
-		contarAlVer([...document.querySelectorAll<HTMLElement>('.tablero .cifra__texto')], formato);
+		const cifras = [...document.querySelectorAll<HTMLElement>('.tablero .cifra__texto')];
+		// La tarjeta entra con la cascada de la carga (tablero-sube): en un celular alto, donde el
+		// tablero ya se ve en la primera pantalla, el conteo esperaba esa entrada antes de arrancar
+		// (si no, contaba con la tarjeta todavía invisible).
+		const tarjeta = cifras[0]?.closest<HTMLElement>('.cifra');
+		contarAlVer(cifras, formato, () => Promise.all(tarjeta?.getAnimations().map((a) => a.finished) ?? []));
 	}
 
 	// El gráfico sigue al cursor (o al dedo): la guía y el punto van al día más cercano y la
@@ -524,11 +529,12 @@ const movimientos = [
 
 	/* De 1024 a 1440 la card queda angosta (el mock comparte columna con el titular) y "$
 	   1.284.500" no entra en 1.375rem: el tamaño responde al ancho de la propia card (cqi), no
-	   al del viewport, y nunca parte el número (nowrap). */
+	   al del viewport, y nunca parte el número (nowrap). El mínimo va en px (como en
+	   .grafico__dias): en rem crece con la letra grande y .ventana{overflow:clip} lo corta. */
 	.cifra__valor {
 		min-width: 0;
 		color: var(--text-heading-light);
-		font-size: clamp(1.125rem, 13cqi, 1.375rem);
+		font-size: clamp(18px, 13cqi, 1.375rem);
 		font-weight: var(--fw-bold);
 		letter-spacing: -0.02em;
 		font-variant-numeric: tabular-nums;
