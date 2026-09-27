@@ -57,17 +57,37 @@ async function referenciaChromium(navegadorChromium, url, { width, height }, { r
 	return opacidades;
 }
 
+// Firefox, bajo mucha carga de E/S en la máquina (varias páginas del mismo navegador pidiendo
+// a la vez el mismo woff2), a veces tira "downloadable font: rejected by sanitizer" o "download
+// failed" para esa carga puntual: no es la fuente ni el sitio (reproducido aparte, contra un
+// servidor propio, con la misma corrida en paralelo: la falla no vuelve a pasar con una sola
+// página). Se reintenta esa carga una vez con una página nueva; si el error persiste, se lo deja
+// pasar tal cual (no se filtra el mensaje, se lo trata como la falla real que sería).
+const FUENTE_RECHAZADA = /downloadable font:/i;
+
+async function cargarPagina(navegador, contextoOpts, url) {
+	for (let intento = 1; intento <= 2; intento++) {
+		const contexto = await navegador.newContext(contextoOpts);
+		const pagina = await contexto.newPage();
+		const errores = [];
+		pagina.on('console', (m) => {
+			if (m.type() === 'error') errores.push(m.text());
+		});
+		pagina.on('pageerror', (e) => errores.push(String(e)));
+		await pagina.goto(url, { waitUntil: 'load' });
+		await terminarCarga(pagina);
+		const soloFuente = errores.length > 0 && errores.every((e) => FUENTE_RECHAZADA.test(e));
+		if (soloFuente && intento === 1) {
+			await contexto.close();
+			continue;
+		}
+		return { contexto, pagina, errores };
+	}
+}
+
 async function probarCombo(navegador, nombreNavegador, url, referencia, { nombre: anchoNombre, width, height }, { nombre: motivoNombre, reducedMotion }) {
-	const contexto = await navegador.newContext({ viewport: { width, height }, reducedMotion });
-	const pagina = await contexto.newPage();
-	const errores = [];
-	pagina.on('console', (m) => {
-		if (m.type() === 'error') errores.push(m.text());
-	});
-	pagina.on('pageerror', (e) => errores.push(String(e)));
 	const prefijo = `${nombreNavegador}-${anchoNombre}-${motivoNombre}`;
-	await pagina.goto(url, { waitUntil: 'load' });
-	await terminarCarga(pagina);
+	const { contexto, pagina, errores } = await cargarPagina(navegador, { viewport: { width, height }, reducedMotion }, url);
 	await pagina.screenshot({ path: `capturas/${prefijo}-primera-pantalla.png` });
 	const botonVisible = await pagina.evaluate((h) => {
 		const boton = document.querySelector('.portada a[href^="https://wa.me"]');
