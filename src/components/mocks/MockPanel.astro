@@ -54,7 +54,9 @@ const cifras = [
 	{ nombre: 'Órdenes', fin: 142, desde: 0, formato: 'simple' },
 	{ nombre: 'Ticket promedio', fin: 9045, desde: 5000, formato: 'miles' },
 ];
-const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}`;
+// Espacio duro entre "$" y el número: con espacio normal, "nowrap" no alcanza para
+// mantenerlos juntos si el navegador busca dónde cortar la línea.
+const texto = (n: number) => `${n > 999 ? '$ ' : ''}${n.toLocaleString('es-AR')}`;
 
 // El primero es el que llega durante la animación; los otros dos ya estaban.
 const movimientos = [
@@ -67,7 +69,7 @@ const movimientos = [
 <div
 	class="tablero"
 	role="img"
-	aria-label="Ejemplo con datos inventados: el tablero de un negocio con órdenes, stock, caja, clientes y presupuestos en un solo lugar. Muestra ventas de la semana por 1.284.500 pesos, 142 órdenes, un ticket promedio de 9.045 pesos, la curva de ventas con el pico el sábado y los últimos movimientos: una orden terminada, un producto bajo el mínimo con el pedido al proveedor armado y la caja del lunes cerrada."
+	aria-label="Ejemplo con datos inventados: el tablero de un negocio. Ventas de la semana: 1.284.500 pesos, 142 órdenes, pico el sábado."
 >
 	<span class="tablero__chip">
 		<Icono nombre="lightning-duotone" size={16} />
@@ -115,7 +117,7 @@ const movimientos = [
 							<div class="cifra" style={`--i: ${i}`}>
 								<dt>{nombre}</dt>
 								<dd class={`cifra__valor cifra__valor--${formato}`} style={`--fin: ${fin}; --desde: ${desde}`}>
-									<span class="cifra__texto">{texto(fin)}</span>
+									<span class="cifra__texto" data-valor={fin}>{texto(fin)}</span>
 								</dd>
 								{variacion && <dd class="cifra__variacion">{variacion}</dd>}
 							</div>
@@ -181,6 +183,16 @@ const movimientos = [
 </div>
 
 <script>
+	import { contarAlVer } from '../../scripts/contar';
+
+	// En el celular las cifras cuentan por tiempo al verse, no atadas al scroll (el rango
+	// quedaba a medio camino según el alto de la pantalla). El mismo espacio duro que texto()
+	// en el frontmatter, para que no se corte entre el "$" y el número mientras cuenta.
+	if (matchMedia('(max-width: 639px)').matches) {
+		const formato = (n: number) => `${n > 999 ? '$ ' : ''}${Math.round(n).toLocaleString('es-AR')}`;
+		contarAlVer([...document.querySelectorAll<HTMLElement>('.tablero .cifra__texto')], formato);
+	}
+
 	// El gráfico sigue al cursor (o al dedo): la guía y el punto van al día más cercano y la
 	// etiqueta dice cuánto se vendió. Al salir vuelve al pico de la semana.
 	const grafico = document.querySelector<HTMLElement>('.tablero .grafico');
@@ -206,10 +218,9 @@ const movimientos = [
 			rotulos.forEach((rotulo, j) => rotulo.classList.toggle('grafico__dia--marcado', j === i));
 		};
 
-		const seguir = (evento: PointerEvent) => {
-			clearTimeout(volver);
+		const marcarDesde = (clientX: number) => {
 			const { left, width } = lienzo.getBoundingClientRect();
-			const i = Math.floor(((evento.clientX - left) / width) * dias.length);
+			const i = Math.floor(((clientX - left) / width) * dias.length);
 			marcar(Math.min(dias.length - 1, Math.max(0, i)));
 			grafico.classList.add('grafico--activo');
 		};
@@ -219,8 +230,54 @@ const movimientos = [
 			marcar(pico);
 		};
 
-		grafico.addEventListener('pointerdown', seguir);
-		grafico.addEventListener('pointermove', seguir);
+		// Con el mouse marca ya al bajar el botón. Con el dedo, recién a los 4px horizontales:
+		// si el gesto es más vertical que horizontal es para bajar la página, no para marcar (así
+		// no salta el marcador cuando el dedo arranca a scrollear sobre el gráfico). Un toque sin
+		// arrastre marca al soltar.
+		let inicio: { x: number; y: number } | null = null;
+		let arrastrando = false;
+
+		grafico.addEventListener('pointerdown', (evento) => {
+			clearTimeout(volver);
+			if (evento.pointerType === 'mouse') {
+				marcarDesde(evento.clientX);
+				return;
+			}
+			inicio = { x: evento.clientX, y: evento.clientY };
+			arrastrando = false;
+		});
+
+		grafico.addEventListener('pointermove', (evento) => {
+			if (evento.pointerType === 'mouse') {
+				marcarDesde(evento.clientX);
+				return;
+			}
+			if (!inicio) return;
+			const dx = evento.clientX - inicio.x;
+			const dy = evento.clientY - inicio.y;
+			if (!arrastrando) {
+				if (Math.abs(dy) > Math.abs(dx)) {
+					inicio = null; // gesto vertical: es para bajar la página, no para marcar
+					return;
+				}
+				if (Math.abs(dx) < 4) return;
+				arrastrando = true;
+				grafico.setPointerCapture(evento.pointerId);
+			}
+			marcarDesde(evento.clientX);
+		});
+
+		grafico.addEventListener('pointerup', (evento) => {
+			if (evento.pointerType !== 'mouse' && !arrastrando && inicio) marcarDesde(evento.clientX);
+			inicio = null;
+			arrastrando = false;
+		});
+
+		grafico.addEventListener('pointercancel', () => {
+			inicio = null;
+			arrastrando = false;
+		});
+
 		// Con el mouse vuelve al salir; con el dedo, un rato después de soltar.
 		grafico.addEventListener('pointerleave', (evento) => {
 			if (evento.pointerType === 'mouse') soltar();
@@ -348,7 +405,7 @@ const movimientos = [
 		place-items: center;
 		min-width: 22px;
 		height: 22px;
-		padding-inline: 6px;
+		padding-inline: 8px;
 		border-radius: var(--radius-pill);
 		background: var(--cyan-300);
 		color: var(--navy-950);
@@ -399,7 +456,7 @@ const movimientos = [
 		display: inline-grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		margin-left: auto;
-		padding: 3px;
+		padding: 4px;
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-pill);
 		color: var(--text-muted-light);
@@ -410,10 +467,10 @@ const movimientos = [
 	.periodo::before {
 		content: '';
 		position: absolute;
-		top: 3px;
-		bottom: 3px;
-		left: 3px;
-		width: calc(50% - 3px);
+		top: 4px;
+		bottom: 4px;
+		left: 4px;
+		width: calc(50% - 4px);
 		border-radius: var(--radius-pill);
 		background: var(--brand-primary-deep);
 		transition: transform 0.25s var(--curva-salida);
@@ -421,9 +478,11 @@ const movimientos = [
 
 	.periodo__opcion {
 		position: relative;
-		padding: 4px 10px;
+		padding: 4px 12px;
 		text-align: center;
-		transition: color 0.2s ease;
+		/* Misma duración y curva que la pastilla (.periodo::before): si el color va más rápido,
+		   pasa a mitad de camino con la pastilla todavía debajo y el contraste baja ~65ms. */
+		transition: color 0.25s var(--curva-salida);
 	}
 
 	.periodo__opcion--activa {
@@ -438,12 +497,13 @@ const movimientos = [
 	}
 
 	.cifra {
+		container-type: inline-size;
 		display: grid;
 		align-content: start;
-		gap: 2px;
+		gap: 4px;
 		padding: 12px;
 		border: 1px solid transparent;
-		border-radius: 14px;
+		border-radius: var(--radius-badge);
 		background: var(--navy-850);
 		transition: border-color 0.2s ease, translate 0.25s var(--curva-salida);
 	}
@@ -462,20 +522,25 @@ const movimientos = [
 		margin: 0;
 	}
 
+	/* De 1024 a 1440 la card queda angosta (el mock comparte columna con el titular) y "$
+	   1.284.500" no entra en 1.375rem: el tamaño responde al ancho de la propia card (cqi), no
+	   al del viewport, y nunca parte el número (nowrap). */
 	.cifra__valor {
 		min-width: 0;
 		color: var(--text-heading-light);
-		font-size: 1.375rem;
+		font-size: clamp(1.125rem, 13cqi, 1.375rem);
 		font-weight: var(--fw-bold);
 		letter-spacing: -0.02em;
 		font-variant-numeric: tabular-nums;
-		overflow-wrap: anywhere;
+		white-space: nowrap;
+		overflow-wrap: normal;
 	}
 
 	.cifra__variacion {
 		color: var(--cyan-300);
 		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
+		text-wrap: balance;
 	}
 
 	/* --- El gráfico: el SVG se estira al ancho; el trazo no se deforma (non-scaling-stroke) y el
@@ -560,7 +625,7 @@ const movimientos = [
 		left: 0;
 		translate: -100% calc(-100% - 12px);
 		transition: translate 0.2s var(--curva-salida);
-		padding: 4px 10px;
+		padding: 4px 12px;
 		border-radius: var(--radius-pill);
 		background: var(--cyan-300);
 		color: var(--navy-950);
@@ -576,6 +641,7 @@ const movimientos = [
 	}
 
 	.grafico__dias {
+		container-type: inline-size;
 		display: grid;
 		grid-template-columns: repeat(7, minmax(0, 1fr));
 		color: var(--text-muted-light);
@@ -583,9 +649,14 @@ const movimientos = [
 		text-align: center;
 	}
 
+	/* "Dom" es el día más ancho: con la letra grande del navegador (150-200%) no entra en su
+	   columna. El tamaño responde al ancho real de la fila (cqi, en px fijos: no crece con la
+	   letra del sistema) y nunca se parte ni se corta (nowrap). */
 	.grafico__dias span {
 		min-width: 0;
-		overflow-wrap: anywhere;
+		white-space: nowrap;
+		overflow-wrap: normal;
+		font-size: clamp(8px, 13cqi, 13px);
 		transition: color 0.2s ease;
 	}
 
@@ -606,17 +677,32 @@ const movimientos = [
 	}
 
 	.movimiento {
+		position: relative;
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr) minmax(0, max-content);
 		align-items: center;
 		gap: 12px;
 		padding: 8px;
-		border-radius: 14px;
+		border-radius: var(--radius-badge);
 		transition: background-color 0.2s ease;
 	}
 
 	.movimiento--nuevo {
 		background: rgba(34, 211, 238, 0.08);
+	}
+
+	/* El fondo recién llegado se apaga con un ::before que solo cambia de opacidad, en vez de
+	   animar background-color (repinta en el hilo principal en cada cuadro). Sin la animación
+	   (reducido o sin soporte) queda en 0: el tinte final es el de .movimiento--nuevo de arriba. */
+	.movimiento--nuevo::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		background-color: rgba(34, 211, 238, 0.16);
+		opacity: 0;
+		pointer-events: none;
 	}
 
 	.movimiento__icono {
@@ -650,7 +736,7 @@ const movimientos = [
 	.movimiento__hora {
 		align-self: start;
 		min-width: 0;
-		padding-top: 2px;
+		padding-top: 4px;
 		color: var(--text-muted-light);
 		font-size: 0.8125rem;
 		font-variant-numeric: tabular-nums;
@@ -665,15 +751,16 @@ const movimientos = [
 		z-index: 1;
 		display: inline-flex;
 		align-items: center;
-		gap: 6px;
-		padding: 10px 16px;
+		gap: 8px;
+		max-width: calc(100% - 32px);
+		padding: 12px 16px;
 		border-radius: var(--radius-pill);
 		background: var(--cyan-300);
 		color: var(--navy-950);
 		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
 		line-height: 1.2;
-		white-space: nowrap;
+		text-wrap: balance;
 		box-shadow: var(--shadow-elevada);
 		transform: translateY(-50%);
 	}
@@ -691,7 +778,7 @@ const movimientos = [
 		max-width: calc(100% - 32px);
 		padding: 12px 16px 12px 12px;
 		border: 1px solid var(--border-light);
-		border-radius: 18px;
+		border-radius: var(--radius-card);
 		background: var(--white);
 		color: var(--text-heading-dark);
 		font-size: 0.875rem;
@@ -843,7 +930,7 @@ const movimientos = [
 	   dos movimientos y no tres. */
 	@media (min-width: 1024px) {
 		.ventana__barra {
-			padding-block: 14px;
+			padding-block: 12px;
 		}
 
 		.movimiento:nth-child(3) {
@@ -922,7 +1009,7 @@ const movimientos = [
 	}
 
 	@keyframes tablero-fondo-se-apaga {
-		from { background-color: rgba(34, 211, 238, 0.24); }
+		from { opacity: 1; }
 	}
 
 	@keyframes tablero-baja-un-lugar {
@@ -937,6 +1024,12 @@ const movimientos = [
 		from { opacity: 0; transform: translateY(24px) scale(0.96); }
 	}
 
+	/* La pastilla ya usa transform para deslizarse hasta el módulo activo: la entrada es solo
+	   opacidad, para no pisarlo. */
+	@keyframes tablero-pastilla {
+		from { opacity: 0; }
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
 		.ventana {
 			transform-origin: 50% 100%;
@@ -946,6 +1039,10 @@ const movimientos = [
 		.modulo {
 			animation: tablero-desde-izquierda 0.5s var(--curva-salida) both;
 			animation-delay: calc(0.6s + var(--i) * 60ms);
+		}
+
+		.modulos::before {
+			animation: tablero-pastilla 0.3s var(--curva-salida) 0.6s both;
 		}
 
 		.cifra {
@@ -976,9 +1073,11 @@ const movimientos = [
 		}
 
 		.movimiento--nuevo {
-			animation:
-				tablero-nuevo 0.5s var(--curva-salida) 2.35s both,
-				tablero-fondo-se-apaga 2s var(--curva-salida) 2.35s both;
+			animation: tablero-nuevo 0.5s var(--curva-salida) 2.35s both;
+		}
+
+		.movimiento--nuevo::before {
+			animation: tablero-fondo-se-apaga 2s var(--curva-salida) 2.35s both;
 		}
 
 		.tablero__chip {
@@ -991,8 +1090,10 @@ const movimientos = [
 	}
 
 	/* Las cifras cuentan hacia arriba con un contador de CSS. El texto real queda en el HTML
-	   para lectores y navegadores sin soporte; donde el contador anda, lo reemplaza. */
-	@media (prefers-reduced-motion: no-preference) {
+	   para lectores y navegadores sin soporte; donde el contador anda, lo reemplaza. Solo desde
+	   640px: en el celular cuentan por tiempo al verse, con contarAlVer (ver el script), porque
+	   el conteo atado al scroll quedaba a medio camino según el alto de la pantalla. */
+	@media (prefers-reduced-motion: no-preference) and (min-width: 640px) {
 		@supports (width: mod(10px, 3px)) {
 			.cifra__valor {
 				animation: tablero-contar 1.4s var(--curva-salida) 0.7s both;
@@ -1009,7 +1110,7 @@ const movimientos = [
 
 			.cifra__valor--miles::after {
 				counter-reset: k calc(round(down, var(--v) / 1000)) u calc(mod(var(--v), 1000));
-				content: '$ ' counter(k) '.' counter(u, tres-cifras);
+				content: '$\00a0' counter(k) '.' counter(u, tres-cifras);
 			}
 
 			.cifra__valor--millones::after {
@@ -1017,7 +1118,7 @@ const movimientos = [
 					m calc(round(down, var(--v) / 1000000))
 					k calc(mod(round(down, var(--v) / 1000), 1000))
 					u calc(mod(var(--v), 1000));
-				content: '$ ' counter(m) '.' counter(k, tres-cifras) '.' counter(u, tres-cifras);
+				content: '$\00a0' counter(m) '.' counter(k, tres-cifras) '.' counter(u, tres-cifras);
 			}
 		}
 	}
@@ -1026,14 +1127,15 @@ const movimientos = [
 	   terminaría antes de que llegues. En tablet ya se ve casi entero en la primera pantalla y
 	   corre al cargar, como en escritorio. En el celular cada parte se arma cuando entra en pantalla, con su
 	   propio timeline: lo que ya se ve al cargar (la ventana, los módulos, el chip) entra con el
-	   tiempo, y lo que está más abajo espera a que llegues, en cualquier alto de pantalla. */
+	   tiempo, y lo que está más abajo espera a que llegues, en cualquier alto de pantalla.
+	   Las cifras quedan afuera: su tarjeta ya entra con la cascada de la carga (regla de arriba,
+	   sin scroll-timeline) y su conteo lo maneja contarAlVer (ver el script), disparado al verlas
+	   en cualquier alto de pantalla en vez de un tramo de scroll que podía quedar a medias. */
 	@media (prefers-reduced-motion: no-preference) and (max-width: 639px) {
 		@supports (animation-timeline: view()) {
-			.cifras { view-timeline: --tablero-cifras block; }
 			.grafico { view-timeline: --tablero-grafico block; }
 			.movimientos { view-timeline: --tablero-movimientos block; }
 
-			.cifra,
 			.grafico__linea,
 			.grafico__area,
 			.grafico__pico,
@@ -1043,24 +1145,6 @@ const movimientos = [
 			.tablero__aviso {
 				animation-delay: 0s;
 				animation-duration: auto;
-			}
-
-			/* Las cards de las cifras están ocultas hasta que llegás: el conteo va atado al mismo
-			   timeline, un poco después, para que se vea contar y no aparezca ya terminado. */
-			.cifra {
-				animation-timeline: --tablero-cifras;
-				animation-range: entry 20% entry 90%;
-			}
-
-			/* Termina bien adentro de la entrada (no a mitad de "cover"): en la primera pantalla
-			   el bloque ya está casi del todo a la vista sin haber scrolleado, y el conteo tiene
-			   que llegar a su valor final igual. Con la curva de salida, a esta altura del rango
-			   ya casi no queda diferencia visual con el 100%. */
-			.cifra__valor {
-				animation-delay: 0s;
-				animation-duration: auto;
-				animation-timeline: --tablero-cifras;
-				animation-range: entry 40% entry 55%;
 			}
 
 			.grafico__linea,
