@@ -40,7 +40,7 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 		<div class="somos__pie">
 			<BotonWhatsApp
-				variante="link"
+				variante="contorno"
 				texto="Hablar directo con Ignacio y Gabriel"
 				mensaje="Hola Ignacio y Gabriel, vi la web y quiero charlar sobre mi negocio."
 			/>
@@ -68,16 +68,19 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 	.persona {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		gap: var(--space-2);
+		gap: var(--space-3);
 	}
 
 	/* La escala gigante de la marca (200 en el lienzo de 1080), llevada a la web: 68 → 163 px.
 	   El tope lo pone "y Gabriel" en 360 px: a 68 px ocupa unos 290 de los 328 disponibles.
-	   Sin nowrap: si no entra (zoom de texto grande), baja de línea en vez de cortarse. */
+	   Sin nowrap: si no entra (zoom de texto grande), baja de línea en vez de cortarse.
+	   El tope en vw (22, no cambia con la letra grande del sistema) evita que "Ignacio" y
+	   "Gabriel" se partan a la mitad con el clamp en rem: "y Gabriel" mide ≈4,03em y entra en
+	   328px a 22vw (81px a 360). No afecta el tamaño en escritorio ni sin letra agrandada. */
 	.persona__nombre {
 		min-width: 0;
 		color: var(--text-heading-dark);
-		font-size: clamp(4.25rem, 1.8rem + 10.5vw, 10.25rem);
+		font-size: min(clamp(4.25rem, 1.8rem + 10.5vw, 10.25rem), 22vw);
 		font-weight: var(--fw-black);
 		line-height: 0.9;
 		letter-spacing: -0.04em;
@@ -127,12 +130,14 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		}
 	}
 
+	/* -6%, no -14%: a 360 el margen de la sección es de 16px, y un corrimiento mayor queda afuera
+	   del overflow-x: clip de .personas durante todo el tramo (se leía "gnacio" y "Gabri"). */
 	@keyframes nombre-desde-izquierda {
-		from { transform: translateX(-14%); }
+		from { transform: translateX(-6%); }
 	}
 
 	@keyframes nombre-desde-derecha {
-		from { transform: translateX(14%); }
+		from { transform: translateX(6%); }
 	}
 
 	@keyframes nombre-se-llena {
@@ -142,17 +147,20 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
 			/* El relleno: una capa del color del titular que crece sobre un gris claro, recortada
-			   a las letras. Color plano, no el gradiente de la marca. */
+			   a las letras. Color plano, no el gradiente de la marca. Base slate-500 (4,51:1
+			   contra el fondo, pasa AA) en vez de slate-200 (1,23:1): a mitad de camino se leía
+			   "Ign" más un fantasma. Rango adelantado para que termine de llenarse antes, cerca
+			   del 60% de la pantalla, no cuando ya casi la cruzó. */
 			.persona__texto {
 				background: linear-gradient(var(--text-heading-dark), var(--text-heading-dark)) 0 0 / 100% 100% no-repeat;
-				background-color: var(--slate-200);
+				background-color: var(--slate-500);
 				-webkit-background-clip: text;
 				background-clip: text;
 				color: transparent;
 				-webkit-text-fill-color: transparent;
 				animation: nombre-se-llena linear both;
 				animation-timeline: view();
-				animation-range: entry 60% cover 55%;
+				animation-range: entry 20% cover 35%;
 			}
 
 			.persona__nombre {
