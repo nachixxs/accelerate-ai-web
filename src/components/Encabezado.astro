@@ -111,6 +111,16 @@ const links = [
 	const menu = document.getElementById('menu')!;
 	menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => menu.hidePopover()));
 
+	// Con el menú abierto, un Tab que se escapa (después del último link) no puede dejar el foco
+	// tapado detrás de la card: en focusin el foco ya está afuera, así que cerrar acá no pelea con
+	// ninguna devolución de foco en curso (a diferencia de focusout, que dispara mientras el foco
+	// todavía cuenta como adentro).
+	document.addEventListener('focusin', (evento) => {
+		if (menu.matches(':popover-open') && !menu.contains(evento.target as Node)) {
+			menu.hidePopover();
+		}
+	});
+
 	// El botón se llena de azul cuando no hay ningún botón principal a la vista.
 	const cta = document.querySelector('.capsula__cta')!;
 	const aLaVista = new Set<Element>();
