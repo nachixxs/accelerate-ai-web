@@ -892,7 +892,10 @@ const auditoria = [
 			font-size: 1.0625rem;
 			box-shadow: none;
 			opacity: 0;
-			transition: translate 0.2s var(--curva-salida), border-color 0.2s var(--curva-salida), opacity 0.3s var(--curva-salida);
+			/* La que sale se va rápido y sola; .pantalla--activa (más abajo) pisa esta transición
+			   con la de entrada, que espera un poco. Fade-through: nunca hay dos a la vista a la
+			   vez (M6). Solo opacidad: respeta la regla de reducción. */
+			transition: translate 0.2s var(--curva-salida), border-color 0.2s var(--curva-salida), opacity 0.12s ease-out;
 			/* Las cuatro están apiladas en la misma celda: sin esto, el mouse siempre cae
 			   sobre la última del DOM. El script marca cuál está a media pantalla (o, sin
 			   soporte de scroll-timeline, cuál está más cerca del centro). */
@@ -907,9 +910,12 @@ const auditoria = [
 		.pantalla--activa {
 			opacity: 1;
 			pointer-events: auto;
+			transition: translate 0.2s var(--curva-salida), border-color 0.2s var(--curva-salida), opacity 0.2s var(--curva-salida) 0.1s;
 		}
 
-		.pantalla--1:not(.pantalla--activa) {
+		/* Solo se apaga la 1 si ya hay otra activa: sin JS (nunca se agrega pantalla--activa) esta
+		   regla no aplica y la 1 queda como arriba, a la vista (REVISOR#1). */
+		.linea:has(.pantalla--activa) .pantalla--1:not(.pantalla--activa) {
 			opacity: 0;
 		}
 
@@ -923,6 +929,17 @@ const auditoria = [
 		@media (hover: hover) and (pointer: fine) {
 			.pantalla:hover {
 				translate: none;
+			}
+		}
+
+		/* .fundir (global.css) le pone a cada pantalla una animation con fill:both que, ya
+		   terminada, sigue fijando la opacidad y se come la transition de .pantalla--activa: el
+		   cambio de paso corta en seco en vez de fundir (B1). Acá gana por especificidad (el scope
+		   de Astro suma un atributo) y no toca nada con movimiento: en el celular .fundir sigue
+		   fundiendo al entrar. */
+		@media (prefers-reduced-motion: reduce) {
+			.pantalla {
+				animation: none;
 			}
 		}
 	}
