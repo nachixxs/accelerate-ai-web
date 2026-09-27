@@ -23,7 +23,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 
 <a class:list={['boton', `boton--${variante}`, clase]} href={whatsappUrl(mensaje)} target="_blank" rel="noopener">
 	{(variante === 'principal' || variante === 'secundario') && <span class="boton__brillo" aria-hidden="true"></span>}
-	{texto}
+	<span class="boton__texto">{texto}</span>
 	<span class="solo-lector"> (abre WhatsApp)</span>
 	{variante === 'principal' ? <Icono nombre="si:whatsapp" size={24} class="boton__icono" /> : <Icono nombre="arrow-right-bold" size={20} class="boton__icono" />}
 </a>
@@ -57,6 +57,12 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 
 	.boton :global(.boton__icono) {
 		flex: none;
+	}
+
+	/* Corta parejo en vez de dejar una palabra sola en la última línea (ej. "Hablar directo
+	   con Ignacio y / Gabriel" a 360). No cambia el copy. */
+	.boton__texto {
+		text-wrap: balance;
 	}
 
 	/* 19px en 700 cuenta como texto grande para WCAG: blanco sobre #2971f2 pide 3:1 y da 4,4:1. */
