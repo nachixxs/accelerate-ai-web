@@ -60,6 +60,7 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 		gap: var(--space-4);
 		margin-top: var(--space-5);
 		overflow-x: clip;
+		overflow-clip-margin: var(--space-2);
 	}
 
 	/* minmax(0, 1fr) en vez de la columna implícita "auto": sin esto, el nowrap del nombre fija
@@ -171,6 +172,18 @@ import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 			.persona:nth-child(2) .persona__nombre {
 				animation-name: nombre-desde-derecha;
+			}
+
+			/* El -6% de "y Gabriel" (el más ancho) sigue sacando la "I" del margen del
+			   overflow-clip-margin durante buena parte de la entrada: medido, hasta 20px a 360 y
+			   hasta 33px a 768 (con la escala tipográfica más grande, el corte es peor, no mejor).
+			   Por debajo de 1024 -las dos columnas apiladas, antes del layout de escritorio- la
+			   entrada va sin desplazamiento, solo con el relleno de arriba. */
+			@media (max-width: 1023px) {
+				.persona__nombre,
+				.persona:nth-child(2) .persona__nombre {
+					animation: none;
+				}
 			}
 
 			.persona__rol {
