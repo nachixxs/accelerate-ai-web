@@ -17,7 +17,7 @@ const links = [
 	{ href: '#resolvemos', texto: 'Qué resolvemos', timeline: '--s-resolvemos' },
 	{ href: '#sistemas', texto: 'Qué armamos', timeline: '--s-sistemas' },
 	{ href: '#proceso', texto: 'Cómo trabajamos', timeline: '--s-proceso' },
-	{ href: '#somos', texto: 'Quiénes somos', timeline: '--s-somos', soloMenu: true },
+	{ href: '#tiempo', texto: 'Tu tiempo', timeline: '--s-tiempo', soloMenu: true },
 	{ href: '#preguntas', texto: 'Preguntas', timeline: '--s-preguntas' },
 ];
 ---
@@ -102,7 +102,7 @@ const links = [
 		Escribinos por WhatsApp
 		<span class="solo-lector"> (abre WhatsApp)</span>
 	</a>
-	<p class="menu__nota">Te contesta Ignacio o Gabriel</p>
+	<p class="menu__nota">Te contesta una persona, no un bot</p>
 </div>
 
 
@@ -435,6 +435,7 @@ const links = [
 		color: var(--text-muted-dark);
 		font-size: var(--type-meta-size);
 		text-align: center;
+		text-wrap: balance;
 	}
 
 	@media (min-width: 640px) {
