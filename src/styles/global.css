@@ -50,13 +50,13 @@ html { scroll-padding-top: 96px; }
 /* Timelines que usa el encabezado: las secciones (marca en cuál estás). timeline-scope los deja ver desde fuera de cada sección.
    El inset de arriba corre la línea que cuenta: una sección está "activa" desde que su borde de
    arriba pasa el 40 % de la pantalla hasta que su borde de abajo pasa ese mismo punto. */
-body { timeline-scope: --s-resolvemos, --s-sistemas, --s-proceso, --s-somos, --s-preguntas; }
+body { timeline-scope: --s-resolvemos, --s-sistemas, --s-proceso, --s-tiempo, --s-preguntas; }
 #resolvemos { view-timeline: --s-resolvemos block; }
 #sistemas { view-timeline: --s-sistemas block; }
 #proceso { view-timeline: --s-proceso block; }
-#somos { view-timeline: --s-somos block; }
+#tiempo { view-timeline: --s-tiempo block; }
 #preguntas { view-timeline: --s-preguntas block; }
-#resolvemos, #sistemas, #proceso, #somos, #preguntas { view-timeline-inset: 40% 0%; }
+#resolvemos, #sistemas, #proceso, #tiempo, #preguntas { view-timeline-inset: 40% 0%; }
 
 /* Link para saltar el encabezado con el teclado: aparece solo cuando recibe el foco. */
 .saltar {
