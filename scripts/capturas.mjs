@@ -183,13 +183,35 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 }
 
 // Devuelve la lista de lo que falló (vacía si todo bien). Deja la calculadora como la encontró.
+// El total se lee de dos lados: `data-total` (lo que calculó el script) y las columnas del odómetro
+// (lo que se ve: el dígito al que llegó cada tira). La card es `.tiempo__fondo`: desde 1024
+// `.tiempo__resultado` es `display: contents` y no tiene caja.
 async function revisarCalculadora(pagina, width, height) {
 	const leer = () =>
 		pagina.evaluate(() => {
-			const numero = document.querySelector('#tiempo [data-total]').getBoundingClientRect();
-			const card = document.querySelector('#tiempo .tiempo__resultado').getBoundingClientRect();
-			const texto = new URL(document.querySelector('#tiempo .tiempo__accion a').href).searchParams.get('text');
-			return { total: document.querySelector('#tiempo [data-total]').textContent, texto, entra: numero.left >= card.left && numero.right <= card.right, pagina: document.documentElement.scrollWidth };
+			const caja = (el) => el.getBoundingClientRect();
+			const numero = caja(document.querySelector('#tiempo [data-total]'));
+			const card = caja(document.querySelector('#tiempo .tiempo__fondo'));
+			const boton = document.querySelector('#tiempo .tiempo__accion a');
+			const columnas = [...document.querySelectorAll('#tiempo .tiempo__numero > .tiempo__col:not([hidden]):not(.tiempo__fantasma)')];
+			const visto = columnas.map((c) => Math.round(-new DOMMatrix(getComputedStyle(c.firstElementChild).transform).f / caja(c).height)).join('');
+			// La marca que viaja: su recorte tiene que coincidir con el chip elegido.
+			const chip = caja(document.querySelector('#tiempo input[name="tarea"]:checked + .tiempo__cara'));
+			const chips = caja(document.querySelector('#tiempo .tiempo__chips'));
+			const recorte = getComputedStyle(document.querySelector('#tiempo .tiempo__marca')).clipPath.match(/-?[\d.]+px/g)?.map(parseFloat) ?? [];
+			const [arriba, derecha, abajo, izquierda] = recorte;
+			const marcaOk = recorte.length >= 4 && [arriba - (chip.top - chips.top), derecha - (chips.right - chip.right), abajo - (chips.bottom - chip.bottom), izquierda - (chip.left - chips.left)].every((d) => Math.abs(d) <= 1);
+			return {
+				total: document.querySelector('#tiempo [data-total]').dataset.total,
+				visto,
+				texto: new URL(boton.href).searchParams.get('text'),
+				anuncio: document.querySelector('#tiempo [data-anuncio]').textContent,
+				valuetext: [...document.querySelectorAll('#tiempo input[type="range"]')].map((r) => r.getAttribute('aria-valuetext')),
+				entra: numero.left >= card.left && numero.right <= card.right,
+				botonDentro: caja(boton).left >= card.left && caja(boton).right <= card.right && caja(boton).bottom <= card.bottom,
+				marcaOk,
+				pagina: document.documentElement.scrollWidth,
+			};
 		});
 	const casos = [
 		[null, null, null, '40', 'Hola, vi la web. Se me van unas 40 horas por mes haciendo la caja.'],
@@ -199,17 +221,30 @@ async function revisarCalculadora(pagina, width, height) {
 		['Hacer la caja', '5', '2', '40', 'Hola, vi la web. Se me van unas 40 horas por mes haciendo la caja.'],
 	];
 	const fallas = [];
+	let horasAhora = '5';
+	let personasAhora = '2';
 	for (const [tarea, horas, personas, total, texto] of casos) {
-		if (tarea) await pagina.locator('#tiempo .tiempo__chip', { hasText: tarea }).click();
-		if (horas) await pagina.locator('#tiempo-horas').fill(horas);
-		if (personas) await pagina.locator('#tiempo-personas').fill(personas);
-		// El número corre 0,22 s hasta el total: se espera a que llegue.
-		await pagina.waitForFunction((t) => document.querySelector('#tiempo [data-total]').textContent === t, total, { timeout: 2000 }).catch(() => {});
+		if (tarea) await pagina.locator('#tiempo label.tiempo__chip', { hasText: tarea }).click();
+		if (horas) await pagina.locator('#tiempo-horas').fill((horasAhora = horas));
+		if (personas) await pagina.locator('#tiempo-personas').fill((personasAhora = personas));
+		// El odómetro corre 0,26 s hasta el total y la marca 0,28 s hasta el chip: se espera a que lleguen.
+		await pagina.waitForFunction((t) => [...document.querySelectorAll('#tiempo .tiempo__numero > .tiempo__col:not([hidden]):not(.tiempo__fantasma)')].map((c) => Math.round(-new DOMMatrix(getComputedStyle(c.firstElementChild).transform).f / c.getBoundingClientRect().height)).join('') === t, total, { timeout: 2000 }).catch(() => {});
+		await pagina.waitForTimeout(350);
 		const ahora = await leer();
 		if (ahora.total !== total) fallas.push(`total ${ahora.total} en vez de ${total}`);
+		if (ahora.visto !== total) fallas.push(`el odómetro muestra ${ahora.visto} en vez de ${total}`);
 		if (ahora.texto !== texto) fallas.push(`mensaje "${ahora.texto}"`);
 		if (!ahora.entra) fallas.push(`el ${total} se sale de su card a ${width} px`);
+		if (!ahora.marcaOk) fallas.push(`la marca azul no coincide con el chip elegido (${tarea ?? 'inicial'})`);
+		if (width >= 1024 && !ahora.botonDentro) fallas.push(`el botón no entra en la card a ${width} px`);
 		if (ahora.pagina > width) fallas.push(`página de ${ahora.pagina} px con el ${total}`);
+		// El anuncio se actualiza a los 700 ms de la última acción; nombra el total y la tarea.
+		const anuncio = `Se te van ${total} horas por mes ${texto.match(/por mes (.*)\.$/)[1]}`;
+		await pagina.waitForFunction((a) => document.querySelector('#tiempo [data-anuncio]').textContent === a, anuncio, { timeout: 1500 }).catch(() => {});
+		const dicho = (await leer()).anuncio;
+		if (dicho !== anuncio) fallas.push(`anuncio "${dicho}" en vez de "${anuncio}"`);
+		const unidades = [horasAhora === '1' ? '1 hora por semana' : `${horasAhora} horas por semana`, personasAhora === '1' ? '1 persona' : `${personasAhora} personas`];
+		if (ahora.valuetext.join('|') !== unidades.join('|')) fallas.push(`aria-valuetext "${ahora.valuetext.join('|')}" en vez de "${unidades.join('|')}"`);
 	}
 
 	// Recorrido de arriba abajo, como lo haría quien usa la sección: cada chip y cada range entra en
@@ -221,7 +256,7 @@ async function revisarCalculadora(pagina, width, height) {
 			const fuera = await pagina.evaluate(() => {
 				document.documentElement.style.scrollBehavior = 'auto';
 				scrollTo(0, 0);
-				const controles = [...document.querySelectorAll('#tiempo .tiempo__chip, #tiempo input[type="range"]')];
+				const controles = [...document.querySelectorAll('#tiempo label.tiempo__chip, #tiempo input[type="range"]')];
 				return controles.flatMap((el) => {
 					el.scrollIntoView({ block: 'nearest' });
 					const n = document.querySelector('#tiempo [data-total]').getBoundingClientRect();
