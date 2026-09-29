@@ -89,3 +89,9 @@ scripts/            og.mjs and capturas.mjs (Playwright)
 
 Built and iterating on design and copy. Not deployed yet: the site URL in `astro.config.mjs`
 is a placeholder, and the build prints a warning until it is replaced with the real domain.
+
+## License
+
+[MIT](LICENSE)
+
+The code is under the MIT license. The Accelerate.ai name, logo and brand assets are not.
