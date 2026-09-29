@@ -315,6 +315,39 @@ const movimientos = [
 		-webkit-user-select: none;
 	}
 
+	/* Con el mouse encima, el tablero crece un poco y lo rodea un halo cian (pedido del usuario,
+	   2026-09-29). Va con `scale` suelto, no `transform`: la ventana ya tiene su animación de
+	   llegada con transform. El halo es un ::before borroso detrás de la ventana que solo cambia de
+	   opacidad; el blur queda fijo. Como el hover de los botones de WhatsApp, lo dispara el mouse y
+	   corre también con movimiento reducido. */
+	@media (hover: hover) and (pointer: fine) {
+		.tablero {
+			isolation: isolate;
+			transition: scale 0.3s var(--curva-salida);
+		}
+
+		.tablero::before {
+			content: '';
+			position: absolute;
+			inset: 28px 8px 48px;
+			z-index: -1;
+			border-radius: var(--radius-card-lg);
+			background: var(--cyan-400);
+			filter: blur(28px);
+			opacity: 0;
+			transition: opacity 0.3s ease-out;
+			pointer-events: none;
+		}
+
+		.tablero:hover {
+			scale: 1.02;
+		}
+
+		.tablero:hover::before {
+			opacity: 0.45;
+		}
+	}
+
 	.modulo,
 	.periodo__opcion,
 	.cifra,
