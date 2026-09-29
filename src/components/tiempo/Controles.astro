@@ -1,0 +1,180 @@
+---
+// Los controles de la calculadora: chips de tarea y dos perillas (horas por semana, personas).
+// El valor va dentro de la perilla (un elemento aparte que sigue a la nativa 1:1) y la marca azul
+// del chip elegido viaja de uno a otro: es una copia de los chips, recortada al elegido. Todo el
+// movimiento lo hace `controles.ts`; acá va el HTML y cómo se ve en reposo.
+interface Props {
+	tareas: { id: string; chip: string; verbo: string }[];
+	controles: { id: string; etiqueta: string; min: number; max: number; valor: number; uno: string; varias: string }[];
+	tarea: string;
+}
+
+const { tareas, controles, tarea } = Astro.props;
+---
+
+<div class="tiempo__controles">
+	<fieldset class="tiempo__tareas">
+		<legend class="tiempo__etiqueta">¿Qué tarea es?</legend>
+		<div class="tiempo__chips">
+			{
+				tareas.map(({ id, chip, verbo }) => (
+					<label class="tiempo__chip">
+						<input type="radio" name="tarea" value={id} data-verbo={verbo} checked={id === tarea} autocomplete="off" />
+						<span class="tiempo__cara">{chip}</span>
+					</label>
+				))
+			}
+			<div class="tiempo__marca" aria-hidden="true">
+				{
+					tareas.map(({ chip }) => (
+						<span class="tiempo__chip">
+							<span class="tiempo__cara">{chip}</span>
+						</span>
+					))
+				}
+			</div>
+		</div>
+	</fieldset>
+
+	{
+		controles.map((c) => (
+			<div class="tiempo__control">
+				<label class="tiempo__etiqueta" for={`tiempo-${c.id}`}>{c.etiqueta}</label>
+				<div class="tiempo__pista" style={`--f:${((c.valor - c.min) / (c.max - c.min)).toFixed(4)}`}>
+					<input
+						id={`tiempo-${c.id}`}
+						type="range"
+						min={c.min}
+						max={c.max}
+						step="1"
+						value={c.valor}
+						autocomplete="off"
+						aria-valuetext={`${c.valor} ${c.valor === 1 ? c.uno : c.varias}`}
+						data-uno={c.uno}
+						data-varias={c.varias}
+					/>
+					<span class="tiempo__relleno" aria-hidden="true"></span>
+					<span class="tiempo__perilla" aria-hidden="true">{c.valor}</span>
+				</div>
+			</div>
+		))
+	}
+</div>
+
+<style>
+	.tiempo__controles { display: grid; gap: var(--space-4); align-content: start; }
+	.tiempo__etiqueta { display: block; padding: 0; color: var(--text-heading-dark); font-weight: var(--fw-semibold); }
+	.tiempo__tareas { min-width: 0; margin: 0; padding: 0; border: 0; }
+	.tiempo__tareas .tiempo__etiqueta { margin-bottom: var(--space-2); }
+
+	/* --- Chips --- */
+	.tiempo__chips { position: relative; display: flex; flex-wrap: wrap; gap: var(--space-1); }
+
+	/* El radio nativo cubre todo el chip (sin zonas muertas) y no se ve: la cara es la que pinta. */
+	.tiempo__chip { position: relative; display: flex; max-width: 100%; }
+	.tiempo__chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+
+	/* Peso fijo en 600: el relleno marca el estado, así los chips no se corren al elegir. */
+	.tiempo__cara {
+		display: flex; align-items: center; min-height: 44px; padding: 10px 20px;
+		border: 1.5px solid var(--slate-500); border-radius: var(--radius-pill); background: var(--white);
+		color: var(--text-heading-dark); font-weight: var(--fw-semibold); line-height: 1.2;
+		-webkit-user-select: none; user-select: none;
+		transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+	}
+
+	/* La marca es una copia de los chips en azul, recortada al elegido: al elegir otro, el recorte
+	   viaja (clip-path, 280 ms) y el color cambia justo en el borde, sin fundir dos colores. No
+	   tapa clics ni la leen los lectores. Hasta que el script la acomoda (`data-marca` en la
+	   sección), el elegido se pinta solo, así no hay un instante sin selección. */
+	.tiempo__marca {
+		position: absolute; inset: 0; display: flex; flex-wrap: wrap; gap: var(--space-1);
+		clip-path: inset(0 100% 100% 0); pointer-events: none;
+	}
+	.tiempo__marca .tiempo__cara { border-color: var(--brand-primary-deep); background: var(--brand-primary-deep); color: var(--white); }
+	:global(.tiempo[data-listo]) .tiempo__marca { transition: clip-path 280ms var(--curva-cruce); }
+	:global(.tiempo:not([data-marca])) .tiempo__chip input:checked + .tiempo__cara {
+		border-color: var(--brand-primary-deep); background: var(--brand-primary-deep); color: var(--white);
+	}
+
+	/* Al presionar un chip sin elegir solo cambia el color (sin escala). */
+	.tiempo__chip input:not(:checked):active + .tiempo__cara { border-color: var(--brand-primary-deep); background: var(--blue-50); color: var(--brand-primary-deep); }
+
+	/* El anillo va en la cara: el radio está transparente y su outline no se vería. */
+	.tiempo__chip input:focus-visible { outline: none; }
+	.tiempo__chip input:focus-visible + .tiempo__cara { outline: 3px solid var(--brand-primary-deep); outline-offset: 3px; }
+
+	@media (hover: hover) and (pointer: fine) {
+		.tiempo__chip input:not(:checked):hover + .tiempo__cara { border-color: var(--brand-primary-deep); color: var(--brand-primary-deep); }
+	}
+
+	/* --- Perillas ---
+	   El range nativo hace el trabajo (teclado, arrastre, lector) con la perilla transparente. La
+	   perilla que se ve es un elemento aparte, del mismo tamaño, que el script mueve con transform
+	   y sin transición mientras se arrastra (1:1 con el dedo). Crece con la letra: la caja de 44 px
+	   y la perilla de 36 tienen su mínimo en px y siguen a rem. */
+	.tiempo__control { --tam: max(36px, 2.25rem); --caja: max(44px, 2.75rem); }
+	.tiempo__pista { position: relative; height: var(--caja); }
+	input[type='range'] {
+		display: block; width: 100%; height: 100%; margin: 0; background: transparent;
+		cursor: pointer; appearance: none; -webkit-appearance: none; touch-action: pan-y;
+	}
+	input[type='range']::-webkit-slider-runnable-track { height: 8px; border-radius: var(--radius-pill); background: var(--slate-400); }
+	input[type='range']::-webkit-slider-thumb {
+		width: var(--tam); height: var(--tam); margin-top: calc((8px - var(--tam)) / 2);
+		border: 0; background: transparent; -webkit-appearance: none;
+	}
+	input[type='range']::-moz-range-track { height: 8px; border-radius: var(--radius-pill); background: var(--slate-400); }
+	input[type='range']::-moz-range-thumb { box-sizing: border-box; width: var(--tam); height: var(--tam); border: 0; background: transparent; }
+
+	/* El tramo elegido: una barra que se recorta con clip-path hasta el centro de la perilla. Sin
+	   script, `--f` (0 a 1) la deja en su lugar. */
+	.tiempo__relleno {
+		position: absolute; top: calc((var(--caja) - 8px) / 2); right: 0; left: 0; height: 8px;
+		border-radius: var(--radius-pill); background: var(--brand-primary-deep); pointer-events: none;
+		clip-path: inset(0 calc(100% - var(--tam) / 2 - (100% - var(--tam)) * var(--f)) 0 0);
+	}
+	.tiempo__perilla {
+		position: absolute; top: calc((var(--caja) - var(--tam)) / 2); left: calc((100% - var(--tam)) * var(--f));
+		box-sizing: border-box; display: grid; place-items: center; width: var(--tam); height: var(--tam);
+		border: 3px solid var(--brand-primary-deep); border-radius: 50%; background: var(--off-white);
+		color: var(--brand-primary-deep); font-size: 0.9375rem; font-weight: var(--fw-black); font-variant-numeric: tabular-nums; line-height: 1;
+		box-shadow: 0 2px 8px rgba(15, 23, 42, 0.28); pointer-events: none;
+	}
+
+	/* Con el teclado la perilla y el tramo se deslizan (120 ms); al arrastrar no hay transición. */
+	.tiempo__control[data-suave] .tiempo__perilla { transition: transform 120ms var(--curva-salida); }
+	.tiempo__control[data-suave] .tiempo__relleno { transition: clip-path 120ms var(--curva-salida); }
+
+	/* Al presionar: azul profundo, número claro y un halo sólido. Sin escala y sin transición de
+	   color: fundir el fondo y el número a la vez los deja casi del mismo tono a mitad de camino
+	   (1,05:1). El cambio es instantáneo, como pide una respuesta al toque. */
+	.tiempo__control[data-presionado] .tiempo__perilla { background: var(--brand-primary-deep); color: var(--white); box-shadow: 0 0 0 6px var(--blue-100); }
+
+	/* El foco se ve en la perilla, no en la caja. Sin :has, queda el anillo sobre el range. */
+	input[type='range']:focus-visible { border-radius: var(--radius-pill); outline: 3px solid var(--brand-primary-deep); outline-offset: -3px; }
+	@supports selector(:has(*)) {
+		input[type='range']:focus-visible { outline: none; }
+		.tiempo__control:has(input:focus-visible) .tiempo__perilla { box-shadow: 0 0 0 3px var(--off-white), 0 0 0 6px var(--brand-primary-deep); }
+	}
+
+	@media (forced-colors: active) {
+		.tiempo__chip input:checked + .tiempo__cara { border-color: Highlight; box-shadow: inset 0 0 0 2px Highlight; }
+		.tiempo__relleno { background: Highlight; }
+	}
+
+	/* Sin JS no hay nada que hacer con los controles: se ve el ejemplo. */
+	@media (scripting: none) {
+		.tiempo__controles { display: none; }
+	}
+
+	/* Debajo de 1024 los controles van después de la card (el HTML no se reordena: el foco sigue
+	   chips, horas, personas, botón). El orden de la card y el botón está en Resultado. */
+	@media (max-width: 1023.98px) {
+		.tiempo__controles { order: 3; }
+	}
+	@media (max-width: 767.98px) {
+		.tiempo__controles { gap: var(--space-2); }
+		.tiempo__cara { padding-inline: 14px; }
+	}
+</style>

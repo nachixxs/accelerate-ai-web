@@ -1,0 +1,189 @@
+---
+// La card del resultado: "Se te van" y las horas por mes, el "momento de escala" de la marca y la
+// única card invertida de la sección. La cifra va en cian con odómetro (una columna de dígitos por
+// lugar, que rueda con transform); dos glows de la marca se encienden con el total; y una pastilla
+// con la tarea elegida se monta sobre el borde de arriba. Desde 1024 el botón entra en la card:
+// `.tiempo__salida` es una grilla y la card (`.tiempo__fondo`) abarca la cifra y el botón.
+// El HTML trae el estado final (la columna en su dígito, la pastilla del ejemplo): sin JS, o con
+// `resultado.ts` sin arrancar, se ve el ejemplo. El botón entra por el slot.
+import Icono from '../Icono.astro';
+
+interface Props {
+	tareas: { id: string; icono: string; verbo: string }[];
+	tarea: string;
+	total: number;
+	horas: number;
+	personas: number;
+}
+
+const { tareas, tarea, total, horas, personas } = Astro.props;
+const verboEjemplo = tareas.find((t) => t.id === tarea)!.verbo;
+const mayus = (s: string) => s[0].toUpperCase() + s.slice(1);
+// Centenas, decenas, unidades: la columna que sobra va oculta.
+const columnas = String(total).padStart(3, ' ').split('');
+---
+
+<div class="tiempo__salida">
+	<div class="tiempo__resultado">
+		<div class="tiempo__fondo" aria-hidden="true">
+			<div class="tiempo__luz" style={`--t:${(total / 800).toFixed(4)}`}>
+				<i class="tiempo__glow tiempo__glow--azul"></i>
+				<i class="tiempo__glow tiempo__glow--cian"></i>
+			</div>
+			<p class="tiempo__pastilla">
+				{
+					tareas.map((t) => (
+						<span class="tiempo__tarea" data-tarea={t.id} hidden={t.id !== tarea}>
+							<Icono nombre={t.icono} size={20} />
+							{mayus(t.verbo)}
+						</span>
+					))
+				}
+			</p>
+		</div>
+
+		<div class="tiempo__contenido">
+			<p class="tiempo__titulo t-label">
+				<Icono nombre="clock-duotone" size={32} class="tiempo__icono" />
+				Se te van
+			</p>
+			<div class="tiempo__cifra" aria-hidden="true">
+				<p class="tiempo__numero" data-total={total}>
+					{
+						columnas.map((d) => (
+							<span class="tiempo__col" hidden={d === ' '}>
+								<span class="tiempo__tira" style={d === ' ' ? undefined : `transform:translateY(-${Number(d) * 10}%)`}>
+									{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => <span>{n}</span>)}
+								</span>
+							</span>
+						))
+					}
+				</p>
+				<p class="tiempo__unidad t-titular">horas por mes</p>
+			</div>
+		</div>
+		<p class="solo-lector" role="status" data-anuncio>Se te van {total} horas por mes {verboEjemplo}</p>
+	</div>
+
+	<p class="tiempo__ejemplo">Un ejemplo: {horas} horas por semana entre {personas} personas, {verboEjemplo}.</p>
+
+	<div class="tiempo__accion">
+		<slot />
+	</div>
+</div>
+
+<style>
+	/* La card es `.tiempo__fondo` (color, sombra, radio) detrás del contenido: así la pastilla puede
+	   salirse del borde y los glows quedan recortados por su propia capa. Debajo de 1024 cubre a
+	   `.tiempo__resultado`; desde 1024, a la cifra y al botón juntos. */
+	.tiempo__salida { display: contents; }
+	.tiempo__resultado { position: relative; isolation: isolate; order: 1; color: var(--text-heading-light); }
+	.tiempo__fondo {
+		position: absolute; inset: 0; z-index: -1; border-radius: var(--radius-card-lg);
+		background: var(--surface-card-dark); box-shadow: var(--shadow-card); pointer-events: none;
+	}
+	.tiempo__contenido { display: grid; gap: var(--space-1); padding: var(--space-3); }
+
+	/* Luz: dos glows de la marca (azul 50 % y cian 20 %, blur 90), desde la esquina de abajo a la
+	   derecha y a medias afuera. Se encienden con el total (--t, de 0 a 1 contra el máximo, 800):
+	   sube la opacidad, y el blur no se anima. */
+	.tiempo__luz {
+		position: absolute; inset: 0; border-radius: inherit; overflow: clip;
+		opacity: calc(0.35 + 0.65 * var(--t)); transition: opacity 300ms var(--curva-salida);
+	}
+	.tiempo__glow { position: absolute; border-radius: 50%; filter: blur(var(--glow-blur)); }
+	.tiempo__glow--azul { right: -55%; bottom: -50%; width: 120%; height: 90%; background: color-mix(in srgb, var(--brand-primary) 50%, transparent); transform: rotate(-12deg); }
+	.tiempo__glow--cian { right: -30%; bottom: -35%; width: 80%; height: 60%; background: color-mix(in srgb, var(--brand-accent) 20%, transparent); transform: rotate(8deg); }
+
+	/* La tarea elegida, montada sobre el borde de arriba: mitad afuera, mitad adentro. No suma alto:
+	   ocupa el margen de arriba de la card. */
+	.tiempo__pastilla {
+		position: absolute; top: 0; right: var(--space-2); max-width: calc(100% - 2 * var(--space-2));
+		padding: 10px 16px; border-radius: var(--radius-pill); background: var(--brand-primary-deep);
+		box-shadow: var(--shadow-elevada); color: var(--off-white);
+		font-size: 0.9375rem; font-weight: var(--fw-semibold); line-height: 1.2; text-wrap: balance;
+		transform: translateY(-50%);
+	}
+	.tiempo__tarea { display: flex; align-items: center; gap: var(--space-1); }
+	.tiempo__tarea[hidden] { display: none; }
+	.tiempo__tarea :global(svg) { flex: none; }
+
+	.tiempo__titulo { display: flex; align-items: center; gap: var(--space-1); color: var(--text-body-light); }
+	.tiempo__resultado :global(.tiempo__icono) { flex: none; color: var(--brand-accent); }
+
+	/* El número es el momento de escala de la marca (200 en el lienzo de 1080). El tope en vw no
+	   cambia con la letra grande del sistema: "800", el máximo, entra en 360 px y con la letra al
+	   200 %. Cada dígito es una columna 0 a 9 en una ranura de 0,9em (el line-height de siempre): la
+	   cifra no suma alto. Ruedan por transición, que se corta y sigue desde donde esté. */
+	.tiempo__numero {
+		position: relative; display: flex; width: fit-content; color: var(--cyan-300);
+		font-size: min(clamp(5.5rem, 0.5rem + 32vw, 12.5rem), 34vw); font-weight: var(--fw-black);
+		font-variant-numeric: tabular-nums; letter-spacing: -0.04em; line-height: 0.9;
+	}
+	.tiempo__col { display: block; height: 0.9em; overflow: clip; }
+	.tiempo__col[hidden] { display: none; }
+	.tiempo__tira { display: block; }
+	.tiempo__tira span { display: block; height: 0.9em; }
+	:global(.tiempo[data-listo]) .tiempo__tira { transition: transform 260ms var(--curva-salida); }
+	/* Al arrastrar la perilla el número va pegado al dedo, sin transición: rodando, aun a 60 ms, un
+	   dígito de cada cuatro se veía distinto del total (medido, informe). Con el teclado, las chips y
+	   el resto de los cambios corre los 260 ms. */
+	:global(.tiempo[data-arrastrando][data-listo]) .tiempo__tira { transition: none; }
+	/* Un dígito que sale mientras el resto se acomoda: copia suelta que se funde en su lugar. */
+	.tiempo__numero :global(.tiempo__fantasma) { position: absolute; top: 0; pointer-events: none; }
+	.tiempo__unidad { color: var(--blue-100); }
+
+	/* Sin JS no hay controles: se ve el ejemplo y se dice que es un ejemplo. */
+	.tiempo__ejemplo { display: none; color: var(--text-body-dark); }
+	@media (scripting: none) {
+		.tiempo__ejemplo { display: block; }
+	}
+
+	/* Debajo de 1024 la card va arriba de los controles y el botón, después: el número cambia a la
+	   vista de quien mueve la perilla, y se elige antes de mandar. Sin JS: card, ejemplo y botón,
+	   con el mismo gap entre los tres. Los controles (order 3) están en Controles. */
+	@media (max-width: 1023.98px) {
+		.tiempo__ejemplo { order: 2; }
+		.tiempo__accion { order: 4; }
+	}
+
+	/* Celular (lo de arriba): con la card arriba, el número tiene que seguir a la vista cuando se
+	   toca el último control (en 360 x 640 quedan 564 px entre la cápsula y el borde de abajo), así
+	   que la card va compacta: 24 de padding, 8 entre piezas y la unidad pegada al número. Desde
+	   768 respira: 48 de padding y 16 entre piezas. */
+	@media (min-width: 768px) {
+		.tiempo__contenido { gap: var(--space-2); padding: var(--space-5); }
+		.tiempo__pastilla { right: var(--space-3); max-width: calc(100% - 2 * var(--space-3)); }
+		.tiempo__unidad { margin-top: var(--space-1); }
+	}
+
+	/* Tablet: el número y "horas por mes" en la misma línea base; si no entran, baja la unidad. */
+	@media (min-width: 768px) and (max-width: 1023.98px) {
+		.tiempo__cifra { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); }
+		.tiempo__unidad { margin-top: 0; }
+	}
+
+	/* Escritorio: el botón entra en la card, en contorno sobre oscuro. Las tres piezas comparten
+	   columna: el fondo abarca las filas de la cifra y del botón, y la card reserva el alto del botón
+	   porque el botón ocupa su fila (con letra grande baja de línea y la card crece con él). */
+	@media (min-width: 1024px) {
+		.tiempo__salida { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr); }
+		.tiempo__resultado { display: contents; }
+		.tiempo__fondo { position: relative; inset: auto; grid-area: 1 / 1 / 3 / 2; }
+		.tiempo__contenido { grid-area: 1 / 1; padding-bottom: 0; }
+		.tiempo__accion { grid-area: 2 / 1; justify-self: start; padding: var(--space-3) var(--space-5) var(--space-5); }
+		.tiempo__ejemplo { grid-area: 3 / 1; margin-top: var(--space-3); }
+
+		/* Contorno cian claro sobre la card oscura (el ajuste de BotonWhatsApp para oscuro cuelga de
+		   .seccion--oscura, y esta sección es clara). Los colores cambian sin transición: fundir el
+		   texto y el fondo a la vez los deja casi del mismo tono a mitad de camino (en el presionado,
+		   cian sobre cian). Solo el hover del mouse mueve el botón (transform, como los demás). */
+		.tiempo__accion :global(.boton--contorno) { border-color: var(--cyan-300); color: var(--cyan-300); transition: transform 0.25s var(--curva-salida); }
+		.tiempo__accion :global(.boton:focus-visible) { outline-color: var(--brand-accent); }
+		/* Al presionar se invierte: cian lleno con texto navy (12:1). Más específico que el hover. */
+		.tiempo__accion :global(.boton--contorno.boton:active) { border-color: var(--cyan-300); background: var(--cyan-300); color: var(--navy-950); transition: transform 0.25s var(--curva-salida); }
+	}
+	@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+		.tiempo__accion :global(.boton--contorno:hover) { border-color: var(--cyan-200); background: var(--navy-800); color: var(--cyan-200); }
+	}
+</style>
