@@ -176,6 +176,30 @@ const fraccion = (c: (typeof controles)[number]) => ((c.valor - c.min) / (c.max 
 		.tiempo__ejemplo { display: block; }
 	}
 
+	/* Debajo de 1024 la card va arriba de los controles y el botón, después: el número cambia a la
+	   vista de quien mueve la perilla, y se elige antes de mandar. El HTML no se reordena (el foco
+	   sigue chips, horas, personas, botón, y el lector recibe el total por el status). Sin JS:
+	   card, ejemplo y botón, con el mismo gap entre los tres. */
+	@media (max-width: 1023.98px) {
+		.tiempo__calc { gap: var(--space-3); }
+		.tiempo__salida { display: contents; }
+		.tiempo__resultado { order: 1; }
+		.tiempo__ejemplo { order: 2; margin-top: 0; }
+		.tiempo__controles { order: 3; }
+		.tiempo__accion { order: 4; margin-top: 0; }
+	}
+
+	/* Celular: con la card arriba, el número tiene que seguir a la vista cuando se toca el último
+	   control (en 360 x 640 quedan 564 px entre la cápsula y el borde de abajo). Se compacta lo que
+	   hay debajo del número y entre controles; el número y los 44 px táctiles no se tocan. */
+	@media (max-width: 767.98px) {
+		.tiempo__calc { gap: var(--space-2); }
+		.tiempo__resultado { gap: var(--space-1); padding: var(--space-3); }
+		.tiempo__unidad { margin-top: 0; }
+		.tiempo__controles { gap: var(--space-2); }
+		.tiempo__cara { padding-inline: 14px; }
+	}
+
 	@media (min-width: 768px) {
 		.tiempo__resultado { padding: var(--space-5); }
 	}
