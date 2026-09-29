@@ -51,8 +51,7 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		transition:
 			background-color 0.2s,
 			border-color 0.2s,
-			color 0.2s,
-			scale 0.2s var(--curva-salida);
+			color 0.2s;
 	}
 
 	.boton :global(.boton__icono) {
@@ -126,11 +125,23 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 		background: var(--blue-50);
 	}
 
-	/* Feedback al presionar: scale suelto, no transform (ese lo usa el hover), sin pisar el
-	   cambio de color de arriba ni la sombra de ::after. */
+	/* El link no tiene fondo: al presionar se oscurece y se subraya (en oscuro, cian claro). */
+	.boton--link:active {
+		color: var(--blue-900);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	:global(.seccion--oscura) .boton--link:active {
+		color: var(--cyan-200);
+	}
+
+	/* Al presionar solo cambia el color (la marca no usa escala), y rápido: en 0,12 s. */
 	.boton:active {
-		scale: 0.97;
-		transition: scale 0.12s var(--curva-salida);
+		transition:
+			background-color 0.12s,
+			border-color 0.12s,
+			color 0.12s;
 	}
 
 	@media (hover: hover) and (pointer: fine) {
@@ -231,7 +242,6 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 				background-color 0.2s,
 				border-color 0.2s,
 				color 0.2s,
-				scale 0.2s var(--curva-salida),
 				transform 0.25s var(--curva-salida);
 		}
 
