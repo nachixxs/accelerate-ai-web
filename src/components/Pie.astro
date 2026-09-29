@@ -7,14 +7,13 @@
 // la página es la línea legal: nada va debajo.
 import { Image } from 'astro:assets';
 // El contacto, como en minificando: una línea discreta por canal (ícono, canal y dato), no un
-// número grande. WhatsApp primero porque es el canal principal; después el mail de cada socio.
+// número grande. Hoy el único canal es WhatsApp (SPECS §1); la lista queda por si se suma otro.
 import Icono from './Icono.astro';
 import imagotipo from '../assets/identidad/imagotipo-claro.png';
-import { EMAILS, WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
+import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 
 const contactos = [
 	{ icono: 'si:whatsapp', canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
-	...EMAILS.map(({ nombre, email }) => ({ icono: 'envelope-simple-duotone', canal: nombre, dato: email, href: `mailto:${email}`, externo: false })),
 ];
 
 const anio = new Date().getFullYear();
@@ -23,7 +22,7 @@ const links = [
 	{ href: '#resolvemos', texto: 'Qué resolvemos' },
 	{ href: '#sistemas', texto: 'Qué armamos' },
 	{ href: '#proceso', texto: 'Cómo trabajamos' },
-	{ href: '#somos', texto: 'Quiénes somos' },
+	{ href: '#tiempo', texto: 'Tu tiempo' },
 	{ href: '#preguntas', texto: 'Preguntas' },
 ];
 ---
@@ -301,9 +300,8 @@ const links = [
 		border-radius: 4px;
 	}
 
-	/* Entre 768 y 1023 el mail no entra en una columna de 1.25fr (queda "…gmail.co" / "m"): 2
-	   columnas, con la marca a lo ancho arriba y secciones + contacto abajo. Las 3 columnas una
-	   al lado de la otra recién entran desde 1024. */
+	/* Entre 768 y 1023, 2 columnas: la marca a lo ancho arriba y secciones + contacto abajo. Las 3
+	   columnas una al lado de la otra recién entran desde 1024. */
 	@media (min-width: 768px) {
 		.pie__grilla {
 			grid-template-columns: 1fr 1fr;
