@@ -55,17 +55,17 @@ async function revisarAncho({ nombre, width, height }) {
 		const abierto = await pagina
 			.waitForFunction(() => document.getElementById('menu').matches(':popover-open'), null, { timeout: 2000 })
 			.then(() => true, () => false);
-		await pagina.locator('#menu a[href="#somos"]').click();
+		await pagina.locator('#menu a[href="#tiempo"]').click();
 		// El scroll es suave: espera a que la sección llegue arriba (o se rinde a los 3 s).
 		await pagina
-			.waitForFunction(() => Math.abs(document.getElementById('somos').getBoundingClientRect().top) < 200, null, { timeout: 3000 })
+			.waitForFunction(() => Math.abs(document.getElementById('tiempo').getBoundingClientRect().top) < 200, null, { timeout: 3000 })
 			.catch(() => {});
 		const despues = await pagina.evaluate(() => ({
 			cerrado: !document.getElementById('menu').matches(':popover-open'),
 			hash: location.hash,
-			seccionArriba: Math.round(document.getElementById('somos').getBoundingClientRect().top),
+			seccionArriba: Math.round(document.getElementById('tiempo').getBoundingClientRect().top),
 		}));
-		menu = abierto && despues.cerrado && despues.hash === '#somos' && Math.abs(despues.seccionArriba) < 200;
+		menu = abierto && despues.cerrado && despues.hash === '#tiempo' && Math.abs(despues.seccionArriba) < 200;
 		await pagina.evaluate(() => scrollTo(0, 0));
 	}
 
@@ -139,6 +139,11 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 		[!medidas.rayas, 'sin rayas largas (— o –) en el texto'],
 	];
 
+	// Tu tiempo: al cambiar tarea, horas y personas cambian el total (horas × personas × 4) y el
+	// mensaje del botón, y ni el "800" del máximo se sale de su card ni de la página.
+	const calculadora = await revisarCalculadora(pagina, width);
+	chequeos.push([calculadora.length === 0, `la calculadora de Tu tiempo cambia el total y el botón, y el máximo entra${calculadora.length ? ': ' + calculadora.join(', ') : ''}`]);
+
 	// Lo que va montado sobre un borde no puede salirse de costado de su card. Los que van en el
 	// flujo, con margen negativo, tampoco pueden tapar lo que tienen al lado (sus hermanos y, en el
 	// cierre, la línea de abajo). El chip del tablero flota sobre la ventana a propósito: de ese
@@ -174,6 +179,38 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 		[montadosGrande.length === 0, `con letra al 150 %, lo montado sobre un borde entra en su card y no tapa nada${montadosGrande.length ? ': ' + montadosGrande.join(', ') : ''}`],
 	);
 	return chequeos;
+}
+
+// Devuelve la lista de lo que falló (vacía si todo bien). Deja la calculadora como la encontró.
+async function revisarCalculadora(pagina, width) {
+	const leer = () =>
+		pagina.evaluate(() => {
+			const numero = document.querySelector('#tiempo [data-total]').getBoundingClientRect();
+			const card = document.querySelector('#tiempo .tiempo__resultado').getBoundingClientRect();
+			const texto = new URL(document.querySelector('#tiempo .tiempo__accion a').href).searchParams.get('text');
+			return { total: document.querySelector('#tiempo [data-total]').textContent, texto, entra: numero.left >= card.left && numero.right <= card.right, pagina: document.documentElement.scrollWidth };
+		});
+	const casos = [
+		[null, null, null, '40', 'Hola, vi la web. Se me van unas 40 horas por mes haciendo la caja.'],
+		['Pasar datos', '20', '10', '800', 'Hola, vi la web. Se me van unas 800 horas por mes pasando datos de un lado a otro.'],
+		['Otra', '1', '1', '4', 'Hola, vi la web. Se me van unas 4 horas por mes en tareas que se repiten.'],
+		['Cargar pedidos', '7', '3', '84', 'Hola, vi la web. Se me van unas 84 horas por mes cargando pedidos.'],
+		['Hacer la caja', '5', '2', '40', 'Hola, vi la web. Se me van unas 40 horas por mes haciendo la caja.'],
+	];
+	const fallas = [];
+	for (const [tarea, horas, personas, total, texto] of casos) {
+		if (tarea) await pagina.locator('#tiempo .tiempo__chip', { hasText: tarea }).click();
+		if (horas) await pagina.locator('#tiempo-horas').fill(horas);
+		if (personas) await pagina.locator('#tiempo-personas').fill(personas);
+		// El número corre 0,22 s hasta el total: se espera a que llegue.
+		await pagina.waitForFunction((t) => document.querySelector('#tiempo [data-total]').textContent === t, total, { timeout: 2000 }).catch(() => {});
+		const ahora = await leer();
+		if (ahora.total !== total) fallas.push(`total ${ahora.total} en vez de ${total}`);
+		if (ahora.texto !== texto) fallas.push(`mensaje "${ahora.texto}"`);
+		if (!ahora.entra) fallas.push(`el ${total} se sale de su card a ${width} px`);
+		if (ahora.pagina > width) fallas.push(`página de ${ahora.pagina} px con el ${total}`);
+	}
+	return fallas;
 }
 
 function imprimir(titulo, chequeos) {
