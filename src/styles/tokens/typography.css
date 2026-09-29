@@ -8,11 +8,17 @@
 --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;--fw-black:800;
 
 --type-hook-size:clamp(2.5rem, 1.7174rem + 3.4783vw, 4.5rem);          /* 40 → 72 */  --type-hook-weight:800; --type-hook-lh:1.05; --type-hook-ls:-0.02em;
---type-titular-size:clamp(1.75rem, 1.2609rem + 2.1739vw, 3rem);        /* 28 → 48 */  --type-titular-weight:700; --type-titular-lh:1.08; --type-titular-ls:-0.01em;
---type-label-size:clamp(1.25rem, 1.1033rem + 0.6522vw, 1.625rem);      /* 20 → 26 */  --type-label-weight:500; --type-label-lh:1.3;
---type-cuerpo-size:clamp(1.0625rem, 0.9891rem + 0.3261vw, 1.25rem);    /* 17 → 20 */  --type-cuerpo-weight:400; --type-cuerpo-lh:1.5;
+/* Tope en vw en titular, label, cuerpo y meta: sin él, con la letra del sistema al 200 % el
+   clamp cae en su mínimo en rem (sube a más del doble en px) y, dentro de un flex/grid sin
+   min-width: 0 (Portada, encabezado de sección), el contenido no se achica más allá de su
+   ancho intrínseco: la página se sale por costado. El tope no toca el diseño normal (100 %):
+   a 360px de ancho, que es donde más cerca pasa, el clamp sin tope ya da el valor mínimo casi
+   exacto y el tope siempre da un poco más. Mismo recurso que en Cierre.astro y QuienesSomos.astro. */
+--type-titular-size:min(clamp(1.75rem, 1.2609rem + 2.1739vw, 3rem), 13vw);        /* 28 → 48 */  --type-titular-weight:700; --type-titular-lh:1.08; --type-titular-ls:-0.01em;
+--type-label-size:min(clamp(1.25rem, 1.1033rem + 0.6522vw, 1.625rem), 9vw);      /* 20 → 26 */  --type-label-weight:500; --type-label-lh:1.3;
+--type-cuerpo-size:min(clamp(1.0625rem, 0.9891rem + 0.3261vw, 1.25rem), 7vw);    /* 17 → 20 */  --type-cuerpo-weight:400; --type-cuerpo-lh:1.5;
 --type-eyebrow-size:clamp(0.8125rem, 0.788rem + 0.1087vw, 0.875rem);   /* 13 → 14 */  --type-eyebrow-weight:600; --type-eyebrow-ls:0.08em;
---type-meta-size:clamp(0.875rem, 0.8505rem + 0.1087vw, 0.9375rem);     /* 14 → 15 */  --type-meta-weight:500;
+--type-meta-size:min(clamp(0.875rem, 0.8505rem + 0.1087vw, 0.9375rem), 6vw);     /* 14 → 15 */  --type-meta-weight:500;
 
 --measure-cuerpo:65ch; /* largo máximo de línea de un párrafo */
 }

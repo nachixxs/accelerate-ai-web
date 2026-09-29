@@ -19,40 +19,62 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 	role="img"
 	aria-label="Ejemplo: el ticket del cierre de caja del martes, con lo cobrado en efectivo, tarjeta y transferencias, el total, y la caja que cierra sin diferencia."
 >
-	<div class="ticket">
-		<div class="ticket__cabecera">
-			<strong>Cierre de caja</strong>
-			<span>Martes 14, 20:05</span>
-		</div>
-		<dl>
-			{
-				movimientos.map(({ medio, monto }) => (
-					<div class="ticket__fila">
-						<dt>{medio}</dt>
-						<dd class="ticket__monto" data-valor={monto}>{pesos(monto)}</dd>
-					</div>
-				))
-			}
-			<div class="ticket__fila ticket__fila--total">
-				<dt>Total</dt>
-				<dd class="ticket__monto" data-valor={total}>{pesos(total)}</dd>
+	<div class="ticket-sombra">
+		<div class="ticket">
+			<div class="ticket__cabecera">
+				<strong>Cierre de caja</strong>
+				<span>Martes 14, 20:05</span>
 			</div>
-		</dl>
-		<div class="ticket__cierre">
-			<span>Diferencia $ 0</span>
-			<span class="ticket__sello">
-				<Icono nombre="check-circle-duotone" size={16} />
-				Cierra
-			</span>
+			<dl>
+				{
+					movimientos.map(({ medio, monto }) => (
+						<div class="ticket__fila">
+							<dt>{medio}</dt>
+							<dd class="ticket__monto" data-valor={monto}>{pesos(monto)}</dd>
+						</div>
+					))
+				}
+				<div class="ticket__fila ticket__fila--total">
+					<dt>Total</dt>
+					<dd class="ticket__monto" data-valor={total}>{pesos(total)}</dd>
+				</div>
+			</dl>
+			<div class="ticket__cierre">
+				<span>Diferencia $ 0</span>
+				<span class="ticket__sello">
+					<Icono nombre="check-circle-duotone" size={16} />
+					Cierra
+				</span>
+			</div>
 		</div>
 	</div>
 	<p class="mock-caja__nota">Datos de ejemplo</p>
 </div>
 
 <script>
-	import { contarAlVer, pesos } from '../../scripts/contar';
+	import { contarAlVer, movimientoReducido, pesos } from '../../scripts/contar';
 
-	contarAlVer([...document.querySelectorAll<HTMLElement>('.ticket__monto')], pesos);
+	const montos = [...document.querySelectorAll<HTMLElement>('.ticket__monto')];
+	contarAlVer(montos, pesos);
+
+	// El sello se estampa por tiempo al verse (no por un tramo corto de scroll), con su propio
+	// observador: el sello queda bastante más abajo que la primera fila del ticket, así que
+	// observarlo a él directamente (entero y por encima del 85 % de la pantalla) evita que se
+	// estampe mientras todavía está fuera de la vista.
+	const sello = document.querySelector<HTMLElement>('.ticket__sello');
+	if (sello && montos.length && !movimientoReducido()) {
+		sello.classList.add('ticket__sello--espera');
+		const observador = new IntersectionObserver(
+			(entradas) => {
+				if (!entradas.some((e) => e.isIntersecting)) return;
+				observador.disconnect();
+				sello.classList.remove('ticket__sello--espera');
+				sello.classList.add('ticket__sello--vista');
+			},
+			{ threshold: 1, rootMargin: '0px 0px -15% 0px' },
+		);
+		observador.observe(sello);
+	}
 </script>
 
 <style>
@@ -72,16 +94,24 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 		font-size: 0.8125rem;
 	}
 
+	/* La sombra va en un envoltorio sin mask ni clip-path: la mask del ticket (el borde dentado)
+	   recorta cualquier box-shadow que lleve el propio elemento, así que el tinte oscuro se pone
+	   acá con drop-shadow, que sigue la forma dentada y acompaña el ticket cuando sube en el
+	   hover (drop-shadow recalcula sobre lo ya pintado, incluido el translate del hijo). */
+	.ticket-sombra {
+		width: 100%;
+		max-width: 300px;
+		filter: drop-shadow(var(--shadow-elevada-oscura));
+	}
+
 	/* El ticket es papel: off-white (la marca no usa #fff puro), con el borde de abajo dentado. */
 	.ticket {
 		width: 100%;
-		max-width: 300px;
 		padding: 20px 20px 28px;
 		background: var(--off-white);
 		color: var(--text-body-dark);
 		font-size: 0.875rem;
 		font-variant-numeric: tabular-nums;
-		box-shadow: var(--shadow-elevada);
 		mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 16px 100%;
 		/* rotate y translate y no transform: transform es de la impresión con el scroll. */
 		rotate: -1.5deg;
@@ -108,8 +138,9 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 
 	.ticket__fila {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: space-between;
-		gap: 12px;
+		gap: 4px 12px;
 		padding-block: 8px;
 	}
 
@@ -167,6 +198,18 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 		}
 	}
 
+	/* El sello se estampa por tiempo al verse (el script agrega estas clases), no por un tramo
+	   corto de scroll. Sin JS o con reducción, ya está en su estado final. El re-estampado con el
+	   mouse (arriba) sigue andando siempre. */
+	.ticket__sello--espera {
+		opacity: 0;
+		scale: 1.3;
+	}
+
+	.ticket__sello--vista {
+		animation: caja-sellar-vista 450ms var(--curva-salida) both;
+	}
+
 	/* clip-path necesita el "to" explícito: sin él, algunos navegadores no interpolan desde el
 	   valor base (none) y el ticket aparece de golpe. */
 	@keyframes caja-imprimir {
@@ -174,8 +217,8 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 		to { clip-path: inset(0 0 0 0); transform: none; }
 	}
 
-	@keyframes caja-sellar {
-		from { opacity: 0; transform: scale(1.3); }
+	@keyframes caja-sellar-vista {
+		from { opacity: 0; scale: 1.3; }
 	}
 
 	@keyframes caja-reestampar {
@@ -188,12 +231,6 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 				animation: caja-imprimir var(--curva-salida) both;
 				animation-timeline: --celda;
 				animation-range: entry 30% cover 40%;
-			}
-
-			.ticket__sello {
-				animation: caja-sellar var(--curva-salida) both;
-				animation-timeline: --celda;
-				animation-range: cover 40% cover 46%;
 			}
 		}
 	}

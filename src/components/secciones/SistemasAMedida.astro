@@ -88,6 +88,7 @@ const tipos = [
 									<span class="tipo__bajada">{bajada}</span>
 								</span>
 								<Icono nombre="arrow-up-right-bold" size={18} class="tipo__flecha" />
+								<span class="solo-lector"> (abre WhatsApp)</span>
 							</a>
 						</li>
 					))
@@ -124,12 +125,20 @@ const tipos = [
 		display: grid;
 		align-content: start;
 		gap: var(--space-4);
-		padding: var(--space-4) var(--space-3) var(--space-5);
+		/* Menos aire a los costados por debajo de 480 px: le da a los mocks (sobre todo el de
+		   órdenes) el ancho que necesitan. */
+		padding: var(--space-4) var(--space-2) var(--space-5);
 		border: 1px solid var(--border-dark);
 		border-radius: var(--radius-card-lg);
 		background: var(--surface-card-dark);
 		box-shadow: var(--shadow-card-oscura);
 		view-timeline: --celda block;
+	}
+
+	@media (min-width: 480px) {
+		.ejemplo {
+			padding-inline: var(--space-3);
+		}
 	}
 
 	.ejemplo__texto {
@@ -151,12 +160,24 @@ const tipos = [
 		background: linear-gradient(160deg, var(--surface-card-dark) 55%, var(--navy-850));
 	}
 
+	/* Desde 1024 esta card iguala el alto de la de stock (misma fila de grilla): el mock de caja
+	   se centra en el sobrante en vez de dejarlo vacío abajo. */
+	@media (min-width: 1024px) {
+		.ejemplo--caja {
+			grid-template-rows: auto 1fr;
+		}
+
+		.ejemplo--caja :global(.mock-caja) {
+			align-self: center;
+		}
+	}
+
 	/* --- La pared: el título con una línea que sigue hasta el borde, 8 tipos en cards y el remate
 	   a lo ancho. --- */
 	.pared {
 		display: grid;
 		gap: var(--space-3);
-		margin-top: var(--space-7);
+		margin-top: var(--espacio-seccion);
 	}
 
 	.pared__titulo {
@@ -175,6 +196,7 @@ const tipos = [
 	}
 
 	.pared__lista {
+		--cols: 1;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		gap: var(--space-1);
@@ -198,7 +220,7 @@ const tipos = [
 		-webkit-tap-highlight-color: transparent;
 		transition:
 			border-color 0.2s ease,
-			transform 0.25s var(--curva-salida);
+			translate 0.25s var(--curva-salida);
 	}
 
 	.tipo__icono {
@@ -206,7 +228,7 @@ const tipos = [
 		place-items: center;
 		width: 48px;
 		height: 48px;
-		border-radius: 14px;
+		border-radius: 12px;
 		background: var(--blue-950);
 		color: var(--cyan-400);
 		transition: background-color 0.2s ease, color 0.2s ease;
@@ -228,6 +250,7 @@ const tipos = [
 		color: var(--text-muted-light);
 		font-size: var(--type-meta-size);
 		line-height: 1.4;
+		text-wrap: pretty;
 	}
 
 	.tipo :global(.tipo__flecha) {
@@ -244,10 +267,23 @@ const tipos = [
 		border-color: var(--cyan-300);
 	}
 
+	/* En táctil no hay hover que la muestre: la flecha queda siempre visible, como con el teclado. */
+	@media (hover: none) {
+		.tipo :global(.tipo__flecha) {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	.tipo:focus-visible :global(.tipo__flecha) {
+		opacity: 1;
+		transform: none;
+	}
+
 	@media (hover: hover) and (pointer: fine) {
 		.tipo:hover {
 			border-color: var(--blue-700);
-			transform: translateY(-4px);
+			translate: 0 -4px;
 		}
 
 		.tipo:hover .tipo__icono {
@@ -293,6 +329,7 @@ const tipos = [
 		}
 
 		.pared__lista {
+			--cols: 2;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
@@ -308,14 +345,35 @@ const tipos = [
 		}
 
 		.pared__lista {
+			--cols: 4;
 			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+
+		/* La reserva entre nombre y bajada es por fila, no por página: cada li toma las 3 filas
+		   del subgrid de la pared (ícono, nombre, bajada), así que la bajada arranca en el mismo
+		   lugar en las 4 columnas sea cual sea el alto del nombre en esa fila. */
+		.pared__lista li {
+			display: grid;
+			grid-row: span 3;
+			grid-template-rows: subgrid;
 		}
 
 		/* En cuatro columnas, el ícono arriba y el texto abajo. */
 		.tipo {
+			grid-row: 1 / -1;
 			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: subgrid;
 			gap: var(--space-3);
 			padding: var(--space-3);
+		}
+
+		.tipo__icono {
+			grid-row: 1;
+		}
+
+		.tipo__textos {
+			grid-row: 2 / -1;
+			grid-template-rows: subgrid;
 		}
 	}
 
@@ -338,15 +396,16 @@ const tipos = [
 				animation-range: entry 0% entry 50%;
 			}
 
-			/* Los tipos entran en cascada cuando la pared llega a la pantalla. */
-			.pared__lista {
-				view-timeline: --pared block;
-			}
-
+			/* Los tipos entran en cascada según van entrando a la pantalla, cada uno con su propio
+			   timeline (no uno compartido para toda la lista, que a 360 es más alta que la
+			   pantalla): el desfase es por columna, no por índice global, así el paso no se pierde
+			   fuera de vista. */
 			.pared__lista li {
 				animation: entrar-corto var(--curva-salida) both;
-				animation-timeline: --pared;
-				animation-range: entry calc(5% + var(--i) * 4%) entry calc(45% + var(--i) * 4%);
+				animation-timeline: view();
+				animation-range:
+					entry calc(10% + mod(var(--i), var(--cols)) * 8%)
+					entry calc(60% + mod(var(--i), var(--cols)) * 8%);
 			}
 		}
 	}

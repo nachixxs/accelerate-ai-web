@@ -7,14 +7,13 @@
 // la página es la línea legal: nada va debajo.
 import { Image } from 'astro:assets';
 // El contacto, como en minificando: una línea discreta por canal (ícono, canal y dato), no un
-// número grande. WhatsApp primero porque es el canal principal; después el mail de cada socio.
+// número grande. Hoy el único canal es WhatsApp (SPECS §1); la lista queda por si se suma otro.
 import Icono from './Icono.astro';
 import imagotipo from '../assets/identidad/imagotipo-claro.png';
-import { EMAILS, WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
+import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 
 const contactos = [
 	{ icono: 'si:whatsapp', canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
-	...EMAILS.map(({ nombre, email }) => ({ icono: 'envelope-simple-duotone', canal: nombre, dato: email, href: `mailto:${email}`, externo: false })),
 ];
 
 const anio = new Date().getFullYear();
@@ -23,7 +22,7 @@ const links = [
 	{ href: '#resolvemos', texto: 'Qué resolvemos' },
 	{ href: '#sistemas', texto: 'Qué armamos' },
 	{ href: '#proceso', texto: 'Cómo trabajamos' },
-	{ href: '#somos', texto: 'Quiénes somos' },
+	{ href: '#tiempo', texto: 'Tu tiempo' },
 	{ href: '#preguntas', texto: 'Preguntas' },
 ];
 ---
@@ -38,8 +37,8 @@ const links = [
 				<p>Sistemas a medida para pymes que repiten tareas todos los días.</p>
 			</div>
 
-			<nav class="pie__bloque" aria-labelledby="pie-secciones" style="--i: 1">
-				<h2 id="pie-secciones" class="pie__titulo">Secciones</h2>
+			<nav class="pie__bloque" aria-label="Secciones del sitio" style="--i: 1">
+				<h2 class="pie__titulo">Secciones</h2>
 				<ul class="pie__links">
 					{links.map(({ href, texto }) => <li><a class="pie__link" href={href}>{texto}</a></li>)}
 				</ul>
@@ -59,6 +58,7 @@ const links = [
 										<span class="pie__contacto-canal">{canal}</span>
 										<span class="pie__contacto-dato" translate="no">{dato}</span>
 									</span>
+									{externo && <span class="solo-lector"> (abre WhatsApp)</span>}
 								</a>
 							</li>
 						))
@@ -157,6 +157,13 @@ const links = [
 		transition: color 0.2s, background-size 0.25s var(--curva-salida);
 	}
 
+	/* Feedback al apretar: cambia de color rápido; al soltar, vuelve con la transición de arriba
+	   (0.2s), más lenta que la de presionar. */
+	.pie__link:active {
+		color: var(--cyan-300);
+		transition: color 0.12s var(--curva-salida);
+	}
+
 	.pie__contactos {
 		display: grid;
 		gap: var(--space-1);
@@ -180,6 +187,18 @@ const links = [
 		border-radius: 12px;
 		color: var(--cyan-300);
 		transition: border-color 0.2s;
+	}
+
+	/* Feedback al apretar, igual que el hover pero más rápido: al soltar vuelve con la transición
+	   de reposo de cada elemento (0.2s), más lenta que la de presionar (0.12s). */
+	.pie__contacto:active .pie__contacto-icono {
+		border-color: var(--cyan-300);
+		transition: border-color 0.12s var(--curva-salida);
+	}
+
+	.pie__contacto:active .pie__contacto-dato {
+		color: var(--text-heading-light);
+		transition: color 0.12s var(--curva-salida);
 	}
 
 	.pie__contacto-texto {
@@ -228,7 +247,22 @@ const links = [
 		color: var(--text-heading-light);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
-		transition: border-color 0.2s;
+		transition: border-color 0.2s, background-color 0.2s;
+	}
+
+	/* Al apretar solo cambia el color (la marca no usa escala): borde cian y fondo navy más claro,
+	   texto claro encima (AA). Rápido al presionar (0,12 s), más lento al soltar (0,2 s). */
+	.pie__arriba:active {
+		border-color: var(--cyan-300);
+		background: var(--navy-800);
+		transition-duration: 0.12s;
+	}
+
+	/* El :hover global de los links (azul oscuro, para el celular) deja este texto en 2,2:1 sobre
+	   navy al tocarlo: se fija el color claro en los dos estados. */
+	.pie__arriba:hover,
+	.pie__arriba:active {
+		color: var(--text-heading-light);
 	}
 
 	.pie__arriba :global(svg) {
@@ -266,10 +300,16 @@ const links = [
 		border-radius: 4px;
 	}
 
+	/* Entre 768 y 1023, 2 columnas: la marca a lo ancho arriba y secciones + contacto abajo. Las 3
+	   columnas una al lado de la otra recién entran desde 1024. */
 	@media (min-width: 768px) {
 		.pie__grilla {
-			grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.25fr);
+			grid-template-columns: 1fr 1fr;
 			gap: var(--space-4);
+		}
+
+		.pie__marca {
+			grid-column: 1 / -1;
 		}
 
 		.pie__links {
@@ -282,6 +322,16 @@ const links = [
 			flex-direction: row;
 			align-items: flex-end;
 			justify-content: space-between;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.pie__grilla {
+			grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr);
+		}
+
+		.pie__marca {
+			grid-column: auto;
 		}
 	}
 

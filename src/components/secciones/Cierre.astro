@@ -23,7 +23,7 @@ const datos = [
 
 	<div class="contenedor">
 		<h2 id="cierre-titulo" class="cierre__titular fundir">
-			<span class="cierre__renglon"><span>Empezá por la</span></span>
+			<span class="cierre__renglon"><span>Empezá por la</span></span>{' '}
 			<span class="cierre__renglon"><span class="texto-gradiente">auditoría gratis</span></span>
 		</h2>
 		<p class="t-cuerpo cierre__bajada revelar">Una charla para encontrar el proceso que más tiempo te hace perder.</p>
@@ -31,8 +31,8 @@ const datos = [
 		<div class="cierre__card fundir">
 			<ul class="cierre__datos">
 				{
-					datos.map(({ icono, titulo, texto }, i) => (
-						<li class="dato" style={`--i: ${i}`}>
+					datos.map(({ icono, titulo, texto }) => (
+						<li class="dato">
 							<Icono nombre={icono} size={28} />
 							<strong>{titulo}</strong>
 							<span>{texto}</span>
@@ -44,7 +44,7 @@ const datos = [
 				<BotonWhatsApp />
 			</div>
 		</div>
-		<p class="cierre__quien">Te contesta Ignacio o Gabriel</p>
+		<p class="cierre__quien">Te contesta una persona, no un bot</p>
 	</div>
 </section>
 
@@ -59,7 +59,9 @@ const datos = [
 		display: grid;
 		max-width: 15ch;
 		view-timeline: --titular block;
-		font-size: clamp(3rem, 1.25rem + 7vw, 6rem);
+		/* Tope en vw: sin él, "auditoría" y "Empezá" salen recortados por el overflow: clip de
+		   .con-glow con la letra del sistema al 200% (el mínimo de 3rem sube a 96px). */
+		font-size: min(clamp(3rem, 1.25rem + 7vw, 6rem), 16vw);
 		font-weight: var(--type-hook-weight);
 		line-height: 0.95;
 		letter-spacing: -0.03em;
@@ -154,11 +156,13 @@ const datos = [
 		padding-left: var(--space-2);
 		color: var(--text-body-light);
 		font-size: var(--type-meta-size);
+		text-wrap: balance;
 	}
 
 	@media (min-width: 768px) {
 		.cierre {
-			--abre-margen: var(--space-7);
+			/* 80px, no --space-7 (90, del lienzo de redes): múltiplo de 8. */
+			--abre-margen: 80px;
 		}
 
 		.cierre__card {
@@ -213,10 +217,6 @@ const datos = [
 		from { transform: translateY(105%); }
 	}
 
-	@keyframes cierre-icono {
-		from { opacity: 0; transform: scale(0.6) rotate(-12deg); }
-	}
-
 	@media (prefers-reduced-motion: no-preference) {
 		@supports (animation-timeline: view()) {
 			/* Lo que se recorta es solo el fondo, una capa de color plano: recortar la sección
@@ -255,17 +255,14 @@ const datos = [
 				animation-range: entry 60% cover 38%;
 			}
 
-			.dato {
-				animation: entrar-corto var(--curva-salida) both;
-				animation-timeline: view();
-				animation-range: entry calc(20% + var(--i) * 12%) entry calc(60% + var(--i) * 12%);
+			/* .revelar (global.css) dura 33-39px acá: la bajada mide 51-60px de alto. Un rango
+			   más largo la deja legible mientras se mueve, en vez de un parpadeo. */
+			.cierre__bajada {
+				animation-range: entry 20% cover 30%;
 			}
 
-			.dato :global(svg) {
-				animation: cierre-icono var(--curva-salida) both;
-				animation-timeline: view();
-				animation-range: entry calc(40% + var(--i) * 12%) entry calc(80% + var(--i) * 12%);
-			}
+			/* .dato y su ícono quedan quietos en su estado final: animaban en el 10% de abajo
+			   de la pantalla, donde no se veían (decisión del usuario). */
 		}
 	}
 

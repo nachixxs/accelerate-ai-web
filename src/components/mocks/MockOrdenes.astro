@@ -142,11 +142,13 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 
 	<span class="ordenes__chip">
 		<Icono nombre="lightning-duotone" size={16} />
-		Terminada: pasa sola a “Para entregar”
+		Terminada: pasó sola a entregar
 	</span>
 </div>
 
 <script>
+	import { movimientoReducido } from '../../scripts/contar';
+
 	// Arrastrar una orden a otra columna: solo con mouse (los dedos siguen haciendo scroll). La
 	// card sigue al puntero con `translate`, no `transform`, para no pisar la animación de scroll
 	// de la orden que cruza. Recién arrastra después de 4 px, así un clic simple no hace nada.
@@ -155,12 +157,75 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		const columnas = [...tablero.querySelectorAll<HTMLElement>('.columna')];
 		const cartas = [...tablero.querySelectorAll<HTMLElement>('.orden:not(.orden--cruza)')];
 
+		// El chip se estampa por tiempo al verse, no por un tramo corto de scroll. Sin JS o con
+		// reducción queda en su estado final (ver la clase base en el CSS).
+		const chip = tablero.querySelector<HTMLElement>('.ordenes__chip');
+		if (chip && !movimientoReducido()) {
+			chip.classList.add('ordenes__chip--espera');
+			const observadorChip = new IntersectionObserver(
+				(entradas) => {
+					if (!entradas.some((e) => e.isIntersecting)) return;
+					observadorChip.disconnect();
+					chip.classList.remove('ordenes__chip--espera');
+					chip.classList.add('ordenes__chip--vista');
+				},
+				// El chip cuenta algo que ya pasó: dispara cuando el cruce (atado al scroll) ya terminó
+				// en todos los anchos, no al 60 % de visible.
+				{ rootMargin: '0px 0px -36% 0px' },
+			);
+			observadorChip.observe(chip);
+		}
+
 		const columnaBajo = (x: number, y: number) =>
 			document.elementFromPoint(x, y)?.closest<HTMLElement>('.columna') ?? null;
 
+		// El cubic-bezier repite --curva-salida: Element.animate() no puede leer una custom
+		// property en `easing`.
+		const curvaSalida = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
 		const sumarContador = (columna: HTMLElement, delta: number) => {
 			const cuenta = columna.querySelector<HTMLElement>('.cuenta__despues');
-			if (cuenta) cuenta.textContent = String(Number(cuenta.textContent) + delta);
+			if (!cuenta) return;
+			cuenta.textContent = String(Number(cuenta.textContent) + delta);
+			// Easing por cuadro (no toda la curva de salida junta): si no, el pico llega a los
+			// ~16 ms y la vuelta se arrastra el resto de los 200 ms.
+			cuenta.animate(
+				[
+					{ transform: 'scale(1)', easing: 'ease-out' },
+					{ transform: 'scale(1.12)', easing: 'ease-in-out' },
+					{ transform: 'scale(1)' },
+				],
+				{ duration: 200 },
+			);
+		};
+
+		// FLIP completo: antes de mover la carta, mide todo lo que puede correrse en las dos
+		// columnas (cartas y huecos) y anima la diferencia a cero después del insertBefore. Sin
+		// esto, solo la carta soltada tenía transición; sus hermanas saltaban de golpe.
+		const medirHermanas = (origen: HTMLElement, destino: HTMLElement, saltar: HTMLElement) => {
+			const elementos = new Set([
+				...origen.querySelectorAll<HTMLElement>('.orden:not(.orden--cruza), .hueco'),
+				...destino.querySelectorAll<HTMLElement>('.orden:not(.orden--cruza), .hueco'),
+			]);
+			elementos.delete(saltar);
+			return new Map([...elementos].map((el) => [el, el.getBoundingClientRect()]));
+		};
+
+		const aplicarFlip = (posiciones: Map<HTMLElement, DOMRect>) => {
+			posiciones.forEach((antes, el) => {
+				const despues = el.getBoundingClientRect();
+				const dx = antes.left - despues.left;
+				const dy = antes.top - despues.top;
+				if (!dx && !dy) return;
+				el.style.transition = 'none';
+				el.style.translate = `${dx}px ${dy}px`;
+				el.getBoundingClientRect(); // fuerza el reflujo antes de volver a animar
+				el.style.transition = '';
+				const limpiar = () => (el.style.translate = '');
+				el.addEventListener('transitionend', limpiar, { once: true });
+				setTimeout(limpiar, 250);
+				requestAnimationFrame(() => (el.style.translate = '0px 0px'));
+			});
 		};
 
 		cartas.forEach((carta) => {
@@ -188,7 +253,9 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 					arrastrando = true;
 					carta.setPointerCapture(evento.pointerId);
 					carta.classList.add('orden--arrastrando');
-					carta.style.transition = 'none';
+					// Solo rotate y scale llevan transición corta (el gesto de "levantar"): translate
+					// queda sin transición y sigue al puntero 1:1, sin el retraso de los otros dos.
+					carta.style.transition = `rotate 150ms ${curvaSalida}, scale 150ms ${curvaSalida}`;
 					carta.style.rotate = '2deg';
 					carta.style.scale = '1.04';
 				}
@@ -207,9 +274,11 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 				const destino = columnaBajo(evento.clientX, evento.clientY);
 				const antes = carta.getBoundingClientRect();
 				if (destino && destino !== origen) {
+					const posiciones = medirHermanas(origen, destino, carta);
 					destino.insertBefore(carta, destino.querySelector('.hueco'));
 					sumarContador(origen, -1);
 					sumarContador(destino, 1);
+					aplicarFlip(posiciones);
 				}
 				const despues = carta.getBoundingClientRect();
 
@@ -339,8 +408,13 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
+		min-width: 0;
+		overflow: hidden;
 		color: var(--text-heading-light);
+		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
+		white-space: nowrap;
+		text-overflow: ellipsis;
 	}
 
 	.columna__punto {
@@ -379,7 +453,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		gap: 8px;
 		padding: 12px;
 		border: 1px solid var(--border-dark);
-		border-radius: 14px;
+		border-radius: 12px;
 		background: var(--navy-850);
 		transition:
 			translate 0.2s var(--curva-salida),
@@ -471,17 +545,24 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		font-weight: var(--fw-bold);
 	}
 
-	/* El lugar vacío: en "En proceso" queda donde estaba la orden; en "Para entregar" la recibe. */
+	/* El lugar vacío: ocupa el alto de una carta para que "En proceso" y "Para entregar" queden
+	   parejas, pero no se ve: es un espaciador, no una caja vacía. Con movimiento, se ve dashed
+	   mientras la orden todavía está ahí y se funde justo cuando termina de cruzar (ver --celda
+	   más abajo); sin JS o con reducción, el estado final ya es invisible. */
 	.hueco {
 		min-height: 136px;
 		border: 1px dashed var(--navy-700);
-		border-radius: 14px;
+		border-radius: 12px;
+		opacity: 0;
+		transition: translate 0.2s var(--curva-salida);
 	}
 
-	/* En el flujo, tapando el hueco que la recibe: si el texto baja de línea, el hueco crece con ella. */
+	/* En el flujo, tapando el hueco que la recibe: si el texto baja de línea, el hueco crece con ella.
+	   Este sí tiene contenido siempre (la orden que cruza), así que va opaco. */
 	.hueco--recibe {
 		display: grid;
 		min-height: 0;
+		opacity: 1;
 	}
 
 	.orden--cruza {
@@ -519,7 +600,7 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		:where(.columna--destino) {
 			outline: 2px dashed var(--cyan-400);
 			outline-offset: 6px;
-			border-radius: 14px;
+			border-radius: 12px;
 		}
 	}
 
@@ -538,7 +619,8 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		font-size: 0.8125rem;
 		font-weight: var(--fw-semibold);
 		line-height: 1.2;
-		box-shadow: var(--shadow-elevada);
+		text-wrap: balance;
+		box-shadow: var(--shadow-elevada-oscura);
 	}
 
 	.ordenes__nota {
@@ -580,8 +662,12 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 		from, to { opacity: 0; }
 	}
 
-	@keyframes ordenes-chip {
-		from { opacity: 0; transform: translateY(12px) scale(0.9); }
+	@keyframes ordenes-hueco {
+		from { opacity: 1; }
+	}
+
+	@keyframes ordenes-chip-vista {
+		from { opacity: 0; translate: 0 12px; scale: 0.9; }
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
@@ -596,6 +682,14 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 				animation: ordenes-cruza var(--curva-cruce) both;
 				animation-timeline: --celda;
 				animation-range: cover 45% cover 58%;
+			}
+
+			/* El hueco se ve mientras la orden todavía está "ahí" y se funde en el mismo tramo en
+			   que ella cruza, así se lee como su lugar que se cierra, no como una caja vacía. */
+			.hueco:not(.hueco--recibe) {
+				animation: ordenes-hueco linear both;
+				animation-timeline: --celda;
+				animation-range: cover 45% cover 60%;
 			}
 
 			.orden__avance-cruza {
@@ -617,12 +711,18 @@ const columnas: { nombre: string; clase: string; antes: number; despues: number;
 				animation-timeline: --celda;
 				animation-range: cover 56% cover 57%;
 			}
-
-			.ordenes__chip {
-				animation: ordenes-chip var(--curva-salida) both;
-				animation-timeline: --celda;
-				animation-range: cover 58% cover 64%;
-			}
 		}
+	}
+
+	/* El chip se dispara por tiempo al verse (no por un tramo corto de scroll): el script agrega
+	   estas clases. Sin JS o con reducción, el chip ya está en su estado final. */
+	.ordenes__chip--espera {
+		opacity: 0;
+		translate: 0 12px;
+		scale: 0.9;
+	}
+
+	.ordenes__chip--vista {
+		animation: ordenes-chip-vista 450ms var(--curva-salida) both;
 	}
 </style>

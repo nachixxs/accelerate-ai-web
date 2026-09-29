@@ -20,6 +20,7 @@
     "esbuild": true
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@iconify-json/ph": "^1.2.2",
     "@iconify-json/simple-icons": "^1.2.97",
     "@iconify/utils": "^3.1.7",

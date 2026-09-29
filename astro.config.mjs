@@ -17,6 +17,11 @@ export default defineConfig({
 			cssMinify: 'esbuild',
 		},
 	},
+	// Todo el CSS adentro del HTML: se ahorra el viaje de red que bloquea el primer pintado
+	// (una landing de una sola visita no se beneficia de cachear el CSS aparte).
+	build: {
+		inlineStylesheets: 'always',
+	},
 	// Archivo es la única familia de la marca. Astro la baja de Google en el build
 	// y la sirve desde el propio sitio, con un fallback de métricas ajustadas.
 	fonts: [

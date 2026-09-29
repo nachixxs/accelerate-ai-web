@@ -25,6 +25,9 @@ import MockPanel from '../mocks/MockPanel.astro';
 			<div class="portada__cta entrada" style="--orden: 2">
 				<BotonWhatsApp />
 			</div>
+			<p class="t-meta portada__nota entrada" style="--orden: 3">
+				Gratis y sin compromiso. <span style="display: inline-block">Te contesta una persona, no un bot.</span>
+			</p>
 		</div>
 
 		<div class="portada__producto">
@@ -34,8 +37,14 @@ import MockPanel from '../mocks/MockPanel.astro';
 </section>
 
 <style>
+	/* La cápsula del encabezado es sticky y ocupa 80px en el flujo (8 + 64 + 8,
+	   Encabezado.astro:128-134), así que la portada arrancaba en y=80 y el glow se
+	   veía cortado en recto. Con el margen negativo arranca en y=0, debajo de la
+	   cápsula, y el padding-top compensa para dejar el mismo aire que antes. */
 	.portada {
-		padding-block: var(--space-4) var(--space-7);
+		margin-top: -80px;
+		padding-top: calc(80px + var(--space-4));
+		padding-bottom: var(--espacio-seccion);
 	}
 
 	.portada__grilla {
@@ -55,13 +64,28 @@ import MockPanel from '../mocks/MockPanel.astro';
 		color: var(--text-body-dark);
 	}
 
+	.portada__nota {
+		color: var(--text-muted-dark);
+		text-wrap: balance;
+	}
+
 	.portada__producto {
 		min-width: 0;
 	}
 
+	/* El degradé de la marca no llega a 3:1 sobre el fondo claro de la portada (baja a 1,7:1 al
+	   final, y a 1,6:1 con el tinte del glow). Acá, y solo acá, va oscurecido: azul profundo a
+	   cian 600 (decisión del usuario, ver a11y/INFORME.md #2). El resto de .texto-gradiente
+	   (global.css) no cambia: sigue siendo el degradé de marca sobre el cierre oscuro. */
+	.portada :global(.texto-gradiente) {
+		background: linear-gradient(90deg, var(--brand-primary-deep), var(--cyan-600));
+		-webkit-background-clip: text;
+		background-clip: text;
+	}
+
 	@media (min-width: 1024px) {
 		.portada {
-			padding-block: var(--space-6) var(--space-8);
+			padding-top: calc(80px + var(--space-6));
 		}
 
 		.portada__grilla {
@@ -70,9 +94,11 @@ import MockPanel from '../mocks/MockPanel.astro';
 			gap: var(--space-5);
 		}
 
-		/* La escala del hook a 72 px deja el titular en 4 líneas en la columna; a 60 entra en 3. */
+		/* La escala del hook a 60 px dejaba el titular parecido al h2: subimos a ~64 px a 1280
+		   (68 en el tope) y le sumamos tracking negativo, como las referencias del rubro. */
 		.portada :global(.t-hook) {
-			font-size: clamp(2.75rem, 1.6rem + 2.4vw, 3.75rem);
+			font-size: clamp(2.75rem, 1.45rem + 3vw, 4.25rem);
+			letter-spacing: -0.03em;
 		}
 
 		/* El tablero entra en su columna: antes se pasaba y lo cortaba la pantalla, y se veía

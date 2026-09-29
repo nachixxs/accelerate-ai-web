@@ -9,6 +9,11 @@
 // scroll horizontal, queda recortado sin aviso.
 import { preview } from 'astro';
 import { chromium } from 'playwright';
+import { revisarAxe } from './capturas-axe.mjs';
+import { revisarLetra200 } from './capturas-letra200.mjs';
+import { revisarAltoContraste } from './capturas-contraste.mjs';
+import { revisarNavegadores } from './capturas-navegadores.mjs';
+import { terminarCarga } from './capturas-utils.mjs';
 
 const ANCHOS = [
 	{ nombre: 'celular-360', width: 360, height: 740 },
@@ -20,15 +25,6 @@ const servidor = await preview({ root: '.', logLevel: 'error' });
 const url = `http://localhost:${servidor.port}/`;
 const navegador = await chromium.launch();
 let fallas = 0;
-
-// Espera a que terminen las animaciones de la carga (la historia de la portada, los fundidos),
-// sin contar las que no terminan nunca (la cinta de rubros) ni las atadas al scroll.
-const terminarCarga = (pagina) =>
-	pagina.evaluate(async () => {
-		await document.fonts.ready;
-		const deTiempo = document.getAnimations().filter((a) => a.timeline instanceof DocumentTimeline && a.effect.getComputedTiming().iterations !== Infinity);
-		await Promise.all(deTiempo.map((a) => a.finished.catch(() => {})));
-	});
 
 async function revisarAncho({ nombre, width, height }) {
 	const pagina = await navegador.newPage({ viewport: { width, height } });
@@ -59,17 +55,17 @@ async function revisarAncho({ nombre, width, height }) {
 		const abierto = await pagina
 			.waitForFunction(() => document.getElementById('menu').matches(':popover-open'), null, { timeout: 2000 })
 			.then(() => true, () => false);
-		await pagina.locator('#menu a[href="#somos"]').click();
+		await pagina.locator('#menu a[href="#tiempo"]').click();
 		// El scroll es suave: espera a que la sección llegue arriba (o se rinde a los 3 s).
 		await pagina
-			.waitForFunction(() => Math.abs(document.getElementById('somos').getBoundingClientRect().top) < 200, null, { timeout: 3000 })
+			.waitForFunction(() => Math.abs(document.getElementById('tiempo').getBoundingClientRect().top) < 200, null, { timeout: 3000 })
 			.catch(() => {});
 		const despues = await pagina.evaluate(() => ({
 			cerrado: !document.getElementById('menu').matches(':popover-open'),
 			hash: location.hash,
-			seccionArriba: Math.round(document.getElementById('somos').getBoundingClientRect().top),
+			seccionArriba: Math.round(document.getElementById('tiempo').getBoundingClientRect().top),
 		}));
-		menu = abierto && despues.cerrado && despues.hash === '#somos' && Math.abs(despues.seccionArriba) < 200;
+		menu = abierto && despues.cerrado && despues.hash === '#tiempo' && Math.abs(despues.seccionArriba) < 200;
 		await pagina.evaluate(() => scrollTo(0, 0));
 	}
 
@@ -143,6 +139,12 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 		[!medidas.rayas, 'sin rayas largas (— o –) en el texto'],
 	];
 
+	// Tu tiempo: al cambiar tarea, horas y personas cambian el total (horas × personas × 4) y el
+	// mensaje del botón, y ni el "800" del máximo se sale de su card ni de la página. Debajo de 1024
+	// la card va arriba de los controles: el total tiene que verse entero, bajo la cápsula, al usar cada uno.
+	const calculadora = await revisarCalculadora(pagina, width, height);
+	chequeos.push([calculadora.length === 0, `la calculadora de Tu tiempo cambia el total y el botón, y el máximo entra${width < 1024 ? ' y se ve al usar cada control' : ''}${calculadora.length ? ': ' + calculadora.join(', ') : ''}`]);
+
 	// Lo que va montado sobre un borde no puede salirse de costado de su card. Los que van en el
 	// flujo, con margen negativo, tampoco pueden tapar lo que tienen al lado (sus hermanos y, en el
 	// cierre, la línea de abajo). El chip del tablero flota sobre la ventana a propósito: de ese
@@ -180,6 +182,60 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 	return chequeos;
 }
 
+// Devuelve la lista de lo que falló (vacía si todo bien). Deja la calculadora como la encontró.
+async function revisarCalculadora(pagina, width, height) {
+	const leer = () =>
+		pagina.evaluate(() => {
+			const numero = document.querySelector('#tiempo [data-total]').getBoundingClientRect();
+			const card = document.querySelector('#tiempo .tiempo__resultado').getBoundingClientRect();
+			const texto = new URL(document.querySelector('#tiempo .tiempo__accion a').href).searchParams.get('text');
+			return { total: document.querySelector('#tiempo [data-total]').textContent, texto, entra: numero.left >= card.left && numero.right <= card.right, pagina: document.documentElement.scrollWidth };
+		});
+	const casos = [
+		[null, null, null, '40', 'Hola, vi la web. Se me van unas 40 horas por mes haciendo la caja.'],
+		['Pasar datos', '20', '10', '800', 'Hola, vi la web. Se me van unas 800 horas por mes pasando datos de un lado a otro.'],
+		['Otra', '1', '1', '4', 'Hola, vi la web. Se me van unas 4 horas por mes en tareas que se repiten.'],
+		['Cargar pedidos', '7', '3', '84', 'Hola, vi la web. Se me van unas 84 horas por mes cargando pedidos.'],
+		['Hacer la caja', '5', '2', '40', 'Hola, vi la web. Se me van unas 40 horas por mes haciendo la caja.'],
+	];
+	const fallas = [];
+	for (const [tarea, horas, personas, total, texto] of casos) {
+		if (tarea) await pagina.locator('#tiempo .tiempo__chip', { hasText: tarea }).click();
+		if (horas) await pagina.locator('#tiempo-horas').fill(horas);
+		if (personas) await pagina.locator('#tiempo-personas').fill(personas);
+		// El número corre 0,22 s hasta el total: se espera a que llegue.
+		await pagina.waitForFunction((t) => document.querySelector('#tiempo [data-total]').textContent === t, total, { timeout: 2000 }).catch(() => {});
+		const ahora = await leer();
+		if (ahora.total !== total) fallas.push(`total ${ahora.total} en vez de ${total}`);
+		if (ahora.texto !== texto) fallas.push(`mensaje "${ahora.texto}"`);
+		if (!ahora.entra) fallas.push(`el ${total} se sale de su card a ${width} px`);
+		if (ahora.pagina > width) fallas.push(`página de ${ahora.pagina} px con el ${total}`);
+	}
+
+	// Recorrido de arriba abajo, como lo haría quien usa la sección: cada chip y cada range entra en
+	// pantalla con scrollIntoView (nearest) y el número tiene que quedar entero, debajo de la cápsula.
+	// En el celular se mide también con una ventana de 640 de alto, la más chica que se usa.
+	if (width < 1024) {
+		for (const alto of width < 768 ? [height, 640] : [height]) {
+			await pagina.setViewportSize({ width, height: alto });
+			const fuera = await pagina.evaluate(() => {
+				document.documentElement.style.scrollBehavior = 'auto';
+				scrollTo(0, 0);
+				const controles = [...document.querySelectorAll('#tiempo .tiempo__chip, #tiempo input[type="range"]')];
+				return controles.flatMap((el) => {
+					el.scrollIntoView({ block: 'nearest' });
+					const n = document.querySelector('#tiempo [data-total]').getBoundingClientRect();
+					const capsula = document.querySelector('.capsula').getBoundingClientRect().bottom;
+					return n.top >= capsula && n.bottom <= innerHeight ? [] : [el.id || el.textContent.trim()];
+				});
+			});
+			if (fuera.length) fallas.push(`a ${width}x${alto} el total no se ve entero al usar: ${fuera.join(', ')}`);
+		}
+		await pagina.setViewportSize({ width, height });
+	}
+	return fallas;
+}
+
 function imprimir(titulo, chequeos) {
 	console.log(`\n${titulo}`);
 	for (const [ok, texto] of chequeos) {
@@ -188,8 +244,25 @@ function imprimir(titulo, chequeos) {
 	}
 }
 
-const resultados = await Promise.all(ANCHOS.map(revisarAncho));
+// Todo corre a la vez: los tres anchos de siempre, más axe, la letra al 200 % y el alto
+// contraste (los tres con la misma instancia de Chromium) y WebKit/Firefox (instancias propias).
+const inicioExtra = Date.now();
+const [resultados, axe, letra200, altoContraste, otrosNavegadores] = await Promise.all([
+	Promise.all(ANCHOS.map(revisarAncho)),
+	revisarAxe(navegador, url),
+	revisarLetra200(navegador, url),
+	revisarAltoContraste(navegador, url),
+	revisarNavegadores(navegador, url),
+]);
 ANCHOS.forEach(({ nombre }, i) => imprimir(nombre, resultados[i]));
+imprimir('axe (accesibilidad, 360 y 1280, estado final)', axe.chequeos);
+imprimir('letra al 200 % (360 y 320, recorriendo la página)', letra200.chequeos);
+imprimir('alto contraste de windows (360)', altoContraste.chequeos);
+imprimir('webkit y firefox (360 y 1280, con y sin movimiento)', otrosNavegadores.chequeos);
+console.log(
+	`\nTiempos: axe ${axe.ms}ms, letra 200% ${letra200.ms}ms, alto contraste ${altoContraste.ms}ms, ` +
+		`webkit/firefox ${otrosNavegadores.ms}ms, total de los cuatro en paralelo ${Date.now() - inicioExtra}ms`,
+);
 
 // Open Graph: la imagen tiene que estar publicada y con URL completa, o WhatsApp no la muestra.
 const pagina = await navegador.newPage();

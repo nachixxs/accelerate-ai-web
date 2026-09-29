@@ -6,9 +6,12 @@
 // cuando la punta la alcanza. En escritorio, a la derecha, una sola card invertida queda fija y
 // cambia de pantalla según el paso que está a media pantalla. En el celular no hay nada fijo:
 // cada paso lleva su visual abajo, en card clara (la propuesta es la única invertida).
-// Sin soporte de animaciones atadas al scroll, o con movimiento reducido, la card fija no existe:
-// cada visual queda al lado de su paso, completo y quieto.
+// Con movimiento reducido (decisión del usuario, 2026-09-28), o sin soporte de animaciones atadas
+// al scroll, la card fija no existe: en escritorio cada visual queda al lado de su paso, completo
+// y quieto, como en el celular. Sin JS la card fija sigue el scroll sola: el script solo suma.
+import { Image } from 'astro:assets';
 import Icono from '../Icono.astro';
+import avatar from '../../assets/identidad/avatar-claro.png';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 const auditoria = [
@@ -108,7 +111,7 @@ const auditoria = [
 					<div class="soporte">
 						<p class="soporte__pedido">¿Podemos sumar el CUIT en las órdenes?</p>
 						<p class="soporte__respuesta">
-							<span class="soporte__quien">I</span>
+							<Image src={avatar} alt="" width={48} class="soporte__quien" />
 							Listo, ya aparece en cada orden.
 						</p>
 					</div>
@@ -119,6 +122,7 @@ const auditoria = [
 				</div>
 			</li>
 		</ol>
+		<span class="linea__relleno" aria-hidden="true"></span>
 		<span class="linea__punto" aria-hidden="true"></span>
 		</div>
 
@@ -150,8 +154,24 @@ const auditoria = [
 	let observador: IntersectionObserver | null = null;
 	const enBanda = new Set<HTMLElement>();
 
+	// El sello "Aprobada" (pantalla 2) entra con un fundido por tiempo, una sola vez. Con la card
+	// fija se estampa cuando esa pantalla pasa a activa, no por su propio observador (con el
+	// observador se estampaba con la pantalla todavía en opacidad 0). Donde el sello está junto a
+	// su paso (celular, tablet, sin soporte) lo dispara un observador propio al verse. Con
+	// reducción o sin JS no se agrega ninguna clase y el CSS lo deja en su estado final.
+	const sello = document.querySelector<HTMLElement>('.propuesta__sello');
+	let selloEstampado = false;
+	function estamparSello() {
+		if (selloEstampado || !sello) return;
+		selloEstampado = true;
+		sello.classList.remove('proceso-sello-espera');
+		sello.classList.add('proceso-sello-entra');
+	}
+
 	// En la franja del medio puede haber dos pasos a la vez (la transición entre uno y otro):
 	// se activa el que tiene el centro más cerca del centro de la pantalla, nunca dos juntos.
+	// Si ninguno está en la franja (antes del paso 1 o después del 4), se queda con el extremo
+	// que corresponde: nunca se vacía la tarjeta fija (B2).
 	function elegirActiva() {
 		pantallas.forEach((p) => p.classList.remove('pantalla--activa'));
 		let elegido: HTMLElement | null = null;
@@ -161,7 +181,13 @@ const auditoria = [
 			const d = Math.abs((r.top + r.bottom) / 2 - innerHeight / 2);
 			if (d < distancia) { distancia = d; elegido = paso; }
 		}
-		if (elegido) pantallas[pasos.indexOf(elegido)]?.classList.add('pantalla--activa');
+		if (!elegido && pasos.length) {
+			elegido = pasos[0].getBoundingClientRect().top > innerHeight / 2 ? pasos[0] : pasos[pasos.length - 1];
+		}
+		if (!elegido) return;
+		const activa = pantallas[pasos.indexOf(elegido)];
+		activa?.classList.add('pantalla--activa');
+		if (activa?.classList.contains('pantalla--2')) estamparSello();
 	}
 
 	function activar() {
@@ -186,8 +212,25 @@ const auditoria = [
 		pantallas.forEach((p) => p.classList.remove('pantalla--activa'));
 	}
 
-	anchoFijo.addEventListener('change', () => (conTarjetaFija() ? activar() : desactivar()));
-	activar();
+	// Observador del sello para cuando no hay card fija; se prende y se apaga con el ancho.
+	const observadorSello = new IntersectionObserver(
+		(entradas) => entradas[0].isIntersecting && estamparSello(),
+		{ threshold: 0.6 },
+	);
+
+	function ajustar() {
+		if (conTarjetaFija()) {
+			activar();
+			if (sello) observadorSello.unobserve(sello);
+		} else {
+			desactivar();
+			if (sello && !movimientoReducido()) observadorSello.observe(sello);
+		}
+	}
+
+	if (sello && !movimientoReducido()) sello.classList.add('proceso-sello-espera');
+	anchoFijo.addEventListener('change', ajustar);
+	ajustar();
 </script>
 
 <style>
@@ -198,9 +241,9 @@ const auditoria = [
 	}
 
 	/* --- El riel y los pasos (celular primero) ---
-	   El envoltorio lleva --marca (la comparten .linea y .linea__punto, que ahora son hermanos:
-	   una custom property solo pasa a los descendientes, no entre hermanos) y el margen que
-	   antes tenía .linea, para que el punto pueda medirse contra la misma caja sin offsets. */
+	   El envoltorio lleva --marca (la comparten .linea, .linea__relleno y .linea__punto, que son
+	   hermanos: una custom property solo pasa a los descendientes) y el margen que antes tenía
+	   .linea, para que el punto pueda medirse contra la misma caja sin offsets. */
 	.proceso__riel {
 		position: relative;
 		margin-top: var(--space-6);
@@ -218,10 +261,9 @@ const auditoria = [
 		timeline-scope: --paso-1, --paso-2, --paso-3, --paso-4;
 	}
 
-	/* El riel y su relleno, a la altura del centro de las marcas; se desvanecen al final: el
-	   soporte sigue. */
-	.linea::before,
-	.linea::after {
+	/* El riel sin relleno, a la altura del centro de las marcas; se desvanece al final: el soporte
+	   sigue. */
+	.linea::before {
 		content: '';
 		position: absolute;
 		top: calc(var(--marca) / 2);
@@ -229,20 +271,36 @@ const auditoria = [
 		left: calc(var(--marca) / 2 - 1px);
 		width: 2px;
 		mask-image: linear-gradient(#000 80%, transparent);
-	}
-
-	.linea::before {
 		background: var(--border-light);
 	}
 
-	.linea::after {
+	/* El relleno del riel: una ventana que no se mueve (mismo tamaño y máscara que el riel) con
+	   el color adentro, en transform. Antes esto era un clip-path animado en .linea::after: en el
+	   hilo principal costaba casi toda la pintura del scroll con movimiento reducido. Con
+	   transform el costo lo asume el compositor. Sin ella (o sin soporte) queda al final, como
+	   el riel ya lleno (el ::before no lleva ninguna traslación fuera de la animación). */
+	.linea__relleno {
+		position: absolute;
+		top: calc(var(--marca) / 2);
+		bottom: 0;
+		left: calc(var(--marca) / 2 - 1px);
+		width: 2px;
+		overflow: clip;
+		mask-image: linear-gradient(#000 80%, transparent);
+		pointer-events: none;
+	}
+
+	.linea__relleno::before {
+		content: '';
+		position: absolute;
+		inset: 0;
 		background: var(--brand-primary-deep);
 	}
 
-	/* El punto que viaja con la punta del relleno: el mismo truco que .linea::after (una caja del
-	   alto del riel que se traslada el 100% de su propia altura), pero con translate en vez de
-	   transform para no pisar ninguna otra animación. Sin ella (o sin soporte) queda al final,
-	   como el riel ya lleno. */
+	/* El punto que viaja con la punta del relleno: el mismo truco que .linea__relleno::before (una
+	   caja del alto del riel que se traslada el 100% de su propia altura), pero con translate en
+	   vez de transform para no pisar ninguna otra animación. Sin ella (o sin soporte) queda al
+	   final, como el riel ya lleno. */
 	.linea__punto {
 		position: absolute;
 		top: calc(var(--marca) / 2);
@@ -465,6 +523,24 @@ const auditoria = [
 		rotate: -3deg;
 	}
 
+	/* El sello entra con un fundido corto la primera vez que se ve (no atado al scroll: ver el
+	   script). "espera" es el estado antes de verse, que solo pone el JS: sin él (o con
+	   movimiento reducido, que ni lo agrega) el sello queda en su estado final de una. */
+	@keyframes proceso-sello-entra {
+		/* scale (la propiedad, no transform) para no pisar el rotate: -3deg de la base. */
+		from { opacity: 0; scale: 1.3; }
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.propuesta__sello.proceso-sello-espera {
+			opacity: 0;
+		}
+
+		.propuesta__sello.proceso-sello-entra {
+			animation: proceso-sello-entra 450ms var(--curva-salida) both;
+		}
+	}
+
 	/* 3. Construcción: las tres semanas, la bandera de la demo a mitad de camino y las tareas. */
 	.semanas {
 		position: relative;
@@ -483,7 +559,9 @@ const auditoria = [
 		border-radius: 8px;
 		background: var(--blue-100);
 		color: var(--blue-900);
-		font-size: 0.8125rem;
+		/* min() y no rem solo: "letra grande" (Android/iOS) infla el rem pero no el vw, así que
+		   el tope en vw evita que "Semana" desborde su tramo cuando crece la fuente del sistema. */
+		font-size: min(0.8125rem, 3.6vw);
 		font-weight: var(--fw-semibold);
 		text-align: center;
 	}
@@ -524,7 +602,7 @@ const auditoria = [
 		color: var(--p-acento);
 	}
 
-	/* 4. Soporte: el pedido y la respuesta, que la da una persona (la inicial de Ignacio). */
+	/* 4. Soporte: el pedido y la respuesta, que la da la agencia (el avatar de la marca, sobre el globo azul oscuro). */
 	.soporte {
 		display: grid;
 		gap: 8px;
@@ -533,13 +611,13 @@ const auditoria = [
 	.soporte p {
 		max-width: 30ch;
 		padding: 10px 14px;
-		border-radius: 18px;
+		border-radius: var(--radius-card);
 	}
 
 	.soporte__pedido {
 		justify-self: start;
 		border: 1px solid var(--p-borde);
-		border-bottom-left-radius: 6px;
+		border-bottom-left-radius: var(--radius-input);
 		color: var(--p-titulo);
 	}
 
@@ -548,26 +626,21 @@ const auditoria = [
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		border-bottom-right-radius: 6px;
+		border-bottom-right-radius: var(--radius-input);
 		background: var(--brand-primary-deep);
 		color: var(--blue-50);
 	}
 
 	.soporte__quien {
-		display: grid;
 		flex: none;
-		place-items: center;
 		width: 24px;
 		height: 24px;
 		border-radius: 50%;
-		background: var(--blue-100);
-		color: var(--blue-900);
-		font-size: 0.8125rem;
-		font-weight: var(--fw-bold);
 	}
 
 	/* --- Escritorio sin la card fija (movimiento reducido o sin soporte): cada visual al lado de
-	   su paso. --- */
+	   su paso, como el celular pero en dos columnas. La card fija (con movimiento) lo pisa más
+	   abajo. --- */
 	@media (min-width: 1024px) {
 		.proceso__riel {
 			--marca: 56px;
@@ -591,13 +664,13 @@ const auditoria = [
 	}
 
 	/* --- Movimiento --- */
-	/* Recorte de arriba a abajo y no scaleY: con scaleY el mask-image de arriba (el desvanecido del
+	/* De -100% a 0 y no scaleY: con scaleY el mask-image de .linea__relleno (el desvanecido del
 	   final) se escalaba junto con la caja, así que la punta del relleno siempre se apagaba un 20%
-	   y quedaba despegada del punto. Con clip-path la caja no cambia de tamaño: el mask solo se ve
-	   cerca del final real del riel, y el borde recortado coincide con el punto en todo el recorrido. */
+	   y quedaba despegada del punto. Acá la ventana (.linea__relleno, con overflow: clip) no
+	   cambia de tamaño ni se mueve: solo se traslada el ::before de adentro, así que el mask se ve
+	   siempre en el mismo lugar y el borde recortado coincide con el punto en todo el recorrido. */
 	@keyframes proceso-llenar {
-		from { clip-path: inset(0 0 100% 0); }
-		to { clip-path: inset(0); }
+		from { translate: 0 -100%; }
 	}
 
 	@keyframes proceso-apagada {
@@ -618,11 +691,7 @@ const auditoria = [
 		to { clip-path: inset(0 0 0 0); }
 	}
 
-	@keyframes proceso-sello {
-		from { opacity: 0; transform: scale(1.3); }
-	}
-
-	/* El punto viaja de punta a punta del riel, junto con .linea::after. */
+	/* El punto viaja de punta a punta del riel, junto con .linea__relleno::before. */
 	@keyframes proceso-punto-viaja {
 		from { translate: 0 0%; }
 	}
@@ -641,7 +710,7 @@ const auditoria = [
 	   no-preference, más abajo. */
 	@supports (animation-timeline: view()) {
 		/* La punta del relleno va a media pantalla. */
-		.linea::after {
+		.linea__relleno::before {
 			animation: proceso-llenar linear both;
 			animation-timeline: --proceso;
 			animation-range: cover 50vh cover calc(100% - 50vh);
@@ -667,11 +736,13 @@ const auditoria = [
 			animation-range: cover calc(50vh - 8px) cover calc(50vh + 16px);
 		}
 
-		/* El pulso del anillo, en la misma marca en la que la punta enciende el ícono. */
+		/* El pulso del anillo, en la misma marca en la que la punta enciende el ícono. Rango de
+		   160px (no los 48 de antes): con un scroll rápido, un tramo más corto se salteaba entero
+		   y el anillo quedaba a mitad de camino si el usuario paraba justo ahí. */
 		.paso__marca::after {
 			animation: proceso-anillo var(--curva-salida) both;
 			animation-timeline: view();
-			animation-range: cover calc(50vh - 8px) cover calc(50vh + 40px);
+			animation-range: cover calc(50vh - 8px) cover calc(50vh + 152px);
 		}
 	}
 
@@ -695,12 +766,6 @@ const auditoria = [
 				animation: proceso-tramo var(--curva-salida) both;
 				animation-timeline: --pantalla;
 				animation-range: cover calc(30% + var(--i) * 8%) cover calc(40% + var(--i) * 8%);
-			}
-
-			.propuesta__sello {
-				animation: proceso-sello var(--curva-salida) both;
-				animation-timeline: --pantalla;
-				animation-range: cover 40% cover 48%;
 			}
 		}
 	}
@@ -747,14 +812,14 @@ const auditoria = [
 	}
 
 	/* Las pantallas usan los timelines de sus hermanos (--paso-N), que necesitan timeline-scope:
-	   sin él quedarían las cuatro visibles y encimadas en la card. */
+	   sin él quedarían las cuatro visibles y encimadas en la card. Con movimiento reducido o sin
+	   soporte no entra nada de esto: quedan las cuatro cards al lado de su paso (arriba). */
 	@media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
 		@supports (animation-timeline: view()) and (timeline-scope: none) {
 			.linea {
 				grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
 				grid-template-rows: repeat(4, auto);
-				column-gap: var(--space-4);
-				row-gap: 0;
+				gap: 0 var(--space-4);
 				--fija-arriba: max(112px, calc(50vh - var(--fija-alto) / 2));
 				--fija-alto: 400px;
 			}
@@ -809,7 +874,6 @@ const auditoria = [
 				--p-acento: var(--cyan-300);
 				--p-chip-fondo: var(--cyan-300);
 				--p-chip-texto: var(--navy-950);
-				grid-column: 3;
 				grid-row: 1 / -1;
 				align-self: start;
 				position: sticky;
@@ -832,14 +896,22 @@ const auditoria = [
 				pointer-events: auto;
 			}
 
+			.pantalla__titulo {
+				font-size: var(--type-label-size);
+			}
+
+			/* Con la tarjeta fija el marco (::before) no se mueve: si la pantalla sube 4px en
+			   hover queda un doble borde abajo. Acá solo cambia el borde. */
+			@media (hover: hover) and (pointer: fine) {
+				.pantalla:hover {
+					translate: none;
+				}
+			}
+
 			.pantalla--1 { animation-name: proceso-pantalla-primera; animation-timeline: --paso-1; }
 			.pantalla--2 { animation-timeline: --paso-2; }
 			.pantalla--3 { animation-timeline: --paso-3; }
 			.pantalla--4 { animation-name: proceso-pantalla-ultima; animation-timeline: --paso-4; }
-
-			.pantalla__titulo {
-				font-size: var(--type-label-size);
-			}
 
 			/* Cada pantalla se arma mientras su paso cruza la mitad. */
 			.pantalla--1 .auditoria__barra > span {
@@ -852,12 +924,6 @@ const auditoria = [
 				animation: entrar-corto var(--curva-salida) both;
 				animation-timeline: --paso-2;
 				animation-range: cover calc(8% + var(--i) * 8%) cover calc(24% + var(--i) * 8%);
-			}
-
-			.pantalla--2 .propuesta__sello {
-				animation: proceso-sello var(--curva-salida) both;
-				animation-timeline: --paso-2;
-				animation-range: cover 40% cover 50%;
 			}
 
 			.pantalla--3 .semanas__tramo {
@@ -881,14 +947,6 @@ const auditoria = [
 			.pantalla--4 .soporte__pedido { animation-range: cover 8% cover 20%; }
 			.pantalla--4 .soporte__respuesta { animation-range: cover 22% cover 34%; }
 			.pantalla--4 .soporte__mejora { animation-range: cover 36% cover 46%; }
-
-			/* Con la tarjeta fija el marco (::before) no se mueve: si la pantalla sube 4px en
-			   hover queda un doble borde abajo. Acá solo cambia el borde. */
-			@media (hover: hover) and (pointer: fine) {
-				.pantalla:hover {
-					translate: none;
-				}
-			}
 		}
 	}
 

@@ -70,11 +70,25 @@ const rubros = [
 	</div>
 </section>
 
+<script>
+	// La cinta corre siempre, también fuera de pantalla: sin esto sigue pintando 60 cuadros por
+	// segundo con la página quieta cerca del cierre (~35% del hilo principal en un celular de gama
+	// media). Se pausa por afuera de la ventana, no cambia la decisión de que corra con reducción:
+	// la clase solo actúa cuando la cinta ya es invisible.
+	const rubros = document.querySelector<HTMLElement>('.rubros');
+	if (rubros) {
+		const observador = new IntersectionObserver(
+			([entrada]) => rubros.classList.toggle('rubros--fuera-de-vista', !entrada.isIntersecting),
+			{ rootMargin: '200px' },
+		);
+		observador.observe(rubros);
+	}
+</script>
+
 <style>
 	.rubros {
 		padding-block: var(--space-4) var(--space-5);
-		border-block: 1px solid var(--border-light);
-		background: var(--white);
+		background: var(--surface-alt);
 	}
 
 	.rubros__cabecera {
@@ -86,9 +100,10 @@ const rubros = [
 	}
 
 	.rubros__titulo {
-		color: var(--text-muted-dark);
-		font-size: var(--type-meta-size);
+		color: var(--text-body-dark);
+		font-size: 1.0625rem;
 		font-weight: var(--fw-medium);
+		text-wrap: balance;
 	}
 
 	/* Los costados se funden con el fondo: los rubros aparecen y se van difuminados en vez de
@@ -121,6 +136,12 @@ const rubros = [
 		display: flex;
 		width: max-content;
 		animation: cinta 150s linear infinite;
+	}
+
+	/* Fuera de la ventana (marcado por el IntersectionObserver del script): se frena para no gastar
+	   hilo principal. Sin JS esta clase nunca se agrega y la cinta corre como siempre. */
+	.rubros--fuera-de-vista .rubros__pista {
+		animation-play-state: paused;
 	}
 
 	/* Frena mientras el marco tiene el foco (Tab, o un toque en el celular: se retoma al tocar
@@ -165,7 +186,7 @@ const rubros = [
 		padding: 6px 18px 6px 6px;
 		border: 1px solid var(--border-light);
 		border-radius: var(--radius-pill);
-		background: var(--surface-alt);
+		background: var(--white);
 		color: var(--text-heading-dark);
 		font-weight: var(--fw-semibold);
 		white-space: nowrap;
