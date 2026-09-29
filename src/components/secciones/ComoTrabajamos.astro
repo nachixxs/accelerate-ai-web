@@ -9,7 +9,9 @@
 // Con movimiento reducido (decisión del usuario, 2026-09-28), o sin soporte de animaciones atadas
 // al scroll, la card fija no existe: en escritorio cada visual queda al lado de su paso, completo
 // y quieto, como en el celular. Sin JS la card fija sigue el scroll sola: el script solo suma.
+import { Image } from 'astro:assets';
 import Icono from '../Icono.astro';
+import avatar from '../../assets/identidad/avatar-claro.png';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
 const auditoria = [
@@ -109,7 +111,7 @@ const auditoria = [
 					<div class="soporte">
 						<p class="soporte__pedido">¿Podemos sumar el CUIT en las órdenes?</p>
 						<p class="soporte__respuesta">
-							<span class="soporte__quien">I</span>
+							<Image src={avatar} alt="" width={48} class="soporte__quien" />
 							Listo, ya aparece en cada orden.
 						</p>
 					</div>
@@ -600,7 +602,7 @@ const auditoria = [
 		color: var(--p-acento);
 	}
 
-	/* 4. Soporte: el pedido y la respuesta, que la da una persona (la inicial de Ignacio). */
+	/* 4. Soporte: el pedido y la respuesta, que la da la agencia (el avatar de la marca, sobre el globo azul oscuro). */
 	.soporte {
 		display: grid;
 		gap: 8px;
@@ -630,16 +632,10 @@ const auditoria = [
 	}
 
 	.soporte__quien {
-		display: grid;
 		flex: none;
-		place-items: center;
 		width: 24px;
 		height: 24px;
 		border-radius: 50%;
-		background: var(--blue-100);
-		color: var(--blue-900);
-		font-size: 0.8125rem;
-		font-weight: var(--fw-bold);
 	}
 
 	/* --- Escritorio sin la card fija (movimiento reducido o sin soporte): cada visual al lado de
