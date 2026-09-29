@@ -266,7 +266,7 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 		-webkit-user-select: none;
 		background: var(--cyan-300);
 		color: var(--navy-950);
-		transition: scale 0.2s var(--curva-salida);
+		transition: background-color 0.15s;
 	}
 
 	.producto__reponer::before {
@@ -278,20 +278,15 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 	}
 
 	@media (hover: hover) and (pointer: fine) {
-		.producto__reponer {
-			transition:
-				background-color 0.2s,
-				scale 0.2s var(--curva-salida);
-		}
-
 		.producto__reponer:hover {
 			background: var(--cyan-200);
 		}
 	}
 
+	/* Al presionar solo cambia el color (la marca no usa escala): cian más saturado, navy encima
+	   (más de 9:1). Va fuera del hover para que también se vea al tocar. */
 	.producto__reponer:active {
-		scale: 0.96;
-		transition: scale 0.12s var(--curva-salida);
+		background: var(--cyan-400);
 	}
 
 	.producto__nivel {

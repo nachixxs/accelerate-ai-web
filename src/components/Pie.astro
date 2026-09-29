@@ -248,14 +248,22 @@ const links = [
 		color: var(--text-heading-light);
 		font-size: var(--type-meta-size);
 		font-weight: var(--fw-semibold);
-		transition: border-color 0.2s, scale 0.2s var(--curva-salida);
+		transition: border-color 0.2s, background-color 0.2s;
 	}
 
-	/* Feedback al apretar: se achica y al soltar vuelve con la transición de arriba (0.2s), más
-	   lenta que la de presionar (0.12s). */
+	/* Al apretar solo cambia el color (la marca no usa escala): borde cian y fondo navy más claro,
+	   texto claro encima (AA). Rápido al presionar (0,12 s), más lento al soltar (0,2 s). */
 	.pie__arriba:active {
-		scale: 0.97;
-		transition: scale 0.12s var(--curva-salida);
+		border-color: var(--cyan-300);
+		background: var(--navy-800);
+		transition-duration: 0.12s;
+	}
+
+	/* El :hover global de los links (azul oscuro, para el celular) deja este texto en 2,2:1 sobre
+	   navy al tocarlo: se fija el color claro en los dos estados. */
+	.pie__arriba:hover,
+	.pie__arriba:active {
+		color: var(--text-heading-light);
 	}
 
 	.pie__arriba :global(svg) {
