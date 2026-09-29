@@ -259,6 +259,13 @@ const links = [
 		transition-duration: 0.12s;
 	}
 
+	/* El :hover global de los links (azul oscuro, para el celular) deja este texto en 2,2:1 sobre
+	   navy al tocarlo: se fija el color claro en los dos estados. */
+	.pie__arriba:hover,
+	.pie__arriba:active {
+		color: var(--text-heading-light);
+	}
+
 	.pie__arriba :global(svg) {
 		color: var(--cyan-300);
 		transition: transform 0.2s var(--curva-salida);
