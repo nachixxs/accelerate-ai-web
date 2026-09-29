@@ -140,9 +140,10 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 	];
 
 	// Tu tiempo: al cambiar tarea, horas y personas cambian el total (horas × personas × 4) y el
-	// mensaje del botón, y ni el "800" del máximo se sale de su card ni de la página.
-	const calculadora = await revisarCalculadora(pagina, width);
-	chequeos.push([calculadora.length === 0, `la calculadora de Tu tiempo cambia el total y el botón, y el máximo entra${calculadora.length ? ': ' + calculadora.join(', ') : ''}`]);
+	// mensaje del botón, y ni el "800" del máximo se sale de su card ni de la página. Debajo de 1024
+	// la card va arriba de los controles: el total tiene que verse entero, bajo la cápsula, al usar cada uno.
+	const calculadora = await revisarCalculadora(pagina, width, height);
+	chequeos.push([calculadora.length === 0, `la calculadora de Tu tiempo cambia el total y el botón, y el máximo entra${width < 1024 ? ' y se ve al usar cada control' : ''}${calculadora.length ? ': ' + calculadora.join(', ') : ''}`]);
 
 	// Lo que va montado sobre un borde no puede salirse de costado de su card. Los que van en el
 	// flujo, con margen negativo, tampoco pueden tapar lo que tienen al lado (sus hermanos y, en el
@@ -182,7 +183,7 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 }
 
 // Devuelve la lista de lo que falló (vacía si todo bien). Deja la calculadora como la encontró.
-async function revisarCalculadora(pagina, width) {
+async function revisarCalculadora(pagina, width, height) {
 	const leer = () =>
 		pagina.evaluate(() => {
 			const numero = document.querySelector('#tiempo [data-total]').getBoundingClientRect();
@@ -209,6 +210,28 @@ async function revisarCalculadora(pagina, width) {
 		if (ahora.texto !== texto) fallas.push(`mensaje "${ahora.texto}"`);
 		if (!ahora.entra) fallas.push(`el ${total} se sale de su card a ${width} px`);
 		if (ahora.pagina > width) fallas.push(`página de ${ahora.pagina} px con el ${total}`);
+	}
+
+	// Recorrido de arriba abajo, como lo haría quien usa la sección: cada chip y cada range entra en
+	// pantalla con scrollIntoView (nearest) y el número tiene que quedar entero, debajo de la cápsula.
+	// En el celular se mide también con una ventana de 640 de alto, la más chica que se usa.
+	if (width < 1024) {
+		for (const alto of width < 768 ? [height, 640] : [height]) {
+			await pagina.setViewportSize({ width, height: alto });
+			const fuera = await pagina.evaluate(() => {
+				document.documentElement.style.scrollBehavior = 'auto';
+				scrollTo(0, 0);
+				const controles = [...document.querySelectorAll('#tiempo .tiempo__chip, #tiempo input[type="range"]')];
+				return controles.flatMap((el) => {
+					el.scrollIntoView({ block: 'nearest' });
+					const n = document.querySelector('#tiempo [data-total]').getBoundingClientRect();
+					const capsula = document.querySelector('.capsula').getBoundingClientRect().bottom;
+					return n.top >= capsula && n.bottom <= innerHeight ? [] : [el.id || el.textContent.trim()];
+				});
+			});
+			if (fuera.length) fallas.push(`a ${width}x${alto} el total no se ve entero al usar: ${fuera.join(', ')}`);
+		}
+		await pagina.setViewportSize({ width, height });
 	}
 	return fallas;
 }
