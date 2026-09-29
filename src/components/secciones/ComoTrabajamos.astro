@@ -6,10 +6,9 @@
 // cuando la punta la alcanza. En escritorio, a la derecha, una sola card invertida queda fija y
 // cambia de pantalla según el paso que está a media pantalla. En el celular no hay nada fijo:
 // cada paso lleva su visual abajo, en card clara (la propuesta es la única invertida).
-// La tarjeta fija corre en los dos modos de movimiento (decisión del usuario, 2026-09-27): con
-// movimiento, el cambio de pantalla va atado al scroll; con movimiento reducido, o sin soporte de
-// animaciones atadas al scroll, es un fundido de opacidad que dispara el script al elegir la
-// pantalla activa. En el celular no hay nada fijo: cada visual queda al lado de su paso.
+// Con movimiento reducido (decisión del usuario, 2026-09-28), o sin soporte de animaciones atadas
+// al scroll, la card fija no existe: en escritorio cada visual queda al lado de su paso, completo
+// y quieto, como en el celular. Sin JS la card fija sigue el scroll sola: el script solo suma.
 import Icono from '../Icono.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 
@@ -138,21 +137,26 @@ const auditoria = [
 <script>
 	import { movimientoReducido } from '../../scripts/contar';
 
-	// La tarjeta fija (escritorio, en los dos modos de movimiento) apila las cuatro pantallas en
-	// la misma celda: sin esto el mouse siempre cae sobre la última del DOM. Acá se marca cuál
-	// está a media pantalla (pantalla--activa); el CSS le da el pointer-events y, con movimiento
-	// reducido o sin soporte de scroll-timeline, también el fundido de opacidad.
+	// La tarjeta fija (escritorio, con movimiento y con scroll-timeline) apila las cuatro
+	// pantallas en la misma celda: sin esto el mouse siempre cae sobre la última del DOM. Acá se
+	// marca cuál está a media pantalla (pantalla--activa); el CSS le da el pointer-events. Donde
+	// no hay tarjeta fija, cada pantalla ya está sola junto a su paso y no hace falta nada.
 	const pasos = [...document.querySelectorAll<HTMLElement>('.proceso .paso__texto')];
 	const pantallas = [...document.querySelectorAll<HTMLElement>('.proceso .pantalla')];
 	const anchoFijo = matchMedia('(min-width: 1024px)');
-	const conTarjetaFija = () => anchoFijo.matches;
+	const conTarjetaFija = () =>
+		!movimientoReducido() &&
+		anchoFijo.matches &&
+		CSS.supports('(animation-timeline: view()) and (timeline-scope: none)');
 
 	let observador: IntersectionObserver | null = null;
 	const enBanda = new Set<HTMLElement>();
 
-	// El sello "Aprobada" (pantalla 2): en escritorio se estampa cuando esa pantalla pasa a
-	// activa, no por su propio observador (con el observador se estampaba con la pantalla todavía
-	// en opacidad 0, B3). Con reducción no se agrega ninguna clase, como hoy.
+	// El sello "Aprobada" (pantalla 2) entra con un fundido por tiempo, una sola vez. Con la card
+	// fija se estampa cuando esa pantalla pasa a activa, no por su propio observador (con el
+	// observador se estampaba con la pantalla todavía en opacidad 0). Donde el sello está junto a
+	// su paso (celular, tablet, sin soporte) lo dispara un observador propio al verse. Con
+	// reducción o sin JS no se agrega ninguna clase y el CSS lo deja en su estado final.
 	const sello = document.querySelector<HTMLElement>('.propuesta__sello');
 	let selloEstampado = false;
 	function estamparSello() {
@@ -181,7 +185,7 @@ const auditoria = [
 		if (!elegido) return;
 		const activa = pantallas[pasos.indexOf(elegido)];
 		activa?.classList.add('pantalla--activa');
-		if (activa?.classList.contains('pantalla--2') && !movimientoReducido()) estamparSello();
+		if (activa?.classList.contains('pantalla--2')) estamparSello();
 	}
 
 	function activar() {
@@ -206,58 +210,42 @@ const auditoria = [
 		pantallas.forEach((p) => p.classList.remove('pantalla--activa'));
 	}
 
-	anchoFijo.addEventListener('change', () => (conTarjetaFija() ? activar() : desactivar()));
-	activar();
+	// Observador del sello para cuando no hay card fija; se prende y se apaga con el ancho.
+	const observadorSello = new IntersectionObserver(
+		(entradas) => entradas[0].isIntersecting && estamparSello(),
+		{ threshold: 0.6 },
+	);
 
-	// El sello "Aprobada" entraba atado a un tramo de scroll de 48-83px: con un scroll rápido se
-	// salta entero. Ahora es una entrada por tiempo, disparada una sola vez cuando se ve. Sin JS,
-	// o con movimiento reducido, no se agrega ninguna clase y el CSS lo deja en su estado final.
-	// En escritorio (con tarjeta fija) el disparo va por elegirActiva(), arriba: acá el observador
-	// queda solo para el celular y la tablet, donde el sello está junto a su paso, en el flujo.
-	if (sello && !movimientoReducido()) {
-		sello.classList.add('proceso-sello-espera');
-	}
-	if (sello && !movimientoReducido() && !anchoFijo.matches) {
-		const observadorSello = new IntersectionObserver(
-			(entradas) => {
-				if (!entradas[0].isIntersecting) return;
-				observadorSello.disconnect();
-				estamparSello();
-			},
-			{ threshold: 0.6 },
-		);
-		observadorSello.observe(sello);
-	}
-</script>
-
-<style>
-	/* --marca vive en la sección (la comparten .proceso__riel y .proceso__pie, que son hermanos:
-	   una custom property solo pasa a los descendientes, no entre hermanos). */
-	.proceso {
-		--marca: 48px;
-	}
-
-	/* Alineado con el texto de los pasos (marca + el gap de .paso), no centrado como el resto de
-	   los CTA de la página los tiene a la izquierda. Debajo de 480px la sangría no entra (el botón
-	   se parte en 2 líneas): ahí queda a la izquierda como el resto de los CTA de sección. */
-	.proceso__pie {
-		display: flex;
-		justify-content: flex-start;
-		margin-top: var(--space-6);
-	}
-
-	@media (min-width: 480px) {
-		.proceso__pie {
-			padding-left: calc(var(--marca) + var(--space-3));
+	function ajustar() {
+		if (conTarjetaFija()) {
+			activar();
+			if (sello) observadorSello.unobserve(sello);
+		} else {
+			desactivar();
+			if (sello && !movimientoReducido()) observadorSello.observe(sello);
 		}
 	}
 
+	if (sello && !movimientoReducido()) sello.classList.add('proceso-sello-espera');
+	anchoFijo.addEventListener('change', ajustar);
+	ajustar();
+</script>
+
+<style>
+	.proceso__pie {
+		display: flex;
+		justify-content: center;
+		margin-top: var(--space-6);
+	}
+
 	/* --- El riel y los pasos (celular primero) ---
-	   El envoltorio lleva el margen que antes tenía .linea, para que el punto pueda medirse
-	   contra la misma caja sin offsets. */
+	   El envoltorio lleva --marca (la comparten .linea, .linea__relleno y .linea__punto, que son
+	   hermanos: una custom property solo pasa a los descendientes) y el margen que antes tenía
+	   .linea, para que el punto pueda medirse contra la misma caja sin offsets. */
 	.proceso__riel {
 		position: relative;
 		margin-top: var(--space-6);
+		--marca: 48px;
 		/* .linea declara el timeline --proceso; .linea__punto es su hermano, no su descendiente,
 		   así que necesita este scope para poder usarlo (igual que --paso-N con las pantallas). */
 		timeline-scope: --proceso;
@@ -654,16 +642,28 @@ const auditoria = [
 		font-weight: var(--fw-bold);
 	}
 
-	/* --- Escritorio, tamaño de marca y espacio entre pasos: comunes a los dos modos de
-	   movimiento. La tarjeta fija (grilla, marco, pantallas) va más abajo, junto con el resto de
-	   lo que le corresponde a >=1024px. --- */
+	/* --- Escritorio sin la card fija (movimiento reducido o sin soporte): cada visual al lado de
+	   su paso, como el celular pero en dos columnas. La card fija (con movimiento) lo pisa más
+	   abajo. --- */
 	@media (min-width: 1024px) {
-		.proceso {
+		.proceso__riel {
 			--marca: 56px;
 		}
 
-		.proceso__pie {
-			padding-left: calc(var(--marca) + var(--space-4));
+		.linea {
+			gap: var(--space-7);
+		}
+
+		.paso {
+			grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
+			column-gap: var(--space-4);
+			align-items: start;
+		}
+
+		.pantalla {
+			grid-column: 3;
+			grid-row: 1;
+			width: 100%;
 		}
 	}
 
@@ -815,141 +815,33 @@ const auditoria = [
 		12%, 100% { opacity: 1; }
 	}
 
-	/* --- La tarjeta fija: para los dos modos de movimiento (decisión del usuario, 2026-09-27).
-	   Los pasos pierden su caja (display: contents) y sus partes pasan a la grilla de la lista:
-	   marca y texto en una fila por paso, las cuatro pantallas apiladas en la tercera columna,
-	   fijas a media pantalla. Con movimiento reducido, o sin soporte de scroll-timeline, el
-	   cambio de pantalla es un fundido de opacidad que dispara la clase pantalla--activa (la pone
-	   el script); con movimiento y soporte, ese fundido lo reemplaza el bloque de más abajo, que
-	   además ata el texto activo y el contenido de cada pantalla al scroll. --- */
-	@media (min-width: 1024px) {
-		.linea {
-			grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
-			grid-template-rows: repeat(4, auto);
-			column-gap: var(--space-4);
-			row-gap: 0;
-			--fija-arriba: max(112px, calc(50vh - var(--fija-alto) / 2));
-			--fija-alto: 400px;
-		}
-
-		.paso {
-			display: contents;
-		}
-
-		/* Marca y texto no llevan fila: con su columna fija, la grilla los pone solos en la
-		   fila siguiente de cada paso. Las pantallas y el marco ocupan todas las filas. */
-		.paso__marca {
-			grid-column: 1;
-		}
-
-		.paso__texto {
-			grid-column: 2;
-			min-height: 70vh;
-			padding-bottom: var(--space-6);
-		}
-
-		/* El marco: la única card invertida, fija. Es el ::before del primer paso, que con
-		   display: contents igual genera su caja y cae en la grilla de la lista. Las cuatro
-		   pantallas van encima, transparentes: solo cambia el contenido. */
-		.paso:first-child::before {
-			content: '';
-			grid-column: 3;
-			grid-row: 1 / -1;
-			align-self: start;
-			position: sticky;
-			top: var(--fija-arriba);
-			height: var(--fija-alto);
-			border: 1px solid var(--border-dark);
-			border-radius: var(--radius-card);
-			background: var(--surface-card-dark);
-			box-shadow: var(--shadow-card);
-		}
-
-		/* La paleta de .pantalla--invertida, para las cuatro; sin fondo, lo pone el marco. El
-		   fundido de opacidad de acá abajo es el que vale con movimiento reducido o sin soporte
-		   de scroll-timeline; con soporte y movimiento, el bloque siguiente lo reemplaza por la
-		   animación atada al scroll. */
-		.pantalla {
-			--p-borde: var(--border-dark);
-			--p-titulo: var(--text-heading-light);
-			--p-texto: var(--text-body-light);
-			--p-suave: var(--text-muted-light);
-			--p-riel: var(--navy-800);
-			--p-acento: var(--cyan-300);
-			--p-chip-fondo: var(--cyan-300);
-			--p-chip-texto: var(--navy-950);
-			grid-column: 3;
-			grid-row: 1 / -1;
-			align-self: start;
-			position: sticky;
-			top: var(--fija-arriba);
-			max-width: none;
-			height: var(--fija-alto);
-			padding: var(--space-5) var(--space-4);
-			gap: var(--space-3);
-			border-color: transparent;
-			background: none;
-			font-size: 1.0625rem;
-			box-shadow: none;
-			opacity: 0;
-			/* La que sale se va rápido y sola; .pantalla--activa (más abajo) pisa esta transición
-			   con la de entrada, que espera un poco. Fade-through: nunca hay dos a la vista a la
-			   vez (M6). Solo opacidad: respeta la regla de reducción. */
-			transition: translate 0.2s var(--curva-salida), border-color 0.2s var(--curva-salida), opacity 0.12s ease-out;
-			/* Las cuatro están apiladas en la misma celda: sin esto, el mouse siempre cae
-			   sobre la última del DOM. El script marca cuál está a media pantalla (o, sin
-			   soporte de scroll-timeline, cuál está más cerca del centro). */
-			pointer-events: none;
-		}
-
-		/* Sin JS (o antes de que el observer elija una), se ve la primera pantalla. */
-		.pantalla--1 {
-			opacity: 1;
-		}
-
-		.pantalla--activa {
-			opacity: 1;
-			pointer-events: auto;
-			transition: translate 0.2s var(--curva-salida), border-color 0.2s var(--curva-salida), opacity 0.2s var(--curva-salida) 0.1s;
-		}
-
-		/* Solo se apaga la 1 si ya hay otra activa: sin JS (nunca se agrega pantalla--activa) esta
-		   regla no aplica y la 1 queda como arriba, a la vista (REVISOR#1). */
-		.linea:has(.pantalla--activa) .pantalla--1:not(.pantalla--activa) {
-			opacity: 0;
-		}
-
-		.pantalla__titulo {
-			font-size: var(--type-label-size);
-		}
-
-		/* Con la tarjeta fija el marco (::before) no se mueve: si la pantalla sube 4px en
-		   hover queda un doble borde abajo. Acá solo cambia el borde. Excepción de movimiento
-		   pedida por el usuario: el hover de la tarjeta fija corre también con reducción. */
-		@media (hover: hover) and (pointer: fine) {
-			.pantalla:hover {
-				translate: none;
-			}
-		}
-
-		/* .fundir (global.css) le pone a cada pantalla una animation con fill:both que, ya
-		   terminada, sigue fijando la opacidad y se come la transition de .pantalla--activa: el
-		   cambio de paso corta en seco en vez de fundir (B1). Acá gana por especificidad (el scope
-		   de Astro suma un atributo) y no toca nada con movimiento: en el celular .fundir sigue
-		   fundiendo al entrar. */
-		@media (prefers-reduced-motion: reduce) {
-			.pantalla {
-				animation: none;
-			}
-		}
-	}
-
 	/* Las pantallas usan los timelines de sus hermanos (--paso-N), que necesitan timeline-scope:
-	   sin él quedarían las cuatro visibles y encimadas en la card. Todo esto reemplaza, para
-	   quien tiene soporte y no pidió menos movimiento, el fundido simple de arriba. */
+	   sin él quedarían las cuatro visibles y encimadas en la card. Con movimiento reducido o sin
+	   soporte no entra nada de esto: quedan las cuatro cards al lado de su paso (arriba). */
 	@media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
 		@supports (animation-timeline: view()) and (timeline-scope: none) {
+			.linea {
+				grid-template-columns: var(--marca) minmax(0, 5fr) minmax(0, 6fr);
+				grid-template-rows: repeat(4, auto);
+				gap: 0 var(--space-4);
+				--fija-arriba: max(112px, calc(50vh - var(--fija-alto) / 2));
+				--fija-alto: 400px;
+			}
+
+			.paso {
+				display: contents;
+			}
+
+			/* Marca y texto no llevan fila: con su columna fija, la grilla los pone solos en la
+			   fila siguiente de cada paso. Las pantallas y el marco ocupan todas las filas. */
+			.paso__marca {
+				grid-column: 1;
+			}
+
 			.paso__texto {
+				grid-column: 2;
+				min-height: 70vh;
+				padding-bottom: var(--space-6);
 				view-timeline: var(--paso) block;
 				view-timeline-inset: 45% 45%;
 				animation: proceso-texto-activo linear both;
@@ -959,8 +851,65 @@ const auditoria = [
 			.paso:first-child .paso__texto { animation-name: proceso-texto-primero; }
 			.paso:last-child .paso__texto { animation-name: proceso-texto-ultimo; }
 
+			/* El marco: la única card invertida, fija. Es el ::before del primer paso, que con
+			   display: contents igual genera su caja y cae en la grilla de la lista. Las cuatro
+			   pantallas van encima, transparentes: solo cambia el contenido. */
+			.paso:first-child::before {
+				content: '';
+				grid-column: 3;
+				grid-row: 1 / -1;
+				align-self: start;
+				position: sticky;
+				top: var(--fija-arriba);
+				height: var(--fija-alto);
+				border: 1px solid var(--border-dark);
+				border-radius: var(--radius-card);
+				background: var(--surface-card-dark);
+				box-shadow: var(--shadow-card);
+			}
+
+			/* La paleta de .pantalla--invertida, para las cuatro; sin fondo, lo pone el marco. */
 			.pantalla {
+				--p-borde: var(--border-dark);
+				--p-titulo: var(--text-heading-light);
+				--p-texto: var(--text-body-light);
+				--p-suave: var(--text-muted-light);
+				--p-riel: var(--navy-800);
+				--p-acento: var(--cyan-300);
+				--p-chip-fondo: var(--cyan-300);
+				--p-chip-texto: var(--navy-950);
+				grid-row: 1 / -1;
+				align-self: start;
+				position: sticky;
+				top: var(--fija-arriba);
+				max-width: none;
+				height: var(--fija-alto);
+				padding: var(--space-5) var(--space-4);
+				gap: var(--space-3);
+				border-color: transparent;
+				background: none;
+				font-size: 1.0625rem;
+				box-shadow: none;
 				animation: proceso-pantalla linear both;
+				/* Las cuatro están apiladas en la misma celda: sin esto, el mouse siempre cae
+				   sobre la última del DOM. El script marca cuál está a media pantalla. */
+				pointer-events: none;
+			}
+
+			.pantalla--activa {
+				pointer-events: auto;
+			}
+
+			.pantalla__titulo {
+				font-size: var(--type-label-size);
+			}
+
+			/* Con la tarjeta fija el marco (::before) no se mueve: si la pantalla sube 4px en
+			   hover queda un doble borde abajo. Acá solo cambia el borde. */
+			@media (hover: hover) and (pointer: fine) {
+				.pantalla:hover {
+					translate: none;
+				}
 			}
 
 			.pantalla--1 { animation-name: proceso-pantalla-primera; animation-timeline: --paso-1; }
