@@ -256,9 +256,6 @@ const links = [
 		display: inline-flex;
 		border-radius: var(--radius-pill);
 		-webkit-tap-highlight-color: transparent;
-		/* Con esto en la base, soltar también transiciona (antes solo existía dentro de :active,
-		   así que la escala volvía a 1 de un salto). */
-		transition: scale 0.2s var(--curva-salida);
 	}
 
 	.capsula__cta-cara {
@@ -312,12 +309,6 @@ const links = [
 		background: var(--blue-50);
 	}
 
-	/* Feedback al presionar: scale suelto, no transform (ese lo usa el hover de la cara). */
-	.capsula__cta:active {
-		scale: 0.97;
-		transition: scale 0.12s var(--curva-salida);
-	}
-
 	.capsula__cta--lleno:active .capsula__cta-relleno {
 		border-color: var(--blue-800);
 		background: var(--blue-800);
@@ -341,18 +332,23 @@ const links = [
 		-webkit-tap-highlight-color: transparent;
 		-webkit-user-select: none;
 		user-select: none;
-		transition: scale 0.2s var(--curva-salida);
-	}
-
-	.capsula__menu:active {
-		scale: 0.97;
-		transition: scale 0.12s var(--curva-salida);
+		transition: background-color 0.15s var(--curva-salida);
 	}
 
 	.capsula__menu--cerrar {
 		border-color: var(--navy-950);
 		background: var(--navy-950);
 		color: var(--white);
+	}
+
+	/* Al presionar solo cambia el color (la marca no usa escala): azul muy claro con texto navy, y
+	   navy más claro con texto blanco en "Cerrar". Los dos pasan AA de sobra. */
+	.capsula__menu:active {
+		background: var(--blue-50);
+	}
+
+	.capsula__menu--cerrar:active {
+		background: var(--navy-800);
 	}
 
 	/* --- El menú: una card blanca en el lugar de la cápsula, como si se abriera hacia abajo. --- */
