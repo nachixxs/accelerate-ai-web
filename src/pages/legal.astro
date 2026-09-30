@@ -32,10 +32,11 @@ import Terminos from '../components/legal/Terminos.astro';
 		padding-bottom: var(--espacio-seccion);
 	}
 
-	/* Desde 1200 px el índice pasa a una columna a la derecha del texto y queda fijo mientras se lee.
-	   El max-height evita que, con texto muy agrandado, se corte la punta de la lista; el padding
-	   deja lugar al anillo de foco, que un overflow recortaría. */
-	@media (min-width: 1200px) {
+	/* Desde 75em el índice pasa a una columna a la derecha del texto y queda fijo mientras se lee. Va en
+	   em (1200 px con la letra normal) para que con la letra agrandada vuelva a una sola columna. El
+	   max-height evita que, con texto muy agrandado, se corte la punta de la lista; el padding deja
+	   lugar al anillo de foco, que un overflow recortaría. */
+	@media (min-width: 75em) {
 		.legal {
 			display: grid;
 			grid-template-columns: minmax(0, 65ch) minmax(0, 22rem);
@@ -48,8 +49,8 @@ import Terminos from '../components/legal/Terminos.astro';
 			grid-column: 2;
 			grid-row: 1 / span 2;
 			position: sticky;
-			top: 112px;
-			max-height: calc(100dvh - 128px);
+			top: 88px;
+			max-height: calc(100dvh - 104px);
 			margin: calc(96px + var(--space-4)) -8px 0;
 			padding: 8px;
 			overflow-y: auto;
@@ -74,10 +75,7 @@ import Terminos from '../components/legal/Terminos.astro';
 	}
 
 	.legal :global(.parte > h2) {
-		font-size: var(--type-label-size);
 		font-weight: var(--fw-bold);
-		line-height: var(--type-label-lh);
-		text-wrap: balance;
 	}
 
 	/* Ritmo de lectura: espacio entre bloques (sin sangría) y más aire arriba de cada tema que abajo. */
