@@ -143,11 +143,21 @@ import Terminos from '../components/legal/Terminos.astro';
 		overflow-wrap: anywhere;
 		text-decoration: underline;
 		text-decoration-thickness: 1px;
-		text-underline-offset: 3px;
+		text-underline-offset: 4px;
 	}
 
-	.legal :global(.parte p a:hover),
-	.legal :global(.parte p a:active) {
+	/* Hover y active de los links del índice y del texto. El :hover global es el azul de máxima
+	   saturación, que no llega a AA sobre el fondo claro. El :hover va solo con puntero fino: en el
+	   celular se quedaría pegado después de tocar. */
+	.legal :global(:is(.indice, .parte p) a:active) {
 		color: var(--blue-800);
+		text-decoration: underline;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.legal :global(:is(.indice, .parte p) a:hover) {
+			color: var(--blue-800);
+			text-decoration: underline;
+		}
 	}
 </style>

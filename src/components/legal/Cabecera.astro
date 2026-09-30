@@ -90,10 +90,16 @@ import Icono from '../Icono.astro';
 		text-underline-offset: 4px;
 	}
 
-	/* El :hover global (azul de la marca) no se lee sobre navy: se fija un cian más claro. */
-	.corta__link:hover,
+	/* El :hover global (azul de la marca) no se lee sobre navy: se fija un cian más claro. El :hover va
+	   solo con puntero fino: en el celular se quedaría pegado después de tocar. */
 	.corta__link:active {
 		color: var(--cyan-200);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.corta__link:hover {
+			color: var(--cyan-200);
+		}
 	}
 
 	.corta :focus-visible {
