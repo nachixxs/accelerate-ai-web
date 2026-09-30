@@ -101,7 +101,7 @@ import Terminos from '../components/legal/Terminos.astro';
 		margin-top: var(--space-1);
 	}
 
-	.legal :global(.parte > :is(p, ul, blockquote)) {
+	.legal :global(.parte > :is(p, ul, figure)) {
 		max-width: var(--measure-cuerpo);
 		color: var(--text-body-dark);
 		line-height: 1.6;
@@ -118,18 +118,21 @@ import Terminos from '../components/legal/Terminos.astro';
 		color: var(--slate-500);
 	}
 
-	/* El texto de la AAIP, literal: se lee como cita por el peso y el color, sin filete de color. */
+	/* El texto de la AAIP, literal: se lee como cita por el filete neutro de 1 px (sin color) y no pesa
+	   más que el cuerpo. La fuente va en el figcaption, fuera de la cita. */
+	.legal :global(.parte figure) {
+		margin: 0;
+	}
+
 	.legal :global(.parte blockquote) {
-		margin-inline: 0;
+		margin: 0;
+		padding-left: var(--space-2);
+		border-left: 1px solid var(--border-light);
 	}
 
-	.legal :global(.parte blockquote p) {
-		color: var(--text-heading-dark);
-		font-weight: var(--fw-medium);
-	}
-
-	.legal :global(.parte blockquote footer) {
+	.legal :global(.parte figcaption) {
 		margin-top: var(--space-1);
+		padding-left: var(--space-2);
 		color: var(--text-body-dark);
 		font-size: var(--type-meta-size);
 	}
