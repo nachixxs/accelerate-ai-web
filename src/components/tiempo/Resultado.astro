@@ -11,13 +11,13 @@ import Icono from '../Icono.astro';
 interface Props {
 	tareas: { id: string; icono: string; verbo: string }[];
 	tarea: string;
+	verboEjemplo: string;
 	total: number;
 	horas: number;
 	personas: number;
 }
 
-const { tareas, tarea, total, horas, personas } = Astro.props;
-const verboEjemplo = tareas.find((t) => t.id === tarea)!.verbo;
+const { tareas, tarea, verboEjemplo, total, horas, personas } = Astro.props;
 const mayus = (s: string) => s[0].toUpperCase() + s.slice(1);
 // Centenas, decenas, unidades: la columna que sobra va oculta.
 const columnas = String(total).padStart(3, ' ').split('');
@@ -120,8 +120,7 @@ const columnas = String(total).padStart(3, ' ').split('');
 		font-size: min(clamp(5.5rem, 0.5rem + 32vw, 12.5rem), 34vw); font-weight: var(--fw-black);
 		font-variant-numeric: tabular-nums; letter-spacing: -0.04em; line-height: 0.9;
 	}
-	.tiempo__col { display: block; height: 0.9em; overflow: clip; }
-	.tiempo__col[hidden] { display: none; }
+	.tiempo__col { height: 0.9em; overflow: clip; }
 	.tiempo__tira { display: block; }
 	.tiempo__tira span { display: block; height: 0.9em; }
 	:global(.tiempo[data-listo]) .tiempo__tira { transition: transform 260ms var(--curva-salida); }
@@ -154,19 +153,18 @@ const columnas = String(total).padStart(3, ' ').split('');
 	@media (min-width: 768px) {
 		.tiempo__contenido { gap: var(--space-2); padding: var(--space-5); }
 		.tiempo__pastilla { right: var(--space-3); max-width: calc(100% - 2 * var(--space-3)); }
-		.tiempo__unidad { margin-top: var(--space-1); }
 	}
 
 	/* Tablet: el número y "horas por mes" en la misma línea base; si no entran, baja la unidad. */
 	@media (min-width: 768px) and (max-width: 1023.98px) {
 		.tiempo__cifra { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); }
-		.tiempo__unidad { margin-top: 0; }
 	}
 
 	/* Escritorio: el botón entra en la card, en contorno sobre oscuro. Las tres piezas comparten
 	   columna: el fondo abarca las filas de la cifra y del botón, y la card reserva el alto del botón
 	   porque el botón ocupa su fila (con letra grande baja de línea y la card crece con él). */
 	@media (min-width: 1024px) {
+		.tiempo__unidad { margin-top: var(--space-1); }
 		.tiempo__salida { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr); }
 		.tiempo__resultado { display: contents; }
 		.tiempo__fondo { position: relative; inset: auto; grid-area: 1 / 1 / 3 / 2; }

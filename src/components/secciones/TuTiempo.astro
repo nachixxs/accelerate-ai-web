@@ -41,7 +41,7 @@ const controles = [
 
 		<div class="tiempo__calc">
 			<Controles tareas={tareas} controles={controles} tarea={TAREA} />
-			<Resultado tareas={tareas} tarea={TAREA} total={total} horas={HORAS} personas={PERSONAS}>
+			<Resultado tareas={tareas} tarea={TAREA} verboEjemplo={verboEjemplo} total={total} horas={HORAS} personas={PERSONAS}>
 				<BotonWhatsApp variante="contorno" texto="Contanos en qué se te van" mensaje={mensaje} />
 			</Resultado>
 		</div>
@@ -106,6 +106,7 @@ const controles = [
 
 	// Al arrastrar, la perilla y el número van pegados al dedo (transiciones cortas, sin teclado).
 	const soltar = () => {
+		if (!arrastrando) return;
 		arrastrando = false;
 		delete seccion.dataset.arrastrando;
 		seccion.querySelectorAll('[data-presionado]').forEach((el) => el.removeAttribute('data-presionado'));

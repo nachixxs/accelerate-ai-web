@@ -5,22 +5,28 @@ export function controles(seccion: HTMLElement) {
 	const rangos = [...seccion.querySelectorAll<HTMLInputElement>('input[type="range"]')];
 	const chips = seccion.querySelector<HTMLElement>('.tiempo__chips')!;
 	const marca = chips.querySelector<HTMLElement>('.tiempo__marca')!;
-	const anchos = new Map<HTMLInputElement, number>();
+	// Se resuelve una vez al arrancar: `perillas` corre en cada paso del arrastre y no lee el layout.
+	// El ancho de la caja y el de la perilla (que no cambia con el valor) se leen al cambiar el tamaño.
+	const medidas = rangos.map((r) => {
+		const control = r.closest<HTMLElement>('.tiempo__control')!;
+		const perilla = control.querySelector<HTMLElement>('.tiempo__perilla')!;
+		perilla.style.left = '0';
+		return { r, control, perilla, relleno: control.querySelector<HTMLElement>('.tiempo__relleno')!, ancho: 0, tam: 0 };
+	});
+	const medir = () => medidas.forEach((m) => ((m.ancho = m.r.clientWidth), (m.tam = m.perilla.offsetWidth)));
+	medir();
 
 	// `suave` es para el teclado (120 ms); al arrastrar la perilla va pegada al dedo, sin transición.
 	function perillas(suave: boolean) {
-		for (const r of rangos) {
-			const control = r.closest<HTMLElement>('.tiempo__control')!;
-			const perilla = control.querySelector<HTMLElement>('.tiempo__perilla')!;
-			const ancho = anchos.get(r) ?? r.clientWidth;
+		for (const { r, control, perilla, relleno, ancho, tam } of medidas) {
 			const fraccion = (Number(r.value) - Number(r.min)) / (Number(r.max) - Number(r.min));
-			const x = (ancho - perilla.offsetWidth) * fraccion;
+			const x = (ancho - tam) * fraccion;
+			const texto = `${r.value} ${r.value === '1' ? r.dataset.uno : r.dataset.varias}`;
 			control.toggleAttribute('data-suave', suave);
 			if (perilla.textContent !== r.value) perilla.textContent = r.value;
-			perilla.style.left = '0';
 			perilla.style.transform = `translateX(${x}px)`;
-			control.querySelector<HTMLElement>('.tiempo__relleno')!.style.clipPath = `inset(0 ${ancho - x - perilla.offsetWidth / 2}px 0 0)`;
-			r.setAttribute('aria-valuetext', `${r.value} ${r.value === '1' ? r.dataset.uno : r.dataset.varias}`);
+			relleno.style.clipPath = `inset(0 ${ancho - x - tam / 2}px 0 0)`;
+			if (r.getAttribute('aria-valuetext') !== texto) r.setAttribute('aria-valuetext', texto);
 		}
 	}
 
@@ -39,10 +45,10 @@ export function controles(seccion: HTMLElement) {
 	}
 
 	// Cualquier cambio de tamaño (ancho de la ventana, letra, fuente que llega) reacomoda todo.
-	const observador = new ResizeObserver((entradas) => {
-		for (const e of entradas) if (e.target instanceof HTMLInputElement) anchos.set(e.target, e.contentRect.width);
-		perillas(false);
+	const observador = new ResizeObserver(() => {
+		medir();
 		marcar(false);
+		perillas(false);
 	});
 	observador.observe(chips);
 	rangos.forEach((r) => observador.observe(r));

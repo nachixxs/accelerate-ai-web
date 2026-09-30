@@ -43,6 +43,7 @@ const { tareas, controles, tarea } = Astro.props;
 				<div class="tiempo__pista" style={`--f:${((c.valor - c.min) / (c.max - c.min)).toFixed(4)}`}>
 					<input
 						id={`tiempo-${c.id}`}
+						name={c.id}
 						type="range"
 						min={c.min}
 						max={c.max}
@@ -68,7 +69,8 @@ const { tareas, controles, tarea } = Astro.props;
 	.tiempo__tareas .tiempo__etiqueta { margin-bottom: var(--space-2); }
 
 	/* --- Chips --- */
-	.tiempo__chips { position: relative; display: flex; flex-wrap: wrap; gap: var(--space-1); }
+	.tiempo__chips, .tiempo__marca { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+	.tiempo__chips { position: relative; }
 
 	/* El radio nativo cubre todo el chip (sin zonas muertas) y no se ve: la cara es la que pinta. */
 	.tiempo__chip { position: relative; display: flex; max-width: 100%; }
@@ -88,11 +90,11 @@ const { tareas, controles, tarea } = Astro.props;
 	   tapa clics ni la leen los lectores. Hasta que el script la acomoda (`data-marca` en la
 	   sección), el elegido se pinta solo, así no hay un instante sin selección. */
 	.tiempo__marca {
-		position: absolute; inset: 0; display: flex; flex-wrap: wrap; gap: var(--space-1);
+		position: absolute; inset: 0;
 		clip-path: inset(0 100% 100% 0); pointer-events: none;
 	}
-	.tiempo__marca .tiempo__cara { border-color: var(--brand-primary-deep); background: var(--brand-primary-deep); color: var(--white); }
 	:global(.tiempo[data-listo]) .tiempo__marca { transition: clip-path 280ms var(--curva-cruce); }
+	.tiempo__marca .tiempo__cara,
 	:global(.tiempo:not([data-marca])) .tiempo__chip input:checked + .tiempo__cara {
 		border-color: var(--brand-primary-deep); background: var(--brand-primary-deep); color: var(--white);
 	}
@@ -119,12 +121,12 @@ const { tareas, controles, tarea } = Astro.props;
 		display: block; width: 100%; height: 100%; margin: 0; background: transparent;
 		cursor: pointer; appearance: none; -webkit-appearance: none; touch-action: pan-y;
 	}
-	input[type='range']::-webkit-slider-runnable-track { height: 8px; border-radius: var(--radius-pill); background: var(--slate-400); }
+	input[type='range']::-webkit-slider-runnable-track { height: 8px; border-radius: var(--radius-pill); background: var(--slate-500); }
 	input[type='range']::-webkit-slider-thumb {
 		width: var(--tam); height: var(--tam); margin-top: calc((8px - var(--tam)) / 2);
 		border: 0; background: transparent; -webkit-appearance: none;
 	}
-	input[type='range']::-moz-range-track { height: 8px; border-radius: var(--radius-pill); background: var(--slate-400); }
+	input[type='range']::-moz-range-track { height: 8px; border-radius: var(--radius-pill); background: var(--slate-500); }
 	input[type='range']::-moz-range-thumb { box-sizing: border-box; width: var(--tam); height: var(--tam); border: 0; background: transparent; }
 
 	/* El tramo elegido: una barra que se recorta con clip-path hasta el centro de la perilla. Sin
@@ -159,7 +161,11 @@ const { tareas, controles, tarea } = Astro.props;
 	}
 
 	@media (forced-colors: active) {
-		.tiempo__chip input:checked + .tiempo__cara { border-color: Highlight; box-shadow: inset 0 0 0 2px Highlight; }
+		/* Sin colores ni sombras del autor: el foco es un outline real y el elegido, un borde grueso. */
+		input[type='range']:focus-visible { outline: 3px solid Highlight; outline-offset: -3px; }
+		.tiempo__marca { display: none; }
+		.tiempo__chip input:checked + .tiempo__cara { border-color: Highlight; outline: 3px solid Highlight; outline-offset: -4.5px; }
+		.tiempo__chip input:checked:focus-visible + .tiempo__cara { outline-offset: 3px; }
 		.tiempo__relleno { background: Highlight; }
 	}
 
