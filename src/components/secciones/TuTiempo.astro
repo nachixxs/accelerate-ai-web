@@ -4,17 +4,19 @@
 // nada. El resultado es el "momento de escala" de la marca y la única card invertida de la sección.
 // El botón de WhatsApp manda ese número y esa tarea. Sin JS, o donde el navegador avisa que no
 // hay scripting, se ve el ejemplo ya calculado y sin controles (el HTML trae el estado final).
+// Las piezas están en `src/components/tiempo/`: los controles, la card del resultado y sus scripts.
 import BotonWhatsApp from '../BotonWhatsApp.astro';
-import Icono from '../Icono.astro';
+import Controles from '../tiempo/Controles.astro';
+import Resultado from '../tiempo/Resultado.astro';
 
 // "Hacer la caja" arranca elegida: es el ejemplo de Sistemas a medida (MockCaja), la tarea que
 // hace cualquier rubro y la que mejor suena en el mensaje ("haciendo la caja").
 const tareas = [
-	{ id: 'pedidos', chip: 'Cargar pedidos', verbo: 'cargando pedidos' },
-	{ id: 'caja', chip: 'Hacer la caja', verbo: 'haciendo la caja' },
-	{ id: 'stock', chip: 'Controlar el stock', verbo: 'controlando el stock' },
-	{ id: 'datos', chip: 'Pasar datos de un lado a otro', verbo: 'pasando datos de un lado a otro' },
-	{ id: 'otra', chip: 'Otra', verbo: 'en tareas que se repiten' },
+	{ id: 'pedidos', chip: 'Cargar pedidos', verbo: 'cargando pedidos', icono: 'receipt-duotone' },
+	{ id: 'caja', chip: 'Hacer la caja', verbo: 'haciendo la caja', icono: 'cash-register-duotone' },
+	{ id: 'stock', chip: 'Controlar el stock', verbo: 'controlando el stock', icono: 'package-duotone' },
+	{ id: 'datos', chip: 'Pasar datos de un lado a otro', verbo: 'pasando datos de un lado a otro', icono: 'arrows-left-right-duotone' },
+	{ id: 'otra', chip: 'Otra', verbo: 'en tareas que se repiten', icono: 'dots-three-circle-duotone' },
 ];
 const [HORAS, PERSONAS, TAREA] = [5, 2, 'caja'];
 const total = HORAS * PERSONAS * 4;
@@ -25,10 +27,9 @@ const PLANTILLA = 'Hola, vi la web. Se me van unas {n} horas por mes {verbo}.';
 const mensaje = PLANTILLA.replace('{n}', String(total)).replace('{verbo}', verboEjemplo);
 
 const controles = [
-	{ id: 'horas', etiqueta: 'Horas por semana', min: 1, max: 20, valor: HORAS },
-	{ id: 'personas', etiqueta: 'Personas que lo hacen', min: 1, max: 10, valor: PERSONAS },
+	{ id: 'horas', etiqueta: 'Horas por semana', min: 1, max: 20, valor: HORAS, uno: 'hora por semana', varias: 'horas por semana' },
+	{ id: 'personas', etiqueta: 'Personas que lo hacen', min: 1, max: 10, valor: PERSONAS, uno: 'persona', varias: 'personas' },
 ];
-const fraccion = (c: (typeof controles)[number]) => ((c.valor - c.min) / (c.max - c.min)).toFixed(4);
 ---
 
 <section id="tiempo" class="seccion tiempo" aria-labelledby="tiempo-titulo" data-plantilla={PLANTILLA}>
@@ -39,169 +40,26 @@ const fraccion = (c: (typeof controles)[number]) => ((c.valor - c.min) / (c.max 
 		</div>
 
 		<div class="tiempo__calc">
-			<div class="tiempo__controles">
-				<fieldset class="tiempo__tareas">
-					<legend class="tiempo__etiqueta">¿Qué tarea es?</legend>
-					<div class="tiempo__chips">
-						{
-							tareas.map(({ id, chip, verbo }) => (
-								<label class="tiempo__chip">
-									<input type="radio" name="tarea" value={id} data-verbo={verbo} checked={id === TAREA} autocomplete="off" />
-									<span class="tiempo__cara">{chip}</span>
-								</label>
-							))
-						}
-					</div>
-				</fieldset>
-
-				{
-					controles.map((c) => (
-						<div class="tiempo__control">
-							<div class="tiempo__cabecera">
-								<label class="tiempo__etiqueta" for={`tiempo-${c.id}`}>{c.etiqueta}</label>
-								<span class="tiempo__valor" aria-hidden="true" data-valor={c.id}>{c.valor}</span>
-							</div>
-							<input
-								id={`tiempo-${c.id}`}
-								type="range"
-								min={c.min}
-								max={c.max}
-								step="1"
-								value={c.valor}
-								autocomplete="off"
-								style={`--f:${fraccion(c)}`}
-							/>
-						</div>
-					))
-				}
-			</div>
-
-			<div class="tiempo__salida">
-				<div class="tiempo__resultado">
-					<p class="tiempo__titulo t-label">
-						<Icono nombre="clock-duotone" size={32} class="tiempo__icono" />
-						Se te van
-					</p>
-					<div aria-hidden="true">
-						<p class="tiempo__numero" data-total>{total}</p>
-						<p class="tiempo__unidad t-titular">horas por mes</p>
-					</div>
-					<p class="solo-lector" role="status" data-anuncio>Se te van {total} horas por mes</p>
-				</div>
-
-				<p class="tiempo__ejemplo">Un ejemplo: {HORAS} horas por semana entre {PERSONAS} personas, {verboEjemplo}.</p>
-
-				<div class="tiempo__accion">
-					<BotonWhatsApp variante="contorno" texto="Contanos en qué se te van" mensaje={mensaje} />
-				</div>
-			</div>
+			<Controles tareas={tareas} controles={controles} tarea={TAREA} />
+			<Resultado tareas={tareas} tarea={TAREA} verboEjemplo={verboEjemplo} total={total} horas={HORAS} personas={PERSONAS}>
+				<BotonWhatsApp variante="contorno" texto="Contanos en qué se te van" mensaje={mensaje} />
+			</Resultado>
 		</div>
 	</div>
 </section>
 
 <style>
 	.tiempo__calc { display: grid; gap: var(--space-5); margin-top: var(--space-5); }
-	.tiempo__controles { display: grid; gap: var(--space-4); align-content: start; }
-	.tiempo__etiqueta { padding: 0; color: var(--text-heading-dark); font-weight: var(--fw-semibold); }
-	.tiempo__tareas { min-width: 0; margin: 0; padding: 0; border: 0; }
-	.tiempo__tareas .tiempo__etiqueta { margin-bottom: var(--space-2); }
-	.tiempo__chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 
-	/* El radio nativo cubre todo el chip (sin zonas muertas) y no se ve: la cara es la que pinta. */
-	.tiempo__chip { position: relative; display: flex; max-width: 100%; }
-	.tiempo__chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-	.tiempo__cara {
-		display: flex; align-items: center; min-height: 44px; padding: 10px 20px;
-		border: 1.5px solid var(--slate-500); border-radius: var(--radius-pill); background: var(--white);
-		color: var(--text-heading-dark); font-weight: var(--fw-medium); line-height: 1.2;
-		transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-	}
-
-	/* Elegido: relleno azul profundo y letra clara. Al presionar solo cambia el color (sin escala). */
-	.tiempo__chip input:checked + .tiempo__cara {
-		border-color: var(--brand-primary-deep); background: var(--brand-primary-deep);
-		color: var(--white); font-weight: var(--fw-semibold);
-	}
-	.tiempo__chip input:not(:checked):active + .tiempo__cara { border-color: var(--brand-primary-deep); background: var(--blue-50); color: var(--brand-primary-deep); }
-
-	/* El anillo va en la cara: el radio está transparente y su outline no se vería. */
-	.tiempo__chip input:focus-visible { outline: none; }
-	.tiempo__chip input:focus-visible + .tiempo__cara { outline: 3px solid var(--brand-primary-deep); outline-offset: 3px; }
-
-	@media (hover: hover) and (pointer: fine) {
-		.tiempo__chip input:not(:checked):hover + .tiempo__cara { border-color: var(--brand-primary-deep); color: var(--brand-primary-deep); }
-	}
-
-	.tiempo__cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
-	.tiempo__valor { color: var(--brand-primary-deep); font-size: var(--type-label-size); font-weight: var(--fw-black); font-variant-numeric: tabular-nums; line-height: 1; }
-
-	/* El control nativo con la marca: pista gris, tramo elegido en azul profundo y perilla de 28 px
-	   dentro de una caja de 44 de alto. --f (0 a 1) lo pone el script y corre el corte del tramo. */
-	input[type='range'] { width: 100%; height: 44px; margin: 0; background: transparent; cursor: pointer; appearance: none; -webkit-appearance: none; }
-	input[type='range']::-webkit-slider-runnable-track {
-		height: 8px; border-radius: var(--radius-pill);
-		background: linear-gradient(to right, var(--brand-primary-deep) calc(14px + (100% - 28px) * var(--f)), var(--slate-300) 0);
-	}
-	input[type='range']::-webkit-slider-thumb {
-		width: 28px; height: 28px; margin-top: -10px; border: 3px solid var(--brand-primary-deep);
-		border-radius: 50%; background: var(--white); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.28); -webkit-appearance: none;
-	}
-	input[type='range']::-moz-range-track { height: 8px; border-radius: var(--radius-pill); background: var(--slate-300); }
-	input[type='range']::-moz-range-progress { height: 8px; border-radius: var(--radius-pill); background: var(--brand-primary-deep); }
-	input[type='range']::-moz-range-thumb {
-		box-sizing: border-box; width: 28px; height: 28px; border: 3px solid var(--brand-primary-deep);
-		border-radius: 50%; background: var(--white); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.28);
-	}
-
-	/* La card invertida de la sección: el número es el momento de escala de la marca (200 en el
-	   lienzo de 1080). El tope en vw no cambia con la letra grande del sistema: "800", el máximo,
-	   entra en 360 px y con la letra al 200 %. Color plano: los dos degradés de la página ya están. */
-	.tiempo__resultado {
-		display: grid; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-card-lg);
-		background: var(--surface-card-dark); box-shadow: var(--shadow-card); color: var(--text-heading-light);
-	}
-	.tiempo__titulo { display: flex; align-items: center; gap: var(--space-1); color: var(--text-body-light); }
-	.tiempo__resultado :global(.tiempo__icono) { flex: none; color: var(--brand-accent); }
-	.tiempo__numero {
-		font-size: min(clamp(5.5rem, 0.5rem + 32vw, 12.5rem), 34vw); font-weight: var(--fw-black);
-		font-variant-numeric: tabular-nums; letter-spacing: -0.04em; line-height: 0.9;
-	}
-	.tiempo__unidad { margin-top: var(--space-1); color: var(--text-heading-light); }
-	.tiempo__accion { margin-top: var(--space-3); }
-
-	/* Sin JS no hay controles: se ve el ejemplo y se dice que es un ejemplo. */
-	.tiempo__ejemplo { display: none; margin-top: var(--space-3); color: var(--text-body-dark); }
-	@media (scripting: none) {
-		.tiempo__controles { display: none; }
-		.tiempo__ejemplo { display: block; }
-	}
-
-	/* Debajo de 1024 la card va arriba de los controles y el botón, después: el número cambia a la
-	   vista de quien mueve la perilla, y se elige antes de mandar. El HTML no se reordena (el foco
-	   sigue chips, horas, personas, botón, y el lector recibe el total por el status). Sin JS:
-	   card, ejemplo y botón, con el mismo gap entre los tres. */
+	/* Debajo de 1024 la card va arriba de los controles y el botón, después: los tres son hijos
+	   directos de esta grilla (la salida es `display: contents`) y se ordenan con `order`, que está
+	   en cada componente: card 1, ejemplo sin JS 2, controles 3, botón 4. El HTML no se reordena (el
+	   foco sigue chips, horas, personas, botón, y el lector recibe el total por el status). */
 	@media (max-width: 1023.98px) {
 		.tiempo__calc { gap: var(--space-3); }
-		.tiempo__salida { display: contents; }
-		.tiempo__resultado { order: 1; }
-		.tiempo__ejemplo { order: 2; margin-top: 0; }
-		.tiempo__controles { order: 3; }
-		.tiempo__accion { order: 4; margin-top: 0; }
 	}
-
-	/* Celular: con la card arriba, el número tiene que seguir a la vista cuando se toca el último
-	   control (en 360 x 640 quedan 564 px entre la cápsula y el borde de abajo). Se compacta lo que
-	   hay debajo del número y entre controles; el número y los 44 px táctiles no se tocan. */
 	@media (max-width: 767.98px) {
 		.tiempo__calc { gap: var(--space-2); }
-		.tiempo__resultado { gap: var(--space-1); padding: var(--space-3); }
-		.tiempo__unidad { margin-top: 0; }
-		.tiempo__controles { gap: var(--space-2); }
-		.tiempo__cara { padding-inline: 14px; }
-	}
-
-	@media (min-width: 768px) {
-		.tiempo__resultado { padding: var(--space-5); }
 	}
 
 	@media (min-width: 1024px) {
@@ -215,48 +73,59 @@ const fraccion = (c: (typeof controles)[number]) => ((c.valor - c.min) / (c.max 
 </style>
 
 <script>
-	import { contar, unidades } from '../../scripts/contar';
+	import { controles } from '../tiempo/controles';
+	import { resultado } from '../tiempo/resultado';
 
 	const seccion = document.getElementById('tiempo')!;
 	const horas = seccion.querySelector<HTMLInputElement>('#tiempo-horas')!;
 	const personas = seccion.querySelector<HTMLInputElement>('#tiempo-personas')!;
-	const numero = seccion.querySelector<HTMLElement>('[data-total]')!;
 	const anuncio = seccion.querySelector<HTMLElement>('[data-anuncio]')!;
 	const boton = seccion.querySelector<HTMLAnchorElement>('.tiempo__accion a')!;
 	const base = boton.href.split('?')[0];
+	const vista = controles(seccion);
+	const card = resultado(seccion);
 	let aviso = 0;
 	let arrastrando = false;
-	let cortar = () => {};
 
 	// Recalcula todo desde los controles. `animar` es falso al arrancar: el HTML ya trae el ejemplo.
 	function actualizar(animar: boolean) {
 		const n = Number(horas.value) * Number(personas.value) * 4;
-		for (const el of [horas, personas]) {
-			el.style.setProperty('--f', String((Number(el.value) - Number(el.min)) / (Number(el.max) - Number(el.min))));
-			seccion.querySelector(`[data-valor="${el.id.replace('tiempo-', '')}"]`)!.textContent = el.value;
-		}
-		const verbo = seccion.querySelector<HTMLInputElement>('input[name="tarea"]:checked')!.dataset.verbo!;
+		const tarea = seccion.querySelector<HTMLInputElement>('input[name="tarea"]:checked')!;
+		const verbo = tarea.dataset.verbo!;
 		boton.href = `${base}?text=${encodeURIComponent(seccion.dataset.plantilla!.replace('{n}', String(n)).replace('{verbo}', verbo))}`;
+		vista.perillas(animar && !arrastrando);
+		card.poner(n, tarea.value, animar);
 
-		// Al tocar un chip o usar el teclado, el número corre en 0,22 s desde donde esté ahora, y un
-		// cambio nuevo corta el anterior. Mientras se arrastra la perilla va pegado, sin correr:
-		// así no se atrasa. Lo dispara quien interactúa, así que corre también con movimiento
-		// reducido (criterio de la tanda, ESTADO).
-		const actual = Number(numero.textContent);
-		cortar();
-		if (!animar || arrastrando) numero.textContent = unidades(n);
-		else if (actual !== n) cortar = contar(numero, actual, n, unidades, 220);
-
-		// El lector de pantalla se entera del total una vez que se deja de mover, no en cada paso.
+		// El lector de pantalla se entera una vez que se deja de mover, no en cada paso. Cambiar solo
+		// la tarea también se anuncia (una vez): el texto nombra el total y la tarea.
 		clearTimeout(aviso);
-		const texto = `Se te van ${n} horas por mes`;
+		const texto = `Se te van ${n} horas por mes ${verbo}`;
 		if (!animar) anuncio.textContent = texto;
 		else if (anuncio.textContent !== texto) aviso = window.setTimeout(() => (anuncio.textContent = texto), 700);
 	}
 
-	seccion.addEventListener('input', () => actualizar(true));
-	seccion.addEventListener('pointerdown', (e) => (arrastrando = (e.target as HTMLInputElement).type === 'range'));
-	addEventListener('pointerup', () => (arrastrando = false));
-	addEventListener('pointercancel', () => (arrastrando = false));
+	// Al arrastrar, la perilla y el número van pegados al dedo (transiciones cortas, sin teclado).
+	const soltar = () => {
+		if (!arrastrando) return;
+		arrastrando = false;
+		delete seccion.dataset.arrastrando;
+		seccion.querySelectorAll('[data-presionado]').forEach((el) => el.removeAttribute('data-presionado'));
+	};
+	seccion.addEventListener('pointerdown', (e) => {
+		const rango = (e.target as HTMLElement).closest<HTMLInputElement>('input[type="range"]');
+		if (!rango) return;
+		arrastrando = true;
+		seccion.dataset.arrastrando = '';
+		rango.closest('.tiempo__control')!.setAttribute('data-presionado', '');
+	});
+	addEventListener('pointerup', soltar);
+	addEventListener('pointercancel', soltar);
+
+	seccion.addEventListener('input', (e) => {
+		if ((e.target as HTMLInputElement).type === 'radio') vista.marcar(true);
+		actualizar(true);
+	});
+	vista.marcar(false);
 	actualizar(false);
+	requestAnimationFrame(() => requestAnimationFrame(() => (seccion.dataset.listo = '')));
 </script>
