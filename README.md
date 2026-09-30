@@ -75,10 +75,11 @@ No environment variables are needed.
 ## Project structure
 
 ```
-src/pages/          index.astro (the page) and the Open Graph template
+src/pages/          index.astro (the page), legal.astro (privacy and terms) and the Open Graph template
 src/components/     header, footer, WhatsApp button, icons and glow effect
   secciones/        the page sections
   mocks/            the animated UI mockups
+  legal/            the text of the privacy and terms page
 src/styles/         global styles and brand tokens
 src/scripts/        client-side helpers
 src/config.ts       WhatsApp link and contact details
@@ -94,4 +95,6 @@ is a placeholder, and the build prints a warning until it is replaced with the r
 
 [MIT](LICENSE)
 
-The code is under the MIT license. The Accelerate.ai name, logo and brand assets are not.
+The code is under the MIT license, which covers the source code only. The Accelerate.ai name
+and logo, the images in `src/assets/identidad/` and `public/` (`og.jpg` and the favicons) and
+the texts of the site are not: all rights reserved.
