@@ -1,0 +1,150 @@
+---
+// La única página aparte (SPECS §4, "Página aparte: /legal"): privacidad y términos de uso. Lleva el
+// mismo encabezado y pie que la portada, con los links de sección hacia `/#…` (raiz="/"). El texto
+// va partido en src/components/legal/. Modo lectura: cuerpo de 65ch, sin animación propia.
+import Base from '../layouts/Base.astro';
+import Encabezado from '../components/Encabezado.astro';
+import Pie from '../components/Pie.astro';
+import Cabecera from '../components/legal/Cabecera.astro';
+import Indice from '../components/legal/Indice.astro';
+import Privacidad from '../components/legal/Privacidad.astro';
+import Terminos from '../components/legal/Terminos.astro';
+---
+
+<Base
+	title="Privacidad y términos | Accelerate.ai"
+	description="Qué datos nos llegan cuando nos escribís por WhatsApp, para qué los usamos y cómo se usa la web."
+>
+	<Encabezado raiz="/" />
+	<main id="contenido">
+		<Cabecera />
+		<div class="contenedor legal">
+			<Indice />
+			<Privacidad />
+			<Terminos />
+		</div>
+	</main>
+	<Pie raiz="/" />
+</Base>
+
+<style>
+	.legal {
+		padding-bottom: var(--espacio-seccion);
+	}
+
+	/* Desde 1200 px el índice pasa a una columna a la derecha del texto y queda fijo mientras se lee.
+	   El max-height evita que, con texto muy agrandado, se corte la punta de la lista; el padding
+	   deja lugar al anillo de foco, que un overflow recortaría. */
+	@media (min-width: 1200px) {
+		.legal {
+			display: grid;
+			grid-template-columns: minmax(0, 65ch) minmax(0, 22rem);
+			column-gap: var(--space-6);
+			align-items: start;
+			justify-content: start;
+		}
+
+		.legal :global(.indice) {
+			grid-column: 2;
+			grid-row: 1 / span 2;
+			position: sticky;
+			top: 112px;
+			max-height: calc(100dvh - 128px);
+			margin: calc(96px + var(--space-4)) -8px 0;
+			padding: 8px;
+			overflow-y: auto;
+		}
+
+		.legal :global(.parte) {
+			grid-column: 1;
+		}
+	}
+
+	/* Cada parte abre con una línea y más aire: son dos textos distintos dentro de la misma página. */
+	.legal :global(.parte) {
+		margin-top: var(--space-6);
+		padding-top: var(--space-5);
+		border-top: 1px solid var(--border-light);
+	}
+
+	@media (min-width: 768px) {
+		.legal :global(.parte) {
+			margin-top: 96px;
+		}
+	}
+
+	.legal :global(.parte > h2) {
+		font-size: var(--type-label-size);
+		font-weight: var(--fw-bold);
+		line-height: var(--type-label-lh);
+		text-wrap: balance;
+	}
+
+	/* Ritmo de lectura: espacio entre bloques (sin sangría) y más aire arriba de cada tema que abajo. */
+	.legal :global(.parte > * + *) {
+		margin-top: var(--space-2);
+	}
+
+	.legal :global(.parte > h3) {
+		margin-top: var(--space-5);
+		font-size: var(--type-cuerpo-size);
+		font-weight: var(--fw-semibold);
+		line-height: var(--type-cuerpo-lh);
+		text-wrap: balance;
+	}
+
+	.legal :global(.parte > h2 + h3) {
+		margin-top: var(--space-4);
+	}
+
+	.legal :global(.parte > h3 + *) {
+		margin-top: var(--space-1);
+	}
+
+	.legal :global(.parte > :is(p, ul, blockquote)) {
+		max-width: var(--measure-cuerpo);
+		color: var(--text-body-dark);
+		line-height: 1.6;
+	}
+
+	.legal :global(.parte ul) {
+		display: grid;
+		gap: var(--space-1);
+		padding-left: 1.25em;
+		list-style: disc;
+	}
+
+	.legal :global(.parte li::marker) {
+		color: var(--slate-500);
+	}
+
+	/* El texto de la AAIP, literal: se lee como cita por el peso y el color, sin filete de color. */
+	.legal :global(.parte blockquote) {
+		margin-inline: 0;
+	}
+
+	.legal :global(.parte blockquote p) {
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-medium);
+	}
+
+	.legal :global(.parte blockquote footer) {
+		margin-top: var(--space-1);
+		color: var(--text-body-dark);
+		font-size: var(--type-meta-size);
+	}
+
+	/* Links dentro del texto: subrayados (no solo de color). El :hover global es el azul de máxima
+	   saturación, que no llega a AA sobre el fondo claro. */
+	.legal :global(.parte p a) {
+		overflow-wrap: anywhere;
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 3px;
+	}
+
+	.legal :global(.parte p a:hover),
+	.legal :global(.parte p a:active) {
+		color: var(--blue-800);
+	}
+</style>

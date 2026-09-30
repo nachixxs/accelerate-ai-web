@@ -1,0 +1,115 @@
+---
+// Título de /legal y "La versión corta". La card invertida se monta sobre el borde de abajo de la
+// franja del título (regla de profundidad de la marca) y es la única de la página. Un solo glow,
+// claro y desde una esquina. #inicio es el destino de "Volver arriba" del pie.
+import Glow from '../Glow.astro';
+import Icono from '../Icono.astro';
+---
+
+<div id="inicio" class="cabecera">
+	<div class="cabecera__franja con-glow">
+		<Glow tono="cian" fondo="claro" esquina="arriba-izq" />
+		<div class="contenedor">
+			<h1 class="t-titular">Privacidad y términos</h1>
+			<p class="t-meta cabecera__fecha">
+				Última actualización: <time datetime="2026-09-29">29 de septiembre de 2026</time>
+			</p>
+		</div>
+	</div>
+
+	<div class="contenedor">
+		<section class="corta" aria-labelledby="corta-titulo">
+			<h2 id="corta-titulo" class="t-label">La versión corta</h2>
+			<ul>
+				<li>Solo nos llega lo que escribís por WhatsApp.</li>
+				<li>Lo usamos para contestarte y armar la propuesta.</li>
+				<li>No lo vendemos ni lo compartimos.</li>
+				<li>La web no usa cookies ni analíticas.</li>
+				<li>Podés pedir que lo borremos.</li>
+			</ul>
+			<a class="corta__link" href="#derechos">
+				Cómo pedir que lo borremos
+				<Icono nombre="arrow-down-bold" size={16} />
+			</a>
+		</section>
+	</div>
+</div>
+
+<style>
+	/* La cápsula del encabezado es sticky y ocupa 80 px en el flujo: con el margen negativo la
+	   franja arranca en y=0 y el glow pasa por detrás de la cápsula, como en la portada. */
+	.cabecera {
+		--solape: 48px;
+		margin-top: -80px;
+	}
+
+	.cabecera__franja {
+		padding-block: calc(80px + var(--space-5)) calc(var(--solape) + var(--space-4));
+		border-bottom: 1px solid var(--border-light);
+	}
+
+	.cabecera__fecha {
+		margin-top: var(--space-2);
+		color: var(--text-body-dark);
+	}
+
+	/* La card baja por encima del borde de la franja: la mitad de arriba adentro, el resto afuera. */
+	.corta {
+		position: relative;
+		z-index: 1;
+		max-width: 40rem;
+		margin-top: calc(var(--solape) * -1);
+		padding: var(--space-4) var(--space-3);
+		border-radius: var(--radius-card-lg);
+		background: var(--surface-card-dark);
+		box-shadow: var(--shadow-card);
+		color: var(--text-body-light);
+	}
+
+	.corta h2 {
+		color: var(--text-heading-light);
+		font-weight: var(--fw-bold);
+	}
+
+	.corta ul {
+		display: grid;
+		gap: var(--space-1);
+		margin-top: var(--space-2);
+	}
+
+	.corta__link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		min-height: 44px;
+		margin-top: var(--space-1);
+		color: var(--brand-accent);
+		font-weight: var(--fw-semibold);
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+	}
+
+	/* El :hover global (azul de la marca) no se lee sobre navy: se fija un cian más claro. */
+	.corta__link:hover,
+	.corta__link:active {
+		color: var(--cyan-200);
+	}
+
+	.corta :focus-visible {
+		outline-color: var(--brand-accent);
+	}
+
+	/* Alto contraste de Windows: sin el fondo oscuro, la card necesita su borde para verse. */
+	@media (forced-colors: active) {
+		.corta {
+			border: 1px solid CanvasText;
+		}
+	}
+
+	@media (min-width: 768px) {
+		.corta {
+			padding: var(--space-5);
+		}
+	}
+</style>
