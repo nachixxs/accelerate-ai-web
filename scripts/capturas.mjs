@@ -1,12 +1,10 @@
 // Capturas de la web en celular (360 px), tablet (768 px) y escritorio (1280 px), más los chequeos que una
 // captura no muestra a simple vista. Uso: npm run capturas (compila antes). Salida en capturas/.
-// La captura completa va con prefers-reduced-motion y sin animaciones: lo que se arma con el
-// scroll saldría a medio camino (o invisible) en una foto de la página entera sin scrollear. La primera
-// pantalla va con movimiento, cuando la historia de la portada ya terminó. Los tres anchos corren a
-// la vez, cada uno en su pestaña.
-// Los chequeos del botón se repiten con la letra al 150 %, como la ve quien usa letra grande en
-// el celular: las secciones con glow tienen overflow: hidden, así que lo que se sale no hace
-// scroll horizontal, queda recortado sin aviso.
+// La captura completa va con prefers-reduced-motion y sin animaciones: lo que se arma con el scroll
+// saldría a medio camino en una foto sin scrollear. La primera pantalla va con movimiento, cuando la
+// historia de la portada ya terminó. Los tres anchos corren a la vez, cada uno en su pestaña.
+// Los chequeos del botón se repiten con la letra al 150 % (las secciones con glow tienen
+// overflow: hidden: lo que se sale no hace scroll horizontal, queda recortado sin aviso).
 import { preview } from 'astro';
 import { chromium } from 'playwright';
 import { revisarAxe } from './capturas-axe.mjs';
@@ -22,8 +20,7 @@ const ANCHOS = [
 ];
 
 const servidor = await preview({ root: '.', logLevel: 'error' });
-const url = `http://localhost:${servidor.port}/`;
-const navegador = await chromium.launch();
+const [url, navegador] = [`http://localhost:${servidor.port}/`, await chromium.launch()];
 let fallas = 0;
 
 async function revisarAncho({ nombre, width, height }) {
@@ -32,10 +29,9 @@ async function revisarAncho({ nombre, width, height }) {
 	await terminarCarga(pagina);
 	await pagina.screenshot({ path: `capturas/${nombre}-primera-pantalla.png` });
 
-	// Las animaciones atadas al scroll tienen que tener su timeline. Si el minificador las junta
-	// en el shorthand `animation`, o si un overflow: hidden las deja sin contenedor de scroll,
-	// Chrome no las corre y la página se ve quieta sin avisar. Se revisan todas: cada animación
-	// cuyo animation-timeline no es auto y quedó sin timeline de scroll es una que se murió.
+	// Las animaciones atadas al scroll tienen que tener su timeline. Si el minificador las junta en
+	// `animation`, o un overflow: hidden las deja sin contenedor de scroll, Chrome no las corre y la
+	// página se ve quieta sin avisar: se revisan todas las que piden un timeline y no lo tienen.
 	const sinTimeline = await pagina.evaluate(() => {
 		const muertas = document.getAnimations().filter((a) => {
 			const { target, pseudoElement } = a.effect;
@@ -52,14 +48,10 @@ async function revisarAncho({ nombre, width, height }) {
 	let menu = true;
 	if (width < 1080) {
 		await pagina.locator('.capsula .capsula__menu').click();
-		const abierto = await pagina
-			.waitForFunction(() => document.getElementById('menu').matches(':popover-open'), null, { timeout: 2000 })
-			.then(() => true, () => false);
+		const abierto = await pagina.waitForFunction(() => document.getElementById('menu').matches(':popover-open'), null, { timeout: 2000 }).then(() => true, () => false);
 		await pagina.locator('#menu a[href="#tiempo"]').click();
 		// El scroll es suave: espera a que la sección llegue arriba (o se rinde a los 3 s).
-		await pagina
-			.waitForFunction(() => Math.abs(document.getElementById('tiempo').getBoundingClientRect().top) < 200, null, { timeout: 3000 })
-			.catch(() => {});
+		await pagina.waitForFunction(() => Math.abs(document.getElementById('tiempo').getBoundingClientRect().top) < 200, null, { timeout: 3000 }).catch(() => {});
 		const despues = await pagina.evaluate(() => ({
 			cerrado: !document.getElementById('menu').matches(':popover-open'),
 			hash: location.hash,
@@ -71,13 +63,11 @@ async function revisarAncho({ nombre, width, height }) {
 
 	// El interruptor de Qué resolvemos cambia los dolores por las soluciones.
 	await pagina.locator('.interruptor label').nth(1).click();
-	const interruptor = await pagina
-		.waitForFunction(() => {
-			const visible = (el) => getComputedStyle(el).visibility === 'visible';
-			const caras = (cual) => [...document.querySelectorAll(`.lista .cara--${cual}`)];
-			return caras('sistema').every((c) => visible(c) && /^inset\(0(px)? 0(px)?/.test(getComputedStyle(c).clipPath)) && !caras('hoy').some(visible);
-		}, null, { timeout: 2000 })
-		.then(() => true, () => false);
+	const interruptor = await pagina.waitForFunction(() => {
+		const visible = (el) => getComputedStyle(el).visibility === 'visible';
+		const caras = (cual) => [...document.querySelectorAll(`.lista .cara--${cual}`)];
+		return caras('sistema').every((c) => visible(c) && /^inset\(0(px)? 0(px)?/.test(getComputedStyle(c).clipPath)) && !caras('hoy').some(visible);
+	}, null, { timeout: 2000 }).then(() => true, () => false);
 	await pagina.close();
 
 	// Captura completa y chequeos de maquetación: sin movimiento, con todo en su lugar final.
@@ -91,9 +81,8 @@ async function revisarAncho({ nombre, width, height }) {
 		return img.decode();
 	})));
 	await pagina2.screenshot({ path: `capturas/${nombre}-primera-pantalla-reducido.png` });
-	// Con movimiento reducido quedan fundidos cortos atados al scroll, y la captura completa no
-	// scrollea: se apagan todas las animaciones. El estado de base es el final, así que la foto
-	// muestra la página armada.
+	// Con movimiento reducido quedan fundidos cortos atados al scroll y la captura completa no
+	// scrollea: se apagan las animaciones (el estado de base es el final, la foto sale armada).
 	await pagina2.addStyleTag({ content: '*, *::before, *::after { animation: none !important; }' });
 	await pagina2.screenshot({ path: `capturas/${nombre}-completa.png`, fullPage: true });
 	const chequeos = await revisar(pagina2, { nombre, width, height, sinTimeline, interruptor, menu });
@@ -139,25 +128,21 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 		[!medidas.rayas, 'sin rayas largas (— o –) en el texto'],
 	];
 
-	// Tu tiempo: al cambiar tarea, horas y personas cambian el total (horas × personas × 4) y el
-	// mensaje del botón, y ni el "800" del máximo se sale de su card ni de la página. Debajo de 1024
-	// la card va arriba de los controles: el total tiene que verse entero, bajo la cápsula, al usar cada uno.
+	// Tu tiempo: tarea, horas y personas cambian el total (horas × personas × 4) y el mensaje del botón,
+	// y el "800" no se sale de su card ni de la página. Debajo de 1024 el total se ve entero al usar cada control.
 	const calculadora = await revisarCalculadora(pagina, width, height);
 	chequeos.push([calculadora.length === 0, `la calculadora de Tu tiempo cambia el total y el botón, y el máximo entra${width < 1024 ? ' y se ve al usar cada control' : ''}${calculadora.length ? ': ' + calculadora.join(', ') : ''}`]);
 
-	// Lo que va montado sobre un borde no puede salirse de costado de su card. Los que van en el
-	// flujo, con margen negativo, tampoco pueden tapar lo que tienen al lado (sus hermanos y, en el
-	// cierre, la línea de abajo). El chip del tablero flota sobre la ventana a propósito: de ese
-	// solo se mide el costado. Se mide con la letra normal y al 150 %.
+	// Lo montado sobre un borde no puede salirse de costado de su card, y lo que va en el flujo con
+	// margen negativo no puede tapar a sus hermanos ni (en el cierre) la línea de abajo. El chip del
+	// tablero flota a propósito: de ese solo se mide el costado. Con la letra normal y al 150 %.
 	const montados = () =>
 		pagina.evaluate(() => {
 			const caja = (el) => el.getBoundingClientRect();
 			const pisa = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom - 1 && b.top < a.bottom - 1;
 			return [
-				['.ordenes__chip', '.ejemplo--ordenes', []],
-				['.pedido', '.ejemplo--stock', []],
-				['.tablero__chip', '.tablero', null],
-				['.cierre__accion', '.cierre__card', ['.cierre__quien']],
+				['.ordenes__chip', '.ejemplo--ordenes', []], ['.pedido', '.ejemplo--stock', []],
+				['.tablero__chip', '.tablero', null], ['.cierre__accion', '.cierre__card', ['.cierre__quien']],
 			]
 				.filter(([chip, card, otros]) => {
 					const el = document.querySelector(chip);
@@ -184,8 +169,7 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 
 // Devuelve la lista de lo que falló (vacía si todo bien). Deja la calculadora como la encontró.
 // El total se lee de dos lados: `data-total` (lo que calculó el script) y las columnas del odómetro
-// (lo que se ve: el dígito al que llegó cada tira). La card es `.tiempo__fondo`: desde 1024
-// `.tiempo__resultado` es `display: contents` y no tiene caja.
+// (lo que se ve). La card es `.tiempo__fondo`: desde 1024 `.tiempo__resultado` no tiene caja.
 async function revisarCalculadora(pagina, width, height) {
 	const leer = () =>
 		pagina.evaluate(() => {
@@ -199,17 +183,14 @@ async function revisarCalculadora(pagina, width, height) {
 			const chip = caja(document.querySelector('#tiempo input[name="tarea"]:checked + .tiempo__cara'));
 			const chips = caja(document.querySelector('#tiempo .tiempo__chips'));
 			const recorte = getComputedStyle(document.querySelector('#tiempo .tiempo__marca')).clipPath.match(/-?[\d.]+px/g)?.map(parseFloat) ?? [];
-			const [arriba, derecha, abajo, izquierda] = recorte;
-			const marcaOk = recorte.length >= 4 && [arriba - (chip.top - chips.top), derecha - (chips.right - chip.right), abajo - (chips.bottom - chip.bottom), izquierda - (chip.left - chips.left)].every((d) => Math.abs(d) <= 1);
+			const esperado = [chip.top - chips.top, chips.right - chip.right, chips.bottom - chip.bottom, chip.left - chips.left];
+			const marcaOk = recorte.length >= 4 && esperado.every((e, i) => Math.abs(recorte[i] - e) <= 1);
 			return {
-				total: document.querySelector('#tiempo [data-total]').dataset.total,
-				visto,
+				total: document.querySelector('#tiempo [data-total]').dataset.total, visto,
 				texto: new URL(boton.href).searchParams.get('text'),
-				anuncio: document.querySelector('#tiempo [data-anuncio]').textContent,
 				valuetext: [...document.querySelectorAll('#tiempo input[type="range"]')].map((r) => r.getAttribute('aria-valuetext')),
-				entra: numero.left >= card.left && numero.right <= card.right,
+				entra: numero.left >= card.left && numero.right <= card.right, marcaOk,
 				botonDentro: caja(boton).left >= card.left && caja(boton).right <= card.right && caja(boton).bottom <= card.bottom,
-				marcaOk,
 				pagina: document.documentElement.scrollWidth,
 			};
 		});
@@ -221,15 +202,13 @@ async function revisarCalculadora(pagina, width, height) {
 		['Hacer la caja', '5', '2', '40', 'Hola, vi la web. Se me van unas 40 horas por mes haciendo la caja.'],
 	];
 	const fallas = [];
-	let horasAhora = '5';
-	let personasAhora = '2';
+	let [horasAhora, personasAhora] = ['5', '2'];
 	for (const [tarea, horas, personas, total, texto] of casos) {
 		if (tarea) await pagina.locator('#tiempo label.tiempo__chip', { hasText: tarea }).click();
 		if (horas) await pagina.locator('#tiempo-horas').fill((horasAhora = horas));
 		if (personas) await pagina.locator('#tiempo-personas').fill((personasAhora = personas));
-		// El odómetro corre 0,26 s hasta el total y la marca 0,28 s hasta el chip: se espera a que lleguen.
-		await pagina.waitForFunction((t) => [...document.querySelectorAll('#tiempo .tiempo__numero > .tiempo__col:not([hidden]):not(.tiempo__fantasma)')].map((c) => Math.round(-new DOMMatrix(getComputedStyle(c.firstElementChild).transform).f / c.getBoundingClientRect().height)).join('') === t, total, { timeout: 2000 }).catch(() => {});
-		await pagina.waitForTimeout(350);
+		// El odómetro, la marca y la luz corren solos: se espera a que terminen todas las animaciones.
+		await pagina.evaluate(() => Promise.allSettled(document.getElementById('tiempo').getAnimations({ subtree: true }).map((a) => a.finished)));
 		const ahora = await leer();
 		if (ahora.total !== total) fallas.push(`total ${ahora.total} en vez de ${total}`);
 		if (ahora.visto !== total) fallas.push(`el odómetro muestra ${ahora.visto} en vez de ${total}`);
@@ -241,15 +220,14 @@ async function revisarCalculadora(pagina, width, height) {
 		// El anuncio se actualiza a los 700 ms de la última acción; nombra el total y la tarea.
 		const anuncio = `Se te van ${total} horas por mes ${texto.match(/por mes (.*)\.$/)[1]}`;
 		await pagina.waitForFunction((a) => document.querySelector('#tiempo [data-anuncio]').textContent === a, anuncio, { timeout: 1500 }).catch(() => {});
-		const dicho = (await leer()).anuncio;
+		const dicho = await pagina.locator('#tiempo [data-anuncio]').textContent();
 		if (dicho !== anuncio) fallas.push(`anuncio "${dicho}" en vez de "${anuncio}"`);
 		const unidades = [horasAhora === '1' ? '1 hora por semana' : `${horasAhora} horas por semana`, personasAhora === '1' ? '1 persona' : `${personasAhora} personas`];
 		if (ahora.valuetext.join('|') !== unidades.join('|')) fallas.push(`aria-valuetext "${ahora.valuetext.join('|')}" en vez de "${unidades.join('|')}"`);
 	}
 
-	// Recorrido de arriba abajo, como lo haría quien usa la sección: cada chip y cada range entra en
-	// pantalla con scrollIntoView (nearest) y el número tiene que quedar entero, debajo de la cápsula.
-	// En el celular se mide también con una ventana de 640 de alto, la más chica que se usa.
+	// Recorrido como quien usa la sección: cada chip y cada range entra con scrollIntoView (nearest)
+	// y el número queda entero, bajo la cápsula. En el celular también con 640 de alto, la más chica.
 	if (width < 1024) {
 		for (const alto of width < 768 ? [height, 640] : [height]) {
 			await pagina.setViewportSize({ width, height: alto });
@@ -307,13 +285,11 @@ const og = await pagina.evaluate(() => {
 	return { titulo: meta('og:title'), descripcion: meta('og:description'), imagen: meta('og:image') };
 });
 const imagenPublicada = (await pagina.request.get(new URL(new URL(og.imagen).pathname, url).href)).ok();
-const chequeosOg = [
+imprimir('open graph', [
 	[og.titulo && og.descripcion, 'Open Graph: título y descripción'],
 	[og.imagen.startsWith('https://') && imagenPublicada, `Open Graph: imagen con URL completa y publicada (${og.imagen})`],
-];
-imprimir('open graph', chequeosOg);
+]);
 
-await navegador.close();
-await servidor.stop();
+await navegador.close(), await servidor.stop();
 console.log(`\nCapturas en capturas/. ${fallas ? `${fallas} chequeo(s) fallaron.` : 'Todos los chequeos pasan.'}`);
 process.exitCode = fallas ? 1 : 0;
