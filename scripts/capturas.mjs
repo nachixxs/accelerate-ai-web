@@ -11,6 +11,7 @@ import { revisarAxe } from './capturas-axe.mjs';
 import { revisarLetra200 } from './capturas-letra200.mjs';
 import { revisarAltoContraste } from './capturas-contraste.mjs';
 import { revisarNavegadores } from './capturas-navegadores.mjs';
+import { revisarLegal } from './capturas-legal.mjs';
 import { terminarCarga } from './capturas-utils.mjs';
 
 const ANCHOS = [
@@ -260,21 +261,23 @@ function imprimir(titulo, chequeos) {
 // Todo corre a la vez: los tres anchos de siempre, más axe, la letra al 200 % y el alto
 // contraste (los tres con la misma instancia de Chromium) y WebKit/Firefox (instancias propias).
 const inicioExtra = Date.now();
-const [resultados, axe, letra200, altoContraste, otrosNavegadores] = await Promise.all([
+const [resultados, axe, letra200, altoContraste, otrosNavegadores, legal] = await Promise.all([
 	Promise.all(ANCHOS.map(revisarAncho)),
 	revisarAxe(navegador, url),
 	revisarLetra200(navegador, url),
 	revisarAltoContraste(navegador, url),
 	revisarNavegadores(navegador, url),
+	revisarLegal(navegador, url),
 ]);
 ANCHOS.forEach(({ nombre }, i) => imprimir(nombre, resultados[i]));
 imprimir('axe (accesibilidad, 360 y 1280, estado final)', axe.chequeos);
 imprimir('letra al 200 % (360 y 320, recorriendo la página)', letra200.chequeos);
 imprimir('alto contraste de windows (360)', altoContraste.chequeos);
 imprimir('webkit y firefox (360 y 1280, con y sin movimiento)', otrosNavegadores.chequeos);
+imprimir('/legal (privacidad y términos, 360 y 1280, con y sin movimiento)', legal.chequeos);
 console.log(
 	`\nTiempos: axe ${axe.ms}ms, letra 200% ${letra200.ms}ms, alto contraste ${altoContraste.ms}ms, ` +
-		`webkit/firefox ${otrosNavegadores.ms}ms, total de los cuatro en paralelo ${Date.now() - inicioExtra}ms`,
+		`webkit/firefox ${otrosNavegadores.ms}ms, legal ${legal.ms}ms, total de los cuatro en paralelo ${Date.now() - inicioExtra}ms`,
 );
 
 // Open Graph: la imagen tiene que estar publicada y con URL completa, o WhatsApp no la muestra.
