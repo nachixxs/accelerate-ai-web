@@ -12,7 +12,7 @@ import Icono from '../Icono.astro';
 		<div class="contenedor">
 			<h1 class="t-titular">Privacidad y términos</h1>
 			<p class="t-meta cabecera__fecha">
-				Última actualización: <time datetime="2026-09-29">29 de septiembre de 2026</time>
+				Última actualización: <time datetime="2026-09-29">29&nbsp;de septiembre de 2026</time>
 			</p>
 		</div>
 	</div>
@@ -57,7 +57,7 @@ import Icono from '../Icono.astro';
 	.corta {
 		position: relative;
 		z-index: 1;
-		max-width: 40rem;
+		max-width: 45rem;
 		margin-top: calc(var(--solape) * -1);
 		padding: var(--space-4) var(--space-3);
 		border-radius: var(--radius-card-lg);
@@ -77,7 +77,9 @@ import Icono from '../Icono.astro';
 		margin-top: var(--space-2);
 	}
 
-	.corta__link {
+	/* Con .corta delante para pesar más que el a:hover global de los celulares (el azul de la marca
+	   no se lee sobre navy). */
+	.corta .corta__link {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-1);
@@ -100,6 +102,19 @@ import Icono from '../Icono.astro';
 		.corta__link:hover {
 			color: var(--cyan-200);
 		}
+	}
+
+	/* La flecha crece con la letra (con la letra al 200 % un ícono de 16 px quedaba chico). */
+	.corta__link :global(svg) {
+		width: 0.8em;
+		height: 0.8em;
+		flex: none;
+	}
+
+	/* La card es oscura pero no es .seccion--oscura: sin esto la selección sería la clara del fondo. */
+	.corta ::selection {
+		background: var(--blue-800);
+		color: var(--white);
 	}
 
 	.corta :focus-visible {
