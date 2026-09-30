@@ -22,6 +22,12 @@ async function nuevaPagina(navegador, width, reducir, opciones = {}) {
 	return { contexto, pagina, errores };
 }
 
+// El © es lo último del pie: ningún otro elemento de la fila termina más abajo (portada y /legal).
+const ultimoDelPie = () => {
+	const legal = document.querySelector('.pie__legal').getBoundingClientRect().bottom;
+	return [...document.querySelectorAll('.pie__base > *')].every((el) => el.getBoundingClientRect().bottom <= legal + 1);
+};
+
 // Mide todo lo que se puede leer de /legal sin navegar.
 const medirPagina = (pagina) =>
 	pagina.evaluate(() => {
@@ -37,7 +43,6 @@ const medirPagina = (pagina) =>
 		});
 		const corta = caja(document.querySelector('.corta'));
 		const franja = caja(document.querySelector('.cabecera__franja'));
-		const legal = caja(document.querySelector('.pie__legal')).bottom;
 		const texto = document.querySelector('main').innerText;
 		return {
 			ancho: [document.documentElement.scrollWidth, document.documentElement.clientWidth],
@@ -52,8 +57,8 @@ const medirPagina = (pagina) =>
 			// Sin timeline de sección, ningún link de la cápsula tiene que verse como el activo.
 			activo: [...document.querySelectorAll('.capsula__nav a')].some((a) => getComputedStyle(a).color !== 'rgb(51, 65, 85)' || getComputedStyle(a, '::before').opacity !== '0' || getComputedStyle(a, '::after').opacity !== '0'),
 			cta: document.querySelector('.capsula__cta').classList.contains('capsula__cta--lleno'),
-			// El © es lo último del pie: ningún otro elemento de la fila termina más abajo.
-			ultimo: [...document.querySelectorAll('.pie__base > *')].every((el) => caja(el).bottom <= legal + 1),
+			// Abajo de 768 px la base del pie va apilada: el foco (orden del DOM) la recorre de arriba abajo.
+			foco: [...document.querySelectorAll('.pie__base a')].every((a, i, l) => innerWidth >= 768 || i === 0 || caja(a).top >= caja(l[i - 1]).top),
 		};
 	});
 
@@ -70,9 +75,10 @@ const titulosBajoCapsula = (pagina) =>
 	});
 
 // Los links de la cápsula (o del menú, en el celular), el logo y los del pie llevan a la sección de la portada.
-async function revisarLinks(navegador, url, width, reducir) {
+// Adónde lleva un link no depende del movimiento (el scroll suave se apaga acá): se corre una vez por ancho.
+async function revisarLinks(navegador, url, width) {
 	const fallas = [];
-	const { contexto, pagina } = await nuevaPagina(navegador, width, reducir);
+	const { contexto, pagina } = await nuevaPagina(navegador, width, false);
 	const pruebas = [
 		...SECCIONES.filter((id) => width < 1080 || enCapsula(width, id)).map((id) => [id, width < 1080 ? `#menu a[href="/#${id}"]` : `.capsula__nav a[href="/#${id}"]`, width < 1080]),
 		...SECCIONES.map((id) => [id, `.pie a[href="/#${id}"]`, false]),
@@ -87,10 +93,8 @@ async function revisarLinks(navegador, url, width, reducir) {
 		if (selector.startsWith('.pie')) await pagina.locator(selector).scrollIntoViewIfNeeded().then(() => pagina.waitForTimeout(400));
 		// 'commit': la portada tarda en cargar con los otros chequeos corriendo; lo que importa es adónde va y dónde queda el scroll.
 		await Promise.all([pagina.waitForURL((u) => u.pathname === '/' && u.hash === `#${id}`, { timeout: 15000, waitUntil: 'commit' }), pagina.locator(selector).click()]).catch(() => {});
-		const [ruta, arriba] = await pagina.waitForFunction((i) => Math.abs(document.getElementById(i)?.getBoundingClientRect().top ?? 9999) < 200, id, { timeout: 10000 }).then(
-			() => pagina.evaluate((i) => [location.pathname + location.hash, Math.round(document.getElementById(i).getBoundingClientRect().top)], id),
-			() => pagina.evaluate((i) => [location.pathname + location.hash, Math.round(document.getElementById(i)?.getBoundingClientRect().top ?? 9999)], id),
-		);
+		await pagina.waitForFunction((i) => Math.abs(document.getElementById(i)?.getBoundingClientRect().top ?? 9999) < 200, id, { timeout: 10000 }).catch(() => {});
+		const [ruta, arriba] = await pagina.evaluate((i) => [location.pathname + location.hash, Math.round(document.getElementById(i)?.getBoundingClientRect().top ?? 9999)], id);
 		if (ruta !== `/#${id}` || Math.abs(arriba) >= 200) fallas.push(`${selector} termina en ${ruta} con la sección a ${arriba} px`);
 	}
 	// Desde la portada, el link del pie lleva a /legal.
@@ -100,11 +104,7 @@ async function revisarLinks(navegador, url, width, reducir) {
 	if (!pagina.url().endsWith('/legal/') || titulo !== 'Privacidad y términos') fallas.push(`el link del pie de la portada termina en ${pagina.url()}`);
 	// En la portada el © también es lo último de la fila del pie.
 	await pagina.goto(url, { waitUntil: 'load' });
-	const ultimoPortada = await pagina.evaluate(() => {
-		const legal = document.querySelector('.pie__legal').getBoundingClientRect().bottom;
-		return [...document.querySelectorAll('.pie__base > *')].every((el) => el.getBoundingClientRect().bottom <= legal + 1);
-	});
-	if (!ultimoPortada) fallas.push('en la portada, algo del pie termina más abajo que el ©');
+	if (!(await pagina.evaluate(ultimoDelPie))) fallas.push('en la portada, algo del pie termina más abajo que el ©');
 	await contexto.close();
 	return fallas;
 }
@@ -116,8 +116,9 @@ async function revisarCombinacion(navegador, url, width, reducir) {
 	await terminarCarga(pagina);
 	const m = await medirPagina(pagina);
 	const sinAlto = await titulosBajoCapsula(pagina);
+	const ultimo = await pagina.evaluate(ultimoDelPie);
 	await contexto.close();
-	const fallasLinks = await revisarLinks(navegador, url, width, reducir);
+	const fallasLinks = reducir ? [] : await revisarLinks(navegador, url, width);
 	const malas = m.anclas.filter((a) => !a.existe || !a.igual).map((a) => a.id);
 	const chequeos = [
 		[errores.length === 0, `${etiqueta}: carga sin errores de consola${errores.length ? ': ' + errores.join(' | ') : ''}`],
@@ -125,11 +126,11 @@ async function revisarCombinacion(navegador, url, width, reducir) {
 		[m.h1 === 1 && m.ordenOk, `${etiqueta}: una sola h1 y títulos en orden (h1: ${m.h1})`],
 		[m.anclas.length > 0 && malas.length === 0 && m.inicio && m.contenido, `${etiqueta}: las anclas del índice existen y dicen lo mismo que su título${malas.length ? ': ' + malas.join(', ') : ''}`],
 		[sinAlto.length === 0, `${etiqueta}: al llegar por el índice, los títulos quedan debajo de la cápsula${sinAlto.length ? ': ' + sinAlto.join(', ') : ''}`],
-		[fallasLinks.length === 0, `${etiqueta}: los links del encabezado y del pie llevan a su sección, el del pie de la portada a /legal y el © queda último${fallasLinks.length ? ': ' + fallasLinks.join('; ') : ''}`],
+		...(reducir ? [] : [[fallasLinks.length === 0, `/legal a ${width} px: los links del encabezado y del pie llevan a su sección, el del pie de la portada a /legal y el © queda último${fallasLinks.length ? ': ' + fallasLinks.join('; ') : ''}`]]),
 		[m.chicos.length === 0, `${etiqueta}: áreas táctiles de 44 px o más${m.chicos.length ? ': ' + m.chicos.join(', ') : ''}`],
 		[m.azul === 0 && !m.rayas, `${etiqueta}: sin el azul #2971f2 (${m.azul} elementos) y sin rayas largas`],
 		[m.glows === 1 && m.montada, `${etiqueta}: un solo glow (${m.glows}) y la card montada sobre el borde de la franja`],
-		[!m.activo && m.cta && m.ultimo, `${etiqueta}: ningún link de la cápsula se ve activo, el botón va lleno y el © es lo último del pie`],
+		[!m.activo && m.cta && ultimo && m.foco, `${etiqueta}: ningún link de la cápsula se ve activo, el botón va lleno, el © es lo último del pie y el foco lo recorre en orden`],
 	];
 	if (m.marcadores.length && width === 360 && !reducir) chequeos.push([true, `AVISO /legal: hay ${m.marcadores.length} marcadores (${m.marcadores.join(' ')}): no publicar con marcadores`]);
 	return chequeos;
@@ -151,7 +152,7 @@ export async function revisarLegal(navegador, url) {
 	const [combinaciones, axe, letra200, contraste] = await Promise.all([
 		Promise.all(ANCHOS.flatMap((w) => [false, true].map((reducir) => revisarCombinacion(navegador, url, w, reducir)))),
 		revisarAxe(navegador, legal),
-		revisarLetra200(navegador, legal),
+		revisarLetra200(navegador, legal, 'legal-'),
 		revisarAltoContrasteLegal(navegador, url),
 	]);
 	const con = (prefijo, { chequeos }) => chequeos.map(([ok, texto]) => [ok, `/legal ${prefijo}: ${texto}`]);

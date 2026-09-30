@@ -277,7 +277,7 @@ imprimir('webkit y firefox (360 y 1280, con y sin movimiento)', otrosNavegadores
 imprimir('/legal (privacidad y términos, 360 y 1280, con y sin movimiento)', legal.chequeos);
 console.log(
 	`\nTiempos: axe ${axe.ms}ms, letra 200% ${letra200.ms}ms, alto contraste ${altoContraste.ms}ms, ` +
-		`webkit/firefox ${otrosNavegadores.ms}ms, legal ${legal.ms}ms, total de los cuatro en paralelo ${Date.now() - inicioExtra}ms`,
+		`webkit/firefox ${otrosNavegadores.ms}ms, legal ${legal.ms}ms, total de todo en paralelo ${Date.now() - inicioExtra}ms`,
 );
 
 // Open Graph: la imagen tiene que estar publicada y con URL completa, o WhatsApp no la muestra.
