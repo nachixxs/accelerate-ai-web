@@ -12,6 +12,10 @@ import Icono from './Icono.astro';
 import imagotipo from '../assets/identidad/imagotipo-claro.png';
 import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 
+// `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada.
+// "Volver arriba" queda en la misma página (#inicio existe en las dos).
+const { raiz = '' } = Astro.props;
+
 const contactos = [
 	{ icono: 'si:whatsapp', canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
 ];
@@ -40,7 +44,7 @@ const links = [
 			<nav class="pie__bloque" aria-label="Secciones del sitio" style="--i: 1">
 				<h2 class="pie__titulo">Secciones</h2>
 				<ul class="pie__links">
-					{links.map(({ href, texto }) => <li><a class="pie__link" href={href}>{texto}</a></li>)}
+					{links.map(({ href, texto }) => <li><a class="pie__link" href={raiz + href}>{texto}</a></li>)}
 				</ul>
 			</nav>
 
@@ -70,6 +74,7 @@ const links = [
 
 		<div class="pie__base">
 			<p class="pie__legal">© {anio} <span translate="no">Accelerate.ai</span>. Todos los derechos reservados.</p>
+			<a class="pie__privacidad" href="/legal/">Privacidad y términos</a>
 			<a class="pie__arriba" href="#inicio">
 				Volver arriba
 				<Icono nombre="arrow-up-bold" size={18} />
@@ -236,6 +241,25 @@ const links = [
 		font-size: var(--type-meta-size);
 	}
 
+	/* Link de texto, subrayado para que se distinga sin depender del color. Se fija el color en
+	   :hover y :active: el :hover global lo pasaría al azul de la marca, ilegible sobre navy. */
+	.pie__privacidad {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		color: var(--text-body-light);
+		font-size: var(--type-meta-size);
+		text-decoration: underline;
+		text-decoration-color: var(--cyan-300);
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+	}
+
+	.pie__privacidad:hover,
+	.pie__privacidad:active {
+		color: var(--text-heading-light);
+	}
+
 	.pie__arriba {
 		display: inline-flex;
 		align-items: center;
@@ -322,6 +346,14 @@ const links = [
 			flex-direction: row;
 			align-items: flex-end;
 			justify-content: space-between;
+			column-gap: var(--space-4);
+		}
+
+		/* Pegado al ©, con el texto sobre la misma línea (la caja de 44 px crece hacia arriba); el
+		   margen automático empuja "Volver arriba" al otro extremo. */
+		.pie__privacidad {
+			align-items: flex-end;
+			margin-right: auto;
 		}
 	}
 
