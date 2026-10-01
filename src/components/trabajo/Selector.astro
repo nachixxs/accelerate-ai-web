@@ -1,20 +1,25 @@
 ---
 // El selector de pantallas de #trabajo: trae un celular al frente del escenario (el que lo mueve es
-// scripts/trabajo-escenario.ts). Tres botones con aria-pressed. En el celular, control segmentado y el
-// texto del momento elegido debajo; desde 768, cada momento con su texto, siempre visible.
+// scripts/trabajo-escenario.ts). Tres botones con aria-pressed. En el celular, control segmentado con una
+// píldora que se desliza (--activa) y el texto del momento elegido debajo; desde 768, cada momento
+// con su texto, siempre visible, en una tarjeta con borde.
 import Icono from '../Icono.astro';
 import { pantallas } from './pantallas';
+
+const activa = pantallas.findIndex((p) => p.pose === 'frente');
 ---
 
 <div class="selector" data-selector role="group" aria-label="Elegí qué pantalla de la app ver">
-	<ul class="selector__lista">
+	<ul class="selector__lista" style={`--activa:${activa}`}>
+		<li class="sel__pildora" aria-hidden="true"></li>
 		{
 			pantallas.map((p, i) => (
 				<li class="sel" data-sel={p.id} data-activa={p.pose === 'frente' ? '' : undefined} style={`--n:${i + 1}`}>
-					<button type="button" class="sel__boton" aria-pressed={p.pose === 'frente' ? 'true' : 'false'}>
+					<button type="button" class="sel__boton" aria-pressed={p.pose === 'frente' ? 'true' : 'false'} aria-label={`${p.nombre}: ${p.momento}`}>
 						<Icono nombre={p.icono} size={32} class="sel__icono" />
 						<span class="sel__corto">{p.corto}</span>
 						<span class="sel__momento">{p.momento}</span>
+						<Icono nombre="arrow-right-bold" size={20} class="sel__flecha" />
 					</button>
 					<p class="sel__texto"><strong>{p.nombre}.</strong> {p.texto}</p>
 				</li>
@@ -26,7 +31,7 @@ import { pantallas } from './pantallas';
 <style>
 	.selector {
 		grid-area: selector;
-		margin-top: var(--space-4);
+		margin-top: var(--space-5);
 	}
 
 	.selector__lista {
@@ -39,6 +44,7 @@ import { pantallas } from './pantallas';
 
 	.sel__boton {
 		position: relative;
+		z-index: 1;
 		display: flex;
 		align-items: center;
 		min-width: 0;
@@ -54,6 +60,10 @@ import { pantallas } from './pantallas';
 		flex: none;
 	}
 
+	.sel__boton :global(.sel__flecha) {
+		display: none;
+	}
+
 	.sel__texto {
 		color: var(--text-body-dark);
 		font-size: var(--type-meta-size);
@@ -61,16 +71,29 @@ import { pantallas } from './pantallas';
 
 	.sel__texto strong {
 		color: var(--text-heading-dark);
+		font-weight: var(--fw-semibold);
 	}
 
 	@media (forced-colors: active) {
+		.sel__boton {
+			border-color: Canvas;
+		}
+
 		.sel__boton[aria-pressed='true'] {
-			border-color: ButtonText;
+			border-color: Highlight;
+		}
+
+		.sel {
+			border-color: CanvasText;
+		}
+
+		.sel[data-activa] {
+			border-color: Highlight;
 		}
 	}
 
 	/* Celular: ícono arriba y nombre corto; los tres textos comparten la celda de abajo, así que el
-	   alto no salta al cambiar. */
+	   alto no salta al cambiar. La píldora azul se desliza detrás del botón elegido. */
 	@media (max-width: 767.98px) {
 		.selector__lista::before {
 			content: '';
@@ -78,6 +101,18 @@ import { pantallas } from './pantallas';
 			margin: -4px;
 			border-radius: var(--radius-pill);
 			background: var(--slate-100);
+		}
+
+		/* Es un elemento y no un pseudo para que axe vea su fondo detrás del texto del elegido. */
+		.sel__pildora {
+			grid-area: 1 / 1 / 2 / -1;
+			border-radius: var(--radius-pill);
+			width: calc(100% / 3);
+			background: var(--brand-primary-deep);
+			box-shadow: var(--shadow-elevada);
+			translate: calc(var(--activa) * 100%) 0;
+			transition: translate 300ms var(--curva-cajon);
+			pointer-events: none;
 		}
 
 		.sel {
@@ -94,18 +129,20 @@ import { pantallas } from './pantallas';
 			padding: 4px;
 			border-radius: var(--radius-pill);
 			color: var(--text-body-dark);
-			font-size: 0.875rem;
+			font-size: min(var(--type-meta-size), 4.4vw);
+			overflow-wrap: normal;
 			text-align: center;
-			overflow-wrap: anywhere;
 			transition:
 				background-color 200ms var(--curva-salida),
 				color 200ms var(--curva-salida);
 		}
 
 		.sel__boton[aria-pressed='true'] {
-			background: var(--brand-primary-deep);
 			color: var(--off-white);
-			box-shadow: var(--shadow-elevada);
+		}
+
+		.sel__boton:active:not([aria-pressed='true']) {
+			background: var(--slate-200);
 		}
 
 		.sel__boton :global(.sel__icono) {
@@ -130,8 +167,8 @@ import { pantallas } from './pantallas';
 	}
 
 	@media (min-width: 768px) {
-		.selector {
-			margin-top: var(--space-5);
+		.sel__pildora {
+			display: none;
 		}
 
 		.selector__lista {
@@ -140,13 +177,17 @@ import { pantallas } from './pantallas';
 
 		.sel {
 			padding: var(--space-2);
+			border: 1px solid var(--border-light);
 			border-radius: var(--radius-badge);
 			cursor: pointer;
-			transition: background-color 200ms var(--curva-salida);
+			transition:
+				background-color 200ms var(--curva-salida),
+				border-color 200ms var(--curva-salida);
 		}
 
 		.sel[data-activa] {
 			background: var(--blue-50);
+			border-color: var(--blue-200);
 		}
 
 		.sel__boton {
@@ -161,10 +202,23 @@ import { pantallas } from './pantallas';
 			color: var(--blue-900);
 		}
 
+		/* El ícono va en un círculo de 48 px: gris apagado y, en el elegido, azul con el ícono claro. */
 		.sel__boton :global(.sel__icono) {
-			width: 32px;
-			height: 32px;
-			color: var(--brand-primary-deep);
+			box-sizing: border-box;
+			width: 48px;
+			height: 48px;
+			padding: var(--space-1);
+			border-radius: 50%;
+			background: var(--slate-100);
+			color: var(--text-muted-dark);
+			transition:
+				background-color 200ms var(--curva-salida),
+				color 200ms var(--curva-salida);
+		}
+
+		.sel[data-activa] .sel__boton :global(.sel__icono) {
+			background: var(--brand-primary-deep);
+			color: var(--off-white);
 		}
 
 		.sel__corto {
@@ -177,11 +231,29 @@ import { pantallas } from './pantallas';
 			grid-template-columns: 1fr;
 			gap: var(--space-1);
 		}
+
+		/* La flecha aparece solo en el elegido y apunta al escenario. */
+		.sel__boton :global(.sel__flecha) {
+			display: block;
+			flex: none;
+			margin-left: auto;
+			color: var(--brand-primary-deep);
+			opacity: 0;
+			transition: opacity 200ms var(--curva-salida);
+		}
+
+		.sel[data-activa] .sel__boton :global(.sel__flecha) {
+			opacity: 1;
+		}
 	}
 
-	@media (hover: hover) and (pointer: fine) {
+	@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
 		.sel:hover:not([data-activa]) {
-			background: var(--slate-100);
+			border-color: var(--slate-300);
+		}
+
+		.sel:hover:not([data-activa]) .sel__boton {
+			color: var(--brand-primary-deep);
 		}
 	}
 </style>

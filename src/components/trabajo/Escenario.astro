@@ -1,12 +1,14 @@
 ---
 // El escenario de #trabajo: los tres celulares sobre la card invertida (la única de la sección), la
-// conversación de ejemplo que cruza su borde de abajo. Ocupa el área 'escena' de la grilla de
+// conversación de ejemplo que cruza su borde de abajo y el sello de demo, montado sobre su borde de
+// arriba. Ocupa el área 'escena' de la grilla de
 // PrimerTrabajo (el selector, el área 'selector'). El HTML ya trae el estado final y quieto;
 // scripts/trabajo-escenario.ts arma la llegada, la conversación, la inclinación y el cambio de celular.
 // Las capturas son 720x1560 y el marco es de proporción fija:
 // al reemplazarlas no se toca el CSS.
 import { Picture } from 'astro:assets';
 import Glow from '../Glow.astro';
+import Icono from '../Icono.astro';
 import Conversacion from './Conversacion.astro';
 import { pantallas } from './pantallas';
 
@@ -19,6 +21,7 @@ const { pregunta, respuesta } = Astro.props;
 
 <div class="escena" data-escena>
 	<div class="escenario" data-escenario data-frente="asistente">
+		<p class="sello"><Icono nombre="flask-duotone" size={24} />Demo con datos simulados</p>
 		<div class="fondo" aria-hidden="true">
 			<div class="glows">
 				<Glow tono="azul" fondo="oscuro" esquina="arriba-der" />
@@ -34,7 +37,7 @@ const { pregunta, respuesta } = Astro.props;
 							alt={p.alt}
 							formats={['avif', 'webp']}
 							widths={[216, 324, 432, 648]}
-							sizes="(min-width: 1024px) 296px, (min-width: 768px) 280px, 50vw"
+							sizes="(min-width: 1024px) min(22vw, 340px), (min-width: 768px) 38vw, 46vw"
 							width={720}
 							height={1560}
 							class="cel__img"
@@ -55,7 +58,7 @@ const { pregunta, respuesta } = Astro.props;
 		grid-area: escena;
 		container-type: inline-size;
 		margin: 0 calc(var(--space-2) * -1) var(--space-5);
-		touch-action: pan-y;
+		touch-action: pan-y pinch-zoom;
 	}
 
 	.escenario {
@@ -76,6 +79,39 @@ const { pregunta, respuesta } = Astro.props;
 		inset: 0 calc(var(--space-4) * -1);
 		background: var(--surface-card-dark);
 		box-shadow: var(--shadow-card);
+	}
+
+	/* El sello de demo, montado sobre el borde de arriba de la card. Con la inclinación acompaña a la card. */
+	.sello {
+		position: absolute;
+		top: 0;
+		left: var(--space-2);
+		z-index: 4;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		max-width: calc(100% - var(--space-4));
+		min-height: 40px;
+		padding: 4px var(--space-2);
+		border-radius: var(--radius-pill);
+		background: var(--blue-50);
+		color: var(--blue-900);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-bold);
+		box-shadow: var(--shadow-elevada);
+		translate: 0 -50%;
+		transform: translateZ(var(--zt, 0px)); /* en el plano de la card: sin la separación de las capas, que lo correría del borde */
+	}
+
+	.sello :global(svg) {
+		flex: none;
+	}
+
+	/* Colores forzados: sin fondos, el sello y las burbujas necesitan su contorno. */
+	@media (forced-colors: active) {
+		.sello {
+			border: 1px solid CanvasText;
+		}
 	}
 
 	.glows {
@@ -101,8 +137,8 @@ const { pregunta, respuesta } = Astro.props;
 		border-radius: calc(var(--f) * 0.15);
 		background: var(--navy-700);
 		box-shadow:
-			inset 0 1px 0 rgba(220, 232, 254, 0.28),
-			0 20px 40px rgba(2, 6, 18, 0.4);
+			inset 0 1px 0 rgba(220, 232, 254, 0.28), /* el filo de luz del marco: no hay token para este tinte */
+			var(--shadow-card-oscura);
 		transform: var(--t);
 		translate: 0 var(--lev, 0px);
 		transition:
@@ -111,7 +147,8 @@ const { pregunta, respuesta } = Astro.props;
 			opacity 200ms var(--curva-salida);
 	}
 
-	/* La sombra honda del que está al frente, en una capa que solo cambia de opacidad. */
+	/* La sombra honda del que está al frente, en una capa que solo cambia de opacidad (más honda que
+	   --shadow-card-oscura: no hay token equivalente). */
 	.cel::after {
 		content: '';
 		position: absolute;
@@ -137,19 +174,30 @@ const { pregunta, respuesta } = Astro.props;
 	.cel[data-levantado] { --lev: -8px; }
 	.cel:not([data-pose='frente']) { cursor: pointer; }
 
+	/* Alarga 8 px abajo la zona del toque de los de atrás: al levantarse no se les escapa el puntero. */
+	.cel:not([data-pose='frente'])::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 -8px;
+	}
+
 	.cel__nucleo {
 		padding: calc(var(--f) * 0.02);
 		border-radius: calc(var(--f) * 0.125);
-		background: #0b0d10;
+		background: var(--navy-950); /* el bisel del marco */
 	}
 
+	/* El celular es un control: tocarlo lo trae al frente, no abre el menú de la imagen. */
 	.cel :global(.cel__img) {
+		-webkit-touch-callout: none;
+		-webkit-user-drag: none;
+		user-select: none;
 		display: block;
 		width: 100%;
 		height: auto;
 		aspect-ratio: 720 / 1560;
 		border-radius: calc(var(--f) * 0.105);
-		background: #16181c;
+		background: var(--navy-900); /* hasta que carga la captura */
 	}
 
 	@media (min-width: 600px) {
@@ -170,17 +218,31 @@ const { pregunta, respuesta } = Astro.props;
 	}
 
 	@media (min-width: 1024px) {
+		/* La escena se estira a la altura de la columna de texto; el contenido queda centrado en la card. */
 		.escena {
+			display: grid;
 			margin: 0 calc((var(--space-4) + max(0px, (100vw - 1200px) / 2)) * -1) 0 0;
 		}
 
 		.escenario {
 			--f: 42cqw;
+			align-content: center;
+		}
+
+		.sello {
+			left: var(--space-5);
 		}
 
 		.fondo {
 			inset: 0 calc(var(--space-4) * -1) 0 0;
 			border-radius: var(--radius-card-lg) 0 0 var(--radius-card-lg);
+		}
+	}
+
+	/* Apaisado y bajo: los celulares se achican para que entren dos en alto. */
+	@media (orientation: landscape) and (max-height: 540px) {
+		.escenario {
+			--f: min(40cqw, calc((100svh - 96px) / 2.2));
 		}
 	}
 
@@ -198,6 +260,29 @@ const { pregunta, respuesta } = Astro.props;
 			transform-style: preserve-3d;
 			transform: rotateX(0deg) rotateY(0deg);
 		}
+
+		/* Luz de escena: los glows se corren al revés de la inclinación (--tx y --ty los pone el script). */
+		.glows :global(.glow--azul-oscuro),
+		.glows :global(.glow--cian-oscuro) {
+			will-change: translate;
+		}
+
+		.glows :global(.glow--azul-oscuro) {
+			translate: calc(var(--tx, 0) * -48px) calc(var(--ty, 0) * -32px);
+		}
+
+		.glows :global(.glow--cian-oscuro) {
+			translate: calc(var(--tx, 0) * -72px) calc(var(--ty, 0) * -48px);
+		}
+
+		/* Los de atrás se levantan 8 px al señalarlos. */
+		.cel:not([data-pose='frente']):hover {
+			--lev: -8px;
+		}
+
+		.cel:not([data-pose='frente']):hover::after {
+			opacity: 1;
+		}
 	}
 
 	/* --- Llegada (solo con JS y sin movimiento reducido: data-entra lo pone el script) --- */
@@ -205,7 +290,8 @@ const { pregunta, respuesta } = Astro.props;
 		clip-path: inset(10% 6% 0 6% round 28px);
 	}
 
-	.escenario[data-entra] .glows {
+	.escenario[data-entra] .glows,
+	.escenario[data-entra] .sello {
 		opacity: 0;
 	}
 
@@ -220,7 +306,8 @@ const { pregunta, respuesta } = Astro.props;
 		transition: clip-path 800ms var(--curva-salida);
 	}
 
-	.escenario[data-entra][data-visto] .glows {
+	.escenario[data-entra][data-visto] .glows,
+	.escenario[data-entra][data-visto] .sello {
 		opacity: 1;
 		transition: opacity 900ms var(--curva-salida) 760ms;
 	}

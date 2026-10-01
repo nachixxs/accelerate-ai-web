@@ -1,7 +1,8 @@
 ---
 // La conversación de ejemplo de #trabajo: la pregunta del dueño y la respuesta del asistente. Va en el
-// flujo del escenario, con 48 px afuera de su borde de abajo, y solo tapa el 8 % de abajo del celular
-// del frente. El texto completo está siempre en el DOM (las palabras son <span>): el alto está
+// flujo del escenario: la pregunta apoya en el bisel de abajo del celular del frente (no tapa la
+// pantalla) y la respuesta cruza 48 px el borde de abajo del escenario. En `respuesta`, lo que va entre
+// [ ] es la frase clave y sale en negrita (el texto que lee el lector de pantalla no cambia). El texto completo está siempre en el DOM (las palabras son <span>): el alto está
 // reservado y el lector de pantalla lee el párrafo entero. El script (trabajo-escenario.ts) la arma
 // con .en en cada pieza; sin JS o con movimiento reducido queda completa y quieta.
 import Icono from '../Icono.astro';
@@ -11,7 +12,13 @@ interface Props {
 	respuesta: string;
 }
 const { pregunta, respuesta } = Astro.props;
-const palabras = respuesta.split(' ');
+let negrita = false;
+const palabras = respuesta.split(' ').map((w) => {
+	if (w.startsWith('[')) negrita = true;
+	const pieza = { t: w.replace(/[[\]]/g, ''), clave: negrita };
+	if (w.endsWith(']')) negrita = false;
+	return pieza;
+});
 ---
 
 <div class="conv" data-conv role="group" aria-label="Ejemplo de conversación con el asistente">
@@ -22,7 +29,7 @@ const palabras = respuesta.split(' ');
 	<div class="resp" data-resp>
 		<p class="resp__rotulo"><Icono nombre="sparkle-duotone" size={20} />Ejemplo de respuesta</p>
 		<p class="resp__texto">
-			{palabras.map((w, n) => (<><span class="w" style={`--w:${n}`}>{w}</span>{' '}</>))}
+			{palabras.map((w, n) => (<><span class:list={['w', { clave: w.clave }]} style={`--w:${n}`}>{w.t}</span>{' '}</>))}
 		</p>
 	</div>
 </div>
@@ -35,7 +42,7 @@ const palabras = respuesta.split(' ');
 		display: grid;
 		gap: var(--space-1);
 		width: min(86cqw, 340px);
-		margin: calc(var(--f) * -0.16) 0 calc(var(--space-5) * -1);
+		margin: calc(var(--f) * -0.045 + var(--space-1)) 0 calc(var(--space-5) * -1);
 		transform: translate3d(0, 0, var(--zc));
 		transition:
 			opacity 200ms var(--curva-salida),
@@ -65,12 +72,12 @@ const palabras = respuesta.split(' ');
 
 	.preg {
 		justify-self: end;
-		padding: 12px var(--space-2);
+		padding: 12px var(--space-2); /* 12 = 8 + 4: ajuste óptico de la burbuja */
 		border-radius: 22px 22px 6px 22px;
-		background: var(--brand-primary-deep);
-		color: var(--off-white);
+		background: var(--brand-accent); /* cian = lo que no cuadra, el hilo con los 32 de la barra */
+		color: var(--navy-950);
 		font-size: 0.9375rem;
-		font-weight: var(--fw-semibold);
+		font-weight: var(--fw-bold);
 		line-height: 1.35;
 		box-shadow: var(--shadow-elevada-oscura);
 		transform-origin: 100% 100%;
@@ -80,7 +87,7 @@ const palabras = respuesta.split(' ');
 		grid-area: 2 / 1;
 		padding: var(--space-2) var(--space-2) var(--space-3);
 		border-radius: 22px 22px 22px 6px;
-		box-shadow: 0 24px 48px rgba(15, 23, 42, 0.45);
+		box-shadow: var(--shadow-card-oscura);
 		transform-origin: 0 0;
 	}
 
@@ -90,7 +97,7 @@ const palabras = respuesta.split(' ');
 		gap: 4px;
 		margin-bottom: var(--space-1);
 		color: var(--brand-primary-deep);
-		font-size: 0.8125rem;
+		font-size: var(--type-meta-size);
 		font-weight: var(--fw-bold);
 	}
 
@@ -99,14 +106,19 @@ const palabras = respuesta.split(' ');
 		line-height: 1.45;
 	}
 
+	.clave {
+		color: var(--brand-primary-deep);
+		font-weight: var(--fw-bold);
+	}
+
 	/* "Escribiendo": tres puntos, una sola pasada, en el lugar de la respuesta. Invisible al final. */
 	.escribiendo {
 		grid-area: 2 / 1;
 		justify-self: start;
 		align-self: start;
 		display: flex;
-		gap: 6px;
-		padding: 14px var(--space-2);
+		gap: var(--space-1);
+		padding: 12px var(--space-2); /* 12 = 8 + 4: ajuste óptico de la burbuja */
 		border-radius: 22px 22px 22px 6px;
 		box-shadow: var(--shadow-elevada-oscura);
 		opacity: 0;
@@ -156,7 +168,15 @@ const palabras = respuesta.split(' ');
 
 	.conv[data-habla] .resp.en .w {
 		opacity: 1;
-		transition: opacity 160ms var(--curva-salida) calc(100ms + var(--w) * 35ms);
+		transition: opacity 160ms var(--curva-salida) calc(100ms + var(--w) * var(--pw, 35ms));
+	}
+
+	@media (forced-colors: active) {
+		.preg,
+		.resp,
+		.escribiendo {
+			border: 1px solid CanvasText;
+		}
 	}
 
 	/* Movimiento reducido: al cambiar de celular se va con un fundido, sin desplazarse. */

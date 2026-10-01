@@ -2,29 +2,32 @@
 // #trabajo (ESTADO, Pendiente 9): el sistema de cajas de quiniela como DEMO con datos simulados, no un
 // cliente ni resultados medidos. Orquesta tres piezas de src/components/trabajo/: el escenario (los
 // celulares, la conversación y el selector), el mes de prueba (la cifra) y el cierre. Fondo claro; la
-// única card invertida es el escenario. Desde 1024 la columna de texto queda centrada en alto contra
-// el escenario; en el celular, escenario, selector y después el mes.
+// única card invertida es el escenario (el sello de demo va montado en su borde). Desde 1024 la columna
+// de texto queda centrada en alto contra el escenario; en el celular, escenario, selector y después el mes.
 import Icono from '../Icono.astro';
+import Glow from '../Glow.astro';
 import BotonWhatsApp from '../BotonWhatsApp.astro';
 import Escenario from '../trabajo/Escenario.astro';
 import Selector from '../trabajo/Selector.astro';
 import ElMes from '../trabajo/ElMes.astro';
 
-// PROVISORIO: se reemplaza por las cifras de la demo en producción. Todo lo que muestra cifras sale de acá.
+// Demo de quiniela-system en producción, mes simulado del 01/09 al 30/09/2026 (leído de la base el 01/10/2026).
+// Todo lo que muestra cifras sale de acá.
 const mes = { dias: 26, movimientos: 1703, arqueos: 104, conDiferencia: 32 };
 
+const pregunta = '¿Por qué no cuadra este arqueo?';
 // PROVISORIO: la respuesta sale de la especificación del asistente, no de la demo (va rotulada "Ejemplo").
-const pregunta = '¿Por qué no cuadra la caja de hoy?';
-const respuesta = 'Faltan $30.000. Hay un fiado de Pérez por $30.000 cargado a las 11:42. Fijate si además te pagó en efectivo y no lo registraste.';
+// Lo que va entre [ ] sale en negrita (cero, uno o varios fragmentos); el texto no cambia.
+const respuesta = 'Faltan $30.000. [Hay un fiado de Pérez por $30.000 cargado a las 11:42.] Fijate si además te pagó en efectivo y no lo registraste.';
 ---
 
-<section id="trabajo" class="seccion trabajo" aria-labelledby="trabajo-titulo">
+<section id="trabajo" class="seccion trabajo con-glow" aria-labelledby="trabajo-titulo">
+	<div class="trabajo__glow" aria-hidden="true"><Glow tono="cian" fondo="claro" esquina="abajo-izq" /></div>
 	<div class="contenedor">
 		<div class="trabajo__cabeza">
 			<div class="encabezado-seccion trabajo__intro revelar">
 				<h2 id="trabajo-titulo" class="t-titular">De siete cuadernos a un solo sistema de gestión</h2>
 				<p class="t-cuerpo">Fiados, cobros, pagos y premios van a un solo registro, y los arqueos y los reportes salen calculados.</p>
-				<p class="trabajo__sello"><Icono nombre="flask-duotone" size={24} />Demo con datos simulados</p>
 			</div>
 			<Escenario pregunta={pregunta} respuesta={respuesta} />
 			<Selector />
@@ -48,10 +51,21 @@ const respuesta = 'Faltan $30.000. Hay un fiado de Pérez por $30.000 cargado a 
 </section>
 
 <style>
-	/* clip y no hidden: el escenario sangra hasta el borde y la barra de scroll no debe agrandar la página. */
+	/* .con-glow recorta con clip (no hidden): el escenario sangra hasta el borde y la barra de scroll no
+	   debe agrandar la página. El glow claro entra por la esquina de abajo, detrás del mes; se desvanece
+	   en los últimos 192 px para que no quede un corte contra la sección que sigue. */
 	.trabajo {
 		background: var(--surface-page);
-		overflow-x: clip;
+	}
+
+	.trabajo__glow {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		overflow: clip;
+		-webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 192px), transparent);
+		mask-image: linear-gradient(to bottom, #000 calc(100% - 192px), transparent);
+		pointer-events: none;
 	}
 
 	/* Celular: texto, escenario y selector, en ese orden. Las áreas las ocupan Escenario (.escena) y Selector (.selector). */
@@ -64,20 +78,6 @@ const respuesta = 'Faltan $30.000. Hay un fiado de Pérez por $30.000 cargado a 
 		grid-area: intro;
 		margin-bottom: var(--space-5);
 		max-width: none;
-	}
-
-	.trabajo__sello {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-1);
-		justify-self: start;
-		min-height: 40px;
-		padding-inline: var(--space-2);
-		border-radius: var(--radius-pill);
-		background: var(--blue-50);
-		color: var(--blue-900);
-		font-size: var(--type-meta-size);
-		font-weight: var(--fw-bold);
 	}
 
 	.trabajo__cierre {
@@ -122,8 +122,13 @@ const respuesta = 'Faltan $30.000. Hay un fiado de Pérez por $30.000 cargado a 
 	}
 
 	/* Escritorio: dos columnas. Los separadores de 1fr centran el texto y el selector en alto contra
-	   el escenario; la fila de 48 px de abajo es donde asoma la conversación. */
+	   el escenario (que se estira a la altura de la columna); la fila de 48 px de abajo es donde asoma
+	   la conversación. */
 	@media (min-width: 1024px) {
+		.trabajo__intro {
+			margin-bottom: 0;
+		}
+
 		.trabajo__cabeza {
 			grid-template-columns: 5fr 7fr;
 			grid-template-rows: 1fr auto auto 1fr 48px;
