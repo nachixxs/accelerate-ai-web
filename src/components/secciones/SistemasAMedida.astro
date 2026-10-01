@@ -55,6 +55,10 @@ const tipos = [
 				<div class="ejemplo__texto">
 					<h3 class="t-label">Cajas y cierres diarios sin cuadernos</h3>
 					<p>Cada movimiento queda registrado y el cierre del día sale en minutos.</p>
+					<a class="ejemplo__link" href="#trabajo">
+						Mirá uno funcionando
+						<Icono nombre="arrow-down-bold" size={16} />
+					</a>
 				</div>
 				<MockCaja />
 			</article>
@@ -149,6 +153,26 @@ const tipos = [
 
 	.ejemplo h3 {
 		font-weight: var(--fw-semibold);
+	}
+
+	/* Link chico al primer trabajo (#trabajo), con 44 px de alto para el dedo. */
+	.ejemplo__link {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		justify-self: start;
+		min-height: 44px;
+		color: var(--cyan-300);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.ejemplo__link:hover {
+			color: var(--cyan-200);
+		}
 	}
 
 	/* Variedad de fondos: el grande lleva un degradé azul profundo desde abajo. */

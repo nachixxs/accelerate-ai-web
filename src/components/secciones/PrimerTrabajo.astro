@@ -1,0 +1,280 @@
+---
+// "Primer trabajo" (ESTADO → Pendiente 9, decisión de Nacho 2026-10-01): el sistema de cajas de
+// quiniela como DEMO, con tres capturas de la app real (tema oscuro). Copy honesto: es una demo con datos
+// simulados, no un cliente ni resultados medidos. Los datos de arriba (mes simulado) y lo que hace
+// cada pantalla salen de notas\cajas\ (SPECS §8, §11 y ESTADO 7.4).
+// Fondo claro entre la sección oscura de sistemas y cómo trabajamos. Las capturas van en marcos
+// de celular hechos con CSS; en el celular, en una fila que se desliza (con foco de teclado), y
+// desde 768 en tres columnas. Sin movimiento propio: solo el fundido .fundir de las otras secciones.
+import { Picture } from 'astro:assets';
+import Icono from '../Icono.astro';
+import BotonWhatsApp from '../BotonWhatsApp.astro';
+import cargaRapida from '../../assets/trabajo/carga-rapida.png';
+import arqueo from '../../assets/trabajo/arqueo.png';
+import asistente from '../../assets/trabajo/asistente.png';
+
+// Los textos son borrador (REVISION-TEXTOS.md).
+const pantallas = [
+	{
+		img: cargaRapida,
+		titulo: 'Carga rápida',
+		texto: 'Fiado, cobro, pago o premio en dos toques, desde el celular y mientras atendés.',
+		alt: 'Pantalla de carga rápida de la app: cuatro botones grandes para registrar un fiado, un cobro, un pago o un premio.',
+	},
+	{
+		img: arqueo,
+		titulo: 'Arqueo',
+		texto: 'Cargás el efectivo y las boletas que contaste y te dice al instante si cierra o de cuánto es la diferencia.',
+		alt: 'Pantalla de arqueo de la app: dos campos para el efectivo y las boletas contados, y el resultado, que cierra o muestra la diferencia.',
+	},
+	{
+		img: asistente,
+		titulo: 'Asistente',
+		texto: 'Le preguntás «¿por qué no cuadra?» y te dice qué movimiento mirar. Solo consulta: no carga ni modifica nada.',
+		alt: 'Chat del asistente de la app: una pregunta sobre un arqueo que no cuadra y la respuesta que señala qué movimiento revisar.',
+	},
+];
+---
+
+<section id="trabajo" class="seccion trabajo" aria-labelledby="trabajo-titulo">
+	<div class="contenedor">
+		<div class="encabezado-seccion fundir">
+			<h2 id="trabajo-titulo" class="t-titular">Nuestro primer trabajo: las cajas de una quiniela</h2>
+			<p class="t-cuerpo">
+				Un sistema que reemplaza los cuadernos de caja de una agencia de quiniela por un solo registro de movimientos, con
+				los arqueos y los reportes calculados. Es una demo: la armamos nosotros y la probamos con datos simulados.
+			</p>
+			<p class="t-cuerpo trabajo__prueba">
+				Lo probamos con un mes simulado de <strong>26 días</strong>, <strong>1.703 movimientos</strong>{' '}y <strong>32 arqueos</strong>.
+			</p>
+		</div>
+
+		<div class="trabajo__escena fundir">
+			<p class="trabajo__pista" aria-hidden="true">
+				Deslizá para ver las tres pantallas
+				<Icono nombre="arrow-right-bold" size={16} />
+			</p>
+			<div class="trabajo__fila" role="group" aria-label="Tres pantallas de la app" tabindex="0">
+				{
+					pantallas.map(({ img, titulo, texto, alt }) => (
+						<figure class="pantalla">
+							<div class="celular">
+								<Picture
+									src={img}
+									alt={alt}
+									formats={['avif', 'webp']}
+									widths={[216, 324, 432, 648]}
+									sizes="(min-width: 1024px) 264px, (min-width: 768px) 20vw, 216px"
+									width={720}
+									height={1560}
+									class="celular__pantalla"
+								/>
+							</div>
+							<figcaption>
+								<strong class="t-label">{titulo}</strong>
+								<span>{texto}</span>
+							</figcaption>
+						</figure>
+					))
+				}
+			</div>
+			<p class="trabajo__nota">Demo con datos simulados</p>
+		</div>
+
+		<div class="trabajo__cierre fundir">
+			<BotonWhatsApp
+				variante="secundario"
+				texto="Quiero un sistema así para mi negocio"
+				mensaje="Hola, vi el sistema de cajas para quiniela que muestran en la web y quiero uno así para mi negocio."
+			/>
+			<a class="trabajo__codigo" href="https://github.com/nachixxs/quiniela-system" target="_blank" rel="noopener noreferrer">
+				Ver el código
+				<Icono nombre="arrow-up-right-bold" size={16} />
+				<span class="solo-lector"> (abre GitHub en otra pestaña)</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<style>
+	/* Blanco, no el gris del cuerpo: separa esta sección de cómo trabajamos, que va abajo y
+	   también es clara. */
+	.trabajo {
+		background: var(--surface-page);
+	}
+
+	.trabajo__prueba {
+		color: var(--text-heading-dark);
+	}
+
+	.trabajo__escena {
+		margin-top: var(--space-5);
+	}
+
+	/* La pista de "hay más" solo en el celular, donde la fila se desliza. */
+	.trabajo__pista {
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+		margin-bottom: var(--space-2);
+		color: var(--text-muted-dark);
+		font-size: var(--type-meta-size);
+	}
+
+	/* En el celular, una fila que se desliza y llega al borde de la pantalla: la tercera
+	   asoma, así se nota que hay más. Es un grupo con foco, para recorrerla con las flechas. */
+	.trabajo__fila {
+		display: flex;
+		gap: var(--space-3);
+		margin-inline: calc(var(--space-2) * -1);
+		padding: var(--space-1) var(--space-2) var(--space-3);
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scroll-padding-inline: var(--space-2);
+		scrollbar-color: var(--slate-300) transparent;
+	}
+
+	.trabajo__fila:focus-visible {
+		outline: 3px solid var(--brand-primary-deep);
+		outline-offset: -3px;
+		border-radius: var(--radius-card);
+	}
+
+	.pantalla {
+		display: grid;
+		flex: none;
+		align-content: start;
+		gap: var(--space-3);
+		width: 232px;
+		scroll-snap-align: start;
+	}
+
+	/* El marco del celular: borde de 8 px y esquinas redondeadas. Las capturas son de tema oscuro,
+	   así que el marco va un escalón más claro (navy-700) para que la pantalla no se funda con él. */
+	.celular {
+		position: relative;
+		padding: var(--space-1);
+		border-radius: 36px;
+		background: var(--navy-700);
+		box-shadow: var(--shadow-card);
+	}
+
+	.celular::before {
+		content: '';
+		position: absolute;
+		top: 14px;
+		left: 50%;
+		z-index: 1;
+		width: 56px;
+		height: 6px;
+		border-radius: var(--radius-pill);
+		background: #0b0d10;
+		translate: -50% 0;
+	}
+
+	.celular :global(.celular__pantalla) {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 720 / 1560;
+		border-radius: 28px;
+		background: #16181c;
+	}
+
+	figcaption {
+		display: grid;
+		gap: var(--space-1);
+		padding-inline: var(--space-1);
+	}
+
+	figcaption strong {
+		font-weight: var(--fw-semibold);
+	}
+
+	figcaption span {
+		color: var(--text-body-dark);
+		font-size: var(--type-meta-size);
+		text-wrap: pretty;
+	}
+
+	.trabajo__nota {
+		color: var(--text-muted-dark);
+		font-size: 0.8125rem;
+	}
+
+	.trabajo__cierre {
+		display: grid;
+		justify-items: start;
+		gap: var(--space-2);
+		margin-top: var(--space-5);
+	}
+
+	/* El link al código es chico a propósito, pero con 44 px de alto para el dedo. */
+	.trabajo__codigo {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		min-height: 44px;
+		color: var(--brand-primary-deep);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.trabajo__codigo:focus-visible {
+		outline: 3px solid var(--brand-primary-deep);
+		outline-offset: 3px;
+		border-radius: var(--radius-input);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.trabajo__codigo:hover {
+			color: var(--blue-900);
+		}
+	}
+
+	@media (min-width: 768px) {
+		.trabajo__pista {
+			display: none;
+		}
+
+		.trabajo__escena {
+			margin-top: var(--space-6);
+		}
+
+		.trabajo__fila {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			align-items: start;
+			gap: var(--space-3);
+			margin-inline: 0;
+			padding: 0 0 var(--space-3);
+			overflow: visible;
+		}
+
+		.pantalla {
+			width: auto;
+			max-width: 296px;
+		}
+
+		/* El del medio, un escalón más abajo: rompe la fila sin mover nada. */
+		.pantalla:nth-child(2) {
+			margin-top: var(--space-5);
+		}
+
+		.trabajo__cierre {
+			grid-auto-flow: column;
+			justify-content: start;
+			align-items: center;
+			gap: var(--space-4);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.trabajo__fila {
+			gap: var(--space-5);
+		}
+	}
+</style>
