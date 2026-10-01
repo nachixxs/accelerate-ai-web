@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-136.75 -367.75 563.6 563.6">
-<!-- Isotipo C4 (versión navy plana) centrado en un cuadrado #0b1220, con 15 % de margen por lado. Misma geometría y mismas máscaras que src/components/Isotipo.astro; los colores son los tokens mark-front, mark-mid y mark-back en su versión sobre oscuro. Se rasteriza a favicon.png y apple-touch-icon.png con npm run iconos. -->
+<!-- Isotipo C4 (versión navy plana) centrado en un cuadrado #0b1220, con 15 % de margen por lado. Misma geometría y mismas máscaras que src/components/Logo.astro (la A y el punto); los colores son los tokens mark-front, mark-mid y mark-back en su versión sobre oscuro. Se rasteriza a favicon.png y apple-touch-icon.png con npm run iconos. -->
 <defs>
 <path id="a" fill-rule="evenodd" d="M3.83 0 164.86 -171.89H221.45L229.42 0H174.36L173.63 -27.54H81.39L56.28 0ZM115.03 -64.82H173.19L173.09 -99.75Q173.16 -102.09 173.3 -106.38Q173.45 -110.67 173.72 -115.55Q173.99 -120.42 174.25 -124.62Q174.52 -128.81 174.62 -130.83H172.76Q168.87 -126.23 163.82 -120.28Q158.77 -114.32 154.06 -108.73Q149.35 -103.14 146.18 -99.64Z"/>
 <path id="s" d="M3.83 0 164.86 -171.89H221.45L229.42 0Z"/>

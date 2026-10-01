@@ -26,12 +26,18 @@ export async function revisarAltoContraste(navegador, url) {
 			outline: getComputedStyle(label).outlineStyle,
 		})),
 	);
+	// El logo del encabezado sigue al tema: el fill de las letras es el color del texto normal.
+	const logo = await pagina.evaluate(() => ({
+		fill: getComputedStyle(document.querySelector('.capsula__logo .logo__letras')).fill,
+		texto: getComputedStyle(document.body).color,
+	}));
 	await contexto.close();
 	const elegido = outlines.find((o) => o.elegido);
 	const otro = outlines.find((o) => !o.elegido);
 	const chequeos = [
 		[!!elegido && elegido.outline !== 'none', `alto contraste: el label elegido tiene outline visible (outline-style: ${elegido?.outline ?? 'no encontrado'})`],
 		[!!otro && otro.outline === 'none', `alto contraste: el label no elegido no tiene outline (outline-style: ${otro?.outline ?? 'no encontrado'})`],
+		[logo.fill === logo.texto, `alto contraste: el logo del encabezado sigue al tema (fill ${logo.fill}, texto ${logo.texto})`],
 	];
 	return { chequeos, ms: Date.now() - inicio };
 }

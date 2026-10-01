@@ -101,4 +101,14 @@ const region = { x: -60, y: -180, width: 410, height: 185 };
 	.logo__medio { fill: var(--logo-medio); }
 	.logo__atras { fill: var(--logo-atras); }
 	.logo__letras { fill: var(--logo-letras); }
+
+	/* Alto contraste: el fondo pasa a Canvas y los fills del SVG no se ajustan solos; todo sigue al tema. */
+	@media (forced-colors: active) {
+		.logo {
+			--logo-frente: CanvasText;
+			--logo-medio: CanvasText;
+			--logo-atras: CanvasText;
+			--logo-letras: CanvasText;
+		}
+	}
 </style>
