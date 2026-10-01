@@ -11,7 +11,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "capturas": "astro build && node scripts/capturas.mjs",
-    "og": "node scripts/og.mjs"
+    "og": "node scripts/og.mjs",
+    "iconos": "node scripts/iconos.mjs"
   },
   "dependencies": {
     "astro": "^7.3.4"

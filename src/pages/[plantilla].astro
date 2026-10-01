@@ -2,9 +2,8 @@
 // Plantilla de la imagen Open Graph (public/og.jpg), 1200 × 630. No es una página del sitio:
 // solo se genera cuando la pide scripts/og.mjs (npm run og); en el build normal no existe.
 // Repite la portada: fondo oscuro, glow desde arriba a la derecha y el mismo titular.
-import { Image } from 'astro:assets';
-import logotipo from '../assets/identidad/logotipo-claro.png';
 import Glow from '../components/Glow.astro';
+import Logo from '../components/Logo.astro';
 import Base from '../layouts/Base.astro';
 
 export function getStaticPaths() {
@@ -17,7 +16,7 @@ export function getStaticPaths() {
 		<Glow tono="azul" esquina="arriba-der" />
 		<Glow tono="cian" esquina="arriba-der" />
 
-		<Image src={logotipo} alt="" width={220} class="og__logo" loading="eager" />
+		<Logo id="og" fondo="oscuro" class="og__logo" />
 		<p class="og__titular">Tu equipo deja de <span class="texto-gradiente">copiar y pegar</span></p>
 		<div class="og__pie">
 			<p>Sistemas a medida para pymes</p>
@@ -37,9 +36,8 @@ export function getStaticPaths() {
 		padding: 64px 300px;
 	}
 
-	.og__logo {
-		width: 220px;
-		height: auto;
+	.og :global(.og__logo) {
+		width: 280px;
 	}
 
 	.og__titular {

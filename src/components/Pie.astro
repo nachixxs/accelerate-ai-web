@@ -3,13 +3,12 @@
 // sección de cierre, así se leen como un solo bloque; los separa la estela: las tres capas de
 // velocidad de la A (atrás, medio, frente), cortadas en diagonal como en el isotipo, que se
 // descubren con el scroll una detrás de la otra (clip-path).
-// Tres columnas: la marca (imagotipo chico + frase), las secciones y el contacto. Lo último de
+// Tres columnas: la marca (logo + frase), las secciones y el contacto. Lo último de
 // la página es la línea legal: nada va debajo.
-import { Image } from 'astro:assets';
 // El contacto, como en minificando: una línea discreta por canal (ícono, canal y dato), no un
 // número grande. Hoy el único canal es WhatsApp (SPECS §1); la lista queda por si se suma otro.
 import Icono from './Icono.astro';
-import imagotipo from '../assets/identidad/imagotipo-claro.png';
+import Logo from './Logo.astro';
 import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 
 // `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada.
@@ -37,7 +36,7 @@ const links = [
 	<div class="contenedor">
 		<div class="pie__grilla">
 			<div class="pie__bloque pie__marca" style="--i: 0">
-				<Image src={imagotipo} alt="Accelerate.ai" width={352} class="pie__logo" />
+				<Logo id="pie" fondo="oscuro" class="pie__logo" />
 				<p>Sistemas a medida para pymes que repiten tareas todos los días.</p>
 			</div>
 
@@ -73,11 +72,11 @@ const links = [
 		</div>
 
 		<div class="pie__base">
+			<a class="pie__privacidad" href="/legal/" aria-current={Astro.url.pathname.startsWith('/legal') ? 'page' : undefined}>Privacidad y términos</a>
 			<a class="pie__arriba" href="#inicio">
 				Volver arriba
 				<Icono nombre="arrow-up-bold" size={18} />
 			</a>
-			<a class="pie__privacidad" href="/legal/" aria-current={Astro.url.pathname.startsWith('/legal') ? 'page' : undefined}>Privacidad y términos</a>
 			<p class="pie__legal">© {anio} <span translate="no">Accelerate.ai</span>. Todos los derechos reservados.</p>
 		</div>
 	</div>
@@ -127,11 +126,8 @@ const links = [
 		line-height: 1.25;
 	}
 
-	/* El imagotipo en tamaño normal, alineado a la izquierda con el resto de la columna. */
-	.pie__logo {
-		display: block;
-		width: 140px;
-		height: auto;
+	.pie__marca :global(.pie__logo) {
+		width: min(10rem, 100%);
 		margin-bottom: var(--space-1);
 	}
 
@@ -225,9 +221,9 @@ const links = [
 		transition: color 0.2s;
 	}
 
-	/* En una columna angosta, la fila no entra entera: apilada, con "Volver arriba" arriba, así el
-	   © queda siempre como lo último visible de la página. El orden en el DOM es el del foco y el de
-	   lectura, y coincide con lo que se ve: arriba, privacidad, ©. */
+	/* En una columna angosta, la fila no entra entera: apilada, así el © queda siempre como lo último
+	   visible de la página. El orden en el DOM es el del foco y el de lectura, y coincide con lo que
+	   se ve: privacidad, volver arriba, ©. */
 	.pie__base {
 		display: flex;
 		flex-direction: column;
@@ -359,12 +355,12 @@ const links = [
 		.pie .pie__privacidad {
 			align-items: flex-end;
 			margin-right: auto;
-			order: -1;
 		}
 
-		/* En el DOM el © va al final (orden de foco y de lectura); acá vuelve al principio de la fila. */
+		/* En el DOM el © va al final (lectura); acá pasa al principio de la fila. Los dos links siguen
+		   en el orden del DOM, de izquierda a derecha: el foco (Tab) va como se ve (WCAG 2.4.3). */
 		.pie__legal {
-			order: -2;
+			order: -1;
 		}
 	}
 

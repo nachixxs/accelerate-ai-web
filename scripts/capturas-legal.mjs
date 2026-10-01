@@ -28,6 +28,14 @@ const ultimoDelPie = () => {
 	return [...document.querySelectorAll('.pie__base > *')].every((el) => el.getBoundingClientRect().bottom <= legal + 1);
 };
 
+// Los links de la fila del pie, en el orden del DOM (el del Tab), se ven en el mismo orden: más abajo
+// en la columna (menos de 768 px) o más a la derecha en la fila.
+const focoEnOrden = () => {
+	const eje = innerWidth >= 768 ? 'left' : 'top';
+	const links = [...document.querySelectorAll('.pie__base a')];
+	return links.length === 2 && links.every((a, i) => i === 0 || a.getBoundingClientRect()[eje] > links[i - 1].getBoundingClientRect()[eje]);
+};
+
 // Mide todo lo que se puede leer de /legal sin navegar.
 const medirPagina = (pagina) =>
 	pagina.evaluate(() => {
@@ -37,7 +45,8 @@ const medirPagina = (pagina) =>
 			const destino = document.getElementById(a.hash.slice(1));
 			return { id: a.hash, existe: !!destino, igual: destino?.textContent.trim() === a.textContent.trim() };
 		});
-		const azul = [...document.body.querySelectorAll('*')].filter((el) => {
+		// El logo del encabezado lleva la A en #2971f2 (la versión claro de la marca): no cuenta.
+		const azul = [...document.body.querySelectorAll('*:not(.logo *)')].filter((el) => {
 			const e = getComputedStyle(el);
 			return [e.color, e.backgroundColor, e.borderTopColor, e.fill].includes('rgb(41, 113, 242)');
 		});
@@ -57,8 +66,6 @@ const medirPagina = (pagina) =>
 			// Sin timeline de sección, ningún link de la cápsula tiene que verse como el activo.
 			activo: [...document.querySelectorAll('.capsula__nav a')].some((a) => getComputedStyle(a).color !== 'rgb(51, 65, 85)' || getComputedStyle(a, '::before').opacity !== '0' || getComputedStyle(a, '::after').opacity !== '0'),
 			cta: document.querySelector('.capsula__cta').classList.contains('capsula__cta--lleno'),
-			// Abajo de 768 px la base del pie va apilada: el foco (orden del DOM) la recorre de arriba abajo.
-			foco: [...document.querySelectorAll('.pie__base a')].every((a, i, l) => innerWidth >= 768 || i === 0 || caja(a).top >= caja(l[i - 1]).top),
 		};
 	});
 
@@ -117,6 +124,14 @@ async function revisarCombinacion(navegador, url, width, reducir) {
 	const m = await medirPagina(pagina);
 	const sinAlto = await titulosBajoCapsula(pagina);
 	const ultimo = await pagina.evaluate(ultimoDelPie);
+	// El foco, al ancho de la combinación y, en la de escritorio, justo a cada lado del corte de 768 px.
+	let foco = await pagina.evaluate(focoEnOrden);
+	if (width > 768) {
+		for (const w of [768, 767]) {
+			await pagina.setViewportSize({ width: w, height: 800 });
+			foco = foco && (await pagina.evaluate(focoEnOrden));
+		}
+	}
 	await contexto.close();
 	const fallasLinks = reducir ? [] : await revisarLinks(navegador, url, width);
 	const malas = m.anclas.filter((a) => !a.existe || !a.igual).map((a) => a.id);
@@ -130,7 +145,7 @@ async function revisarCombinacion(navegador, url, width, reducir) {
 		[m.chicos.length === 0, `${etiqueta}: áreas táctiles de 44 px o más${m.chicos.length ? ': ' + m.chicos.join(', ') : ''}`],
 		[m.azul === 0 && !m.rayas, `${etiqueta}: sin el azul #2971f2 (${m.azul} elementos) y sin rayas largas`],
 		[m.glows === 1 && m.montada, `${etiqueta}: un solo glow (${m.glows}) y la card montada sobre el borde de la franja`],
-		[!m.activo && m.cta && ultimo && m.foco, `${etiqueta}: ningún link de la cápsula se ve activo, el botón va lleno, el © es lo último del pie y el foco lo recorre en orden`],
+		[!m.activo && m.cta && ultimo && foco, `${etiqueta}: ningún link de la cápsula se ve activo, el botón va lleno, el © es lo último del pie y el foco recorre sus links en el orden en que se ven`],
 	];
 	if (m.marcadores.length && width === 360 && !reducir) chequeos.push([true, `AVISO /legal: hay ${m.marcadores.length} marcadores (${m.marcadores.join(' ')}): no publicar con marcadores`]);
 	return chequeos;
