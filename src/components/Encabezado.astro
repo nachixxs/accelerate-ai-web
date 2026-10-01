@@ -12,6 +12,11 @@ import Icono from './Icono.astro';
 import imagotipo from '../assets/identidad/imagotipo-azul.png';
 import { WHATSAPP_URL } from '../config';
 
+// `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada
+// (/#tiempo) y no se marca ninguna como activa. Ahí tampoco hay un botón principal de la página: el
+// de la cápsula queda lleno desde el arranque, sin esperar al script.
+const { raiz = '' } = Astro.props;
+
 // --s-* son los timelines de las secciones (global.css): marcan cuál está en pantalla.
 const links = [
 	{ href: '#resolvemos', texto: 'Qué resolvemos', timeline: '--s-resolvemos' },
@@ -28,7 +33,7 @@ const links = [
 		<div class="capsula">
 			<span class="capsula__fondo" aria-hidden="true"></span>
 
-			<a href="#inicio" class="capsula__logo">
+			<a href={`${raiz}#inicio`} class="capsula__logo">
 				<Image src={imagotipo} alt="Accelerate.ai" width={160} densities={[1, 2, 3]} loading="eager" />
 			</a>
 
@@ -39,7 +44,7 @@ const links = [
 							.filter(({ soloMenu }) => !soloMenu)
 							.map(({ href, texto, timeline }) => (
 								<li>
-									<a href={href} style={`--timeline: ${timeline}`}>
+									<a href={raiz + href} style={`--timeline: ${timeline}`}>
 										{texto}
 									</a>
 								</li>
@@ -49,7 +54,7 @@ const links = [
 			</nav>
 
 			<div class="capsula__acciones">
-				<a class="capsula__cta" href={WHATSAPP_URL} target="_blank" rel="noopener">
+				<a class:list={['capsula__cta', { 'capsula__cta--lleno': raiz }]} href={WHATSAPP_URL} target="_blank" rel="noopener">
 					<span class="capsula__cta-cara">
 						<Icono nombre="si:whatsapp" size={20} />
 						<span class="capsula__cta-texto solo-lector">Escribinos por WhatsApp</span>
@@ -88,7 +93,7 @@ const links = [
 			{
 				links.map(({ href, texto }, i) => (
 					<li style={`--i: ${i}`}>
-						<a href={href}>
+						<a href={raiz + href}>
 							{texto}
 							<Icono nombre="arrow-right-bold" size={16} class="menu__flecha" />
 						</a>

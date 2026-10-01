@@ -48,7 +48,7 @@ async function elementosQueSeSalen(pagina) {
 	});
 }
 
-async function revisarUnAncho(navegador, url, width) {
+async function revisarUnAncho(navegador, url, width, prefijo) {
 	const contexto = await navegador.newContext({ viewport: { width, height: ALTO_VENTANA }, reducedMotion: 'reduce' });
 	const pagina = await contexto.newPage();
 	const cdp = await contexto.newCDPSession(pagina);
@@ -87,15 +87,15 @@ async function revisarUnAncho(navegador, url, width) {
 	if (fallas) {
 		await pagina.evaluate(() => scrollTo(0, 0));
 		salidos = await elementosQueSeSalen(pagina);
-		await pagina.screenshot({ path: `capturas/letra-200-${width}px-desborde.png`, fullPage: true });
+		await pagina.screenshot({ path: `capturas/${prefijo}letra-200-${width}px-desborde.png`, fullPage: true });
 	}
 	await contexto.close();
 	return { clientWidth, anchoMaximo, fallas, primeraFallaY, ultimaFallaY, salidos };
 }
 
-export async function revisarLetra200(navegador, url) {
+export async function revisarLetra200(navegador, url, prefijo = '') {
 	const inicio = Date.now();
-	const porAncho = await Promise.all(ANCHOS.map(async (width) => ({ width, r: await revisarUnAncho(navegador, url, width) })));
+	const porAncho = await Promise.all(ANCHOS.map(async (width) => ({ width, r: await revisarUnAncho(navegador, url, width, prefijo) })));
 	const chequeos = [];
 	for (const { width, r } of porAncho) {
 		if (!r.fallas) {

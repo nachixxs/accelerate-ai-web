@@ -1,0 +1,76 @@
+---
+// Índice de /legal: las dos partes lado a lado, cada una con sus temas. Los textos son los mismos
+// de los títulos (scripts/capturas-legal.mjs lo comprueba).
+const partes = [
+	{
+		id: 'privacidad',
+		titulo: 'Privacidad',
+		temas: [
+			['responsable', 'Quién es el responsable'],
+			['datos', 'Qué datos nos llegan'],
+			['finalidad', 'Para qué los usamos'],
+			['plazo', 'Cuánto tiempo los guardamos'],
+			['whatsapp', 'WhatsApp y Meta'],
+			['hosting', 'Hosting y datos técnicos'],
+			['cookies', 'Cookies'],
+			['derechos', 'Tus derechos'],
+			['aaip', 'Reclamos ante la AAIP'],
+		],
+	},
+	{
+		id: 'terminos',
+		titulo: 'Términos de uso',
+		temas: [
+			['informativa', 'La web es informativa'],
+			['calculadora', 'Calculadora y ejemplos'],
+			['auditoria', 'La auditoría gratis'],
+			['propiedad', 'Propiedad intelectual'],
+			['creditos', 'Créditos'],
+			['terceros', 'Links a otros servicios'],
+			['ley', 'Ley aplicable'],
+			['cambios', 'Si este texto cambia'],
+		],
+	},
+];
+---
+
+<nav class="indice" aria-label="Índice de esta página">
+	{
+		partes.map(({ id, titulo, temas }) => (
+			<div class="indice__parte">
+				<a class="indice__titulo" href={`#${id}`}>{titulo}</a>
+				<ul>
+					{temas.map(([ancla, texto]) => <li><a href={`#${ancla}`}>{texto}</a></li>)}
+				</ul>
+			</div>
+		))
+	}
+</nav>
+
+<style>
+	.indice {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-3);
+		max-width: var(--measure-cuerpo);
+		margin-top: var(--space-6);
+	}
+
+	.indice a {
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+		padding-block: 4px;
+		color: var(--brand-primary-deep);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-medium);
+		line-height: 1.3;
+		overflow-wrap: anywhere;
+		text-underline-offset: 4px;
+	}
+
+	.indice .indice__titulo {
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-bold);
+	}
+</style>

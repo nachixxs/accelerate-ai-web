@@ -1,0 +1,96 @@
+---
+// Primera parte de /legal. Los marcadores entre corchetes ([NOMBRE], [CUIT], [DOMICILIO], [PLAZO],
+// [HOSTING], [MAIL]) se reemplazan con los datos reales antes de publicar: la página no sale con ellos
+// (SPECS §4, scripts/capturas-legal.mjs avisa si quedan). El texto de la AAIP va literal (Res. AAIP 14/2018, art. 3).
+import { whatsappUrl } from '../../config';
+
+const consulta = whatsappUrl('Hola, quiero consultar los datos míos que tienen.');
+---
+
+<section class="parte" aria-labelledby="privacidad">
+	<h2 id="privacidad" class="t-label">Privacidad</h2>
+
+	<h3 id="responsable">Quién es el responsable</h3>
+	<p>El responsable es quien decide qué se hace con tus datos y responde por ellos.</p>
+	<p>
+		Acá, el responsable es [NOMBRE], CUIT [CUIT], con domicilio en [DOMICILIO]. <span translate="no">Accelerate.ai</span> es
+		su nombre comercial. En este texto, “nosotros” quiere decir <span translate="no">Accelerate.ai</span>.
+	</p>
+
+	<h3 id="datos">Qué datos nos llegan</h3>
+	<p>Tus datos son la información que te identifica. Los únicos que nos llegan son los que nos mandás vos por WhatsApp:</p>
+	<ul>
+		<li>tu número de teléfono;</li>
+		<li>el nombre de tu perfil;</li>
+		<li>tu mensaje, que puede incluir las horas y la tarea que elegiste en la calculadora de la web.</li>
+	</ul>
+	<p>La web no tiene formularios ni nos manda nada por su cuenta: el mensaje sale de tu WhatsApp cuando vos lo enviás.</p>
+	<p>Tus datos quedan guardados en nuestra lista de contactos (una base de datos), a cargo del responsable de arriba.</p>
+
+	<h3 id="finalidad">Para qué los usamos</h3>
+	<p>Usamos tus datos para contestarte, coordinar la auditoría y armar una propuesta. No los vendemos ni los compartimos.</p>
+	<p>
+		Darnos tus datos es voluntario. Si no querés hacerlo, podés ver la web igual, pero no vamos a poder contestarte
+		ni coordinar la auditoría.
+	</p>
+
+	<h3 id="plazo">Cuánto tiempo los guardamos</h3>
+	<p>Guardamos tus datos durante [PLAZO]. Cuando ya no los necesitamos, los borramos.</p>
+
+	<h3 id="whatsapp">WhatsApp y Meta</h3>
+	<p>
+		WhatsApp es un servicio de Meta Platforms, no nuestro. Cuando nos escribís, Meta procesa tus mensajes en
+		servidores que están fuera de la Argentina. Si preferís no usarlo, podés escribirnos por mail a <a href="mailto:[MAIL]">[MAIL]</a>.
+	</p>
+
+	<h3 id="hosting">Hosting y datos técnicos</h3>
+	<p>
+		El servicio que aloja la web, [HOSTING], registra datos técnicos de quien la visita, como la dirección IP. Los
+		registra por seguridad y para que la web funcione.
+	</p>
+
+	<h3 id="cookies">Cookies</h3>
+	<p>
+		Las cookies son archivos chicos que un sitio deja en tu navegador para reconocerte. La web no usa cookies, ni
+		almacenamiento local, ni analíticas, ni píxeles de seguimiento, así que no hay ningún aviso de cookies para aceptar.
+	</p>
+	<p>
+		La fuente de letra se sirve desde la propia web, sin pedirla a otro servicio. La calculadora corre en tu navegador
+		y no guarda nada.
+	</p>
+
+	<h3 id="derechos">Tus derechos</h3>
+	<p>Podés pedirnos:</p>
+	<ul>
+		<li>
+			acceso: saber qué datos tuyos tenemos. Es gratis cada 6&nbsp;meses y te respondemos dentro de los
+			10&nbsp;días corridos;
+		</li>
+		<li>rectificación y actualización: corregir o poner al día lo que esté mal o desactualizado;</li>
+		<li>supresión: que borremos tus datos.</li>
+	</ul>
+	<p>Corregir, actualizar o borrar no tiene costo, y lo hacemos dentro de los 5&nbsp;días hábiles.</p>
+	<p>
+		Podés pedirlo <a href={consulta} target="_blank" rel="noopener">escribiéndonos por WhatsApp<span class="solo-lector"> (abre WhatsApp)</span></a> o por mail a <a href="mailto:[MAIL]">[MAIL]</a>. No hace falta ningún formato especial: alcanza con que nos cuentes qué necesitás.
+	</p>
+
+	<h3 id="aaip">Reclamos ante la AAIP</h3>
+	<p>
+		Este texto sigue la Ley&nbsp;25.326 de protección de datos personales. La Agencia de Acceso a la Información
+		Pública (AAIP) es el organismo que controla que se cumpla. Dice así:
+	</p>
+	<figure>
+		<blockquote>
+			<p>
+				“LA AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA, en su carácter de Órgano de Control de la Ley&nbsp;N°&nbsp;25.326,
+				tiene la atribución de atender las denuncias y reclamos que interpongan quienes resulten afectados en sus
+				derechos por incumplimiento de las normas vigentes en materia de protección de datos personales”
+			</p>
+		</blockquote>
+		<figcaption>Resolución AAIP&nbsp;14/2018, artículo 3.</figcaption>
+	</figure>
+	<p>
+		Dicho más simple: si sentís que no respetamos tus derechos sobre tus datos, podés presentar una denuncia o un
+		reclamo ante la AAIP.
+	</p>
+</section>

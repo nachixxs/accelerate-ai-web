@@ -1,0 +1,161 @@
+---
+// La única página aparte (SPECS §4, "Página aparte: /legal"): privacidad y términos de uso. Lleva el
+// mismo encabezado y pie que la portada, con los links de sección hacia `/#…` (raiz="/"). El texto
+// va partido en src/components/legal/. Modo lectura: cuerpo de 65ch, sin animación propia.
+import Base from '../layouts/Base.astro';
+import Encabezado from '../components/Encabezado.astro';
+import Pie from '../components/Pie.astro';
+import Cabecera from '../components/legal/Cabecera.astro';
+import Indice from '../components/legal/Indice.astro';
+import Privacidad from '../components/legal/Privacidad.astro';
+import Terminos from '../components/legal/Terminos.astro';
+---
+
+<Base
+	title="Privacidad y términos | Accelerate.ai"
+	description="Qué datos nos llegan cuando nos escribís por WhatsApp, para qué los usamos y cómo se usa la web."
+>
+	<Encabezado raiz="/" />
+	<main id="contenido">
+		<Cabecera />
+		<div class="contenedor legal">
+			<Indice />
+			<Privacidad />
+			<Terminos />
+		</div>
+	</main>
+	<Pie raiz="/" />
+</Base>
+
+<style>
+	.legal {
+		padding-bottom: var(--espacio-seccion);
+	}
+
+	/* Desde 75em el índice pasa a una columna a la derecha del texto y queda fijo mientras se lee. Va en
+	   em (1200 px con la letra normal) para que con la letra agrandada vuelva a una sola columna. El
+	   max-height evita que, con texto muy agrandado, se corte la punta de la lista; el padding deja
+	   lugar al anillo de foco, que un overflow recortaría. */
+	@media (min-width: 75em) {
+		.legal {
+			display: grid;
+			grid-template-columns: minmax(0, 65ch) minmax(0, 22rem);
+			column-gap: var(--space-6);
+			align-items: start;
+			justify-content: start;
+		}
+
+		.legal :global(.indice) {
+			grid-column: 2;
+			grid-row: 1 / span 2;
+			position: sticky;
+			top: 88px;
+			max-height: calc(100dvh - 104px);
+			margin: calc(96px + var(--space-4)) -8px 0;
+			padding: 8px;
+			overflow-y: auto;
+		}
+
+		.legal :global(.parte) {
+			grid-column: 1;
+		}
+	}
+
+	/* Cada parte abre con una línea y más aire: son dos textos distintos dentro de la misma página. */
+	.legal :global(.parte) {
+		margin-top: var(--space-6);
+		padding-top: var(--space-5);
+		border-top: 1px solid var(--border-light);
+	}
+
+	@media (min-width: 768px) {
+		.legal :global(.parte) {
+			margin-top: 96px;
+		}
+	}
+
+	.legal :global(.parte > h2) {
+		font-weight: var(--fw-bold);
+	}
+
+	/* Ritmo de lectura: espacio entre bloques (sin sangría) y más aire arriba de cada tema que abajo. */
+	.legal :global(.parte > * + *) {
+		margin-top: var(--space-2);
+	}
+
+	.legal :global(.parte > h3) {
+		margin-top: var(--space-5);
+		font-size: var(--type-cuerpo-size);
+		font-weight: var(--fw-semibold);
+		line-height: var(--type-cuerpo-lh);
+		text-wrap: balance;
+	}
+
+	.legal :global(.parte > h2 + h3) {
+		margin-top: var(--space-4);
+	}
+
+	.legal :global(.parte > h3 + *) {
+		margin-top: var(--space-1);
+	}
+
+	.legal :global(.parte > :is(p, ul, figure)) {
+		max-width: var(--measure-cuerpo);
+		color: var(--text-body-dark);
+		line-height: 1.6;
+	}
+
+	.legal :global(.parte ul) {
+		display: grid;
+		gap: var(--space-1);
+		padding-left: 1.25em;
+		list-style: disc;
+	}
+
+	.legal :global(.parte li::marker) {
+		color: var(--slate-500);
+	}
+
+	/* El texto de la AAIP, literal: se lee como cita por el filete neutro de 1 px (sin color) y no pesa
+	   más que el cuerpo. La fuente va en el figcaption, fuera de la cita. */
+	.legal :global(.parte figure) {
+		margin: 0;
+	}
+
+	.legal :global(.parte blockquote) {
+		margin: 0;
+		padding-left: var(--space-2);
+		border-left: 1px solid var(--border-light);
+	}
+
+	.legal :global(.parte figcaption) {
+		margin-top: var(--space-1);
+		padding-left: var(--space-2);
+		color: var(--text-body-dark);
+		font-size: var(--type-meta-size);
+	}
+
+	/* Links dentro del texto: subrayados (no solo de color). El :hover global es el azul de máxima
+	   saturación, que no llega a AA sobre el fondo claro. */
+	.legal :global(.parte p a) {
+		overflow-wrap: anywhere;
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+	}
+
+	/* Hover y active de los links del índice y del texto. El :hover global es el azul de máxima
+	   saturación, que no llega a AA sobre el fondo claro. El :hover va solo con puntero fino: en el
+	   celular se quedaría pegado después de tocar. */
+	.legal :global(:is(.indice, .parte p) a:active) {
+		color: var(--blue-800);
+		text-decoration: underline;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.legal :global(:is(.indice, .parte p) a:hover) {
+			color: var(--blue-800);
+			text-decoration: underline;
+		}
+	}
+</style>
