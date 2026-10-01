@@ -1,6 +1,6 @@
 ---
-// Primera parte de /legal. Los marcadores entre corchetes ([NOMBRE], [CUIT], [DOMICILIO], [PLAZO],
-// [HOSTING], [MAIL]) se reemplazan con los datos reales antes de publicar: la página no sale con ellos
+// Primera parte de /legal. El marcador entre corchetes ([MAIL], va a ser ignacionogpa@accelerate.com.ar
+// cuando esté el dominio) se reemplaza con el dato real antes de publicar: la página no sale con él
 // (SPECS §4, scripts/capturas-legal.mjs avisa si quedan). El texto de la AAIP va literal (Res. AAIP 14/2018, art. 3).
 import { whatsappUrl } from '../../config';
 
@@ -13,7 +13,7 @@ const consulta = whatsappUrl('Hola, quiero consultar los datos míos que tienen.
 	<h3 id="responsable">Quién es el responsable</h3>
 	<p>El responsable es quien decide qué se hace con tus datos y responde por ellos.</p>
 	<p>
-		Acá, el responsable es [NOMBRE], CUIT [CUIT], con domicilio en [DOMICILIO]. <span translate="no">Accelerate.ai</span> es
+		Acá, el responsable es Ignacio Noguerol Parola, CUIT/CUIL 20-46397405-6, con domicilio en Alem Norte 1630, General Alvear, Mendoza. <span translate="no">Accelerate.ai</span> es
 		su nombre comercial. En este texto, “nosotros” quiere decir <span translate="no">Accelerate.ai</span>.
 	</p>
 
@@ -35,7 +35,11 @@ const consulta = whatsappUrl('Hola, quiero consultar los datos míos que tienen.
 	</p>
 
 	<h3 id="plazo">Cuánto tiempo los guardamos</h3>
-	<p>Guardamos tus datos durante [PLAZO]. Cuando ya no los necesitamos, los borramos.</p>
+	<p>
+		Si no llegamos a trabajar juntos, guardamos tus datos hasta un año después de la última vez que hablamos. Si
+		contratás un sistema, los guardamos mientras trabajemos juntos y, después, solo lo que nos pida la ley, por ejemplo
+		para facturar. Cuando ya no los necesitamos, los borramos.
+	</p>
 
 	<h3 id="whatsapp">WhatsApp y Meta</h3>
 	<p>
@@ -45,7 +49,7 @@ const consulta = whatsappUrl('Hola, quiero consultar los datos míos que tienen.
 
 	<h3 id="hosting">Hosting y datos técnicos</h3>
 	<p>
-		El servicio que aloja la web, [HOSTING], registra datos técnicos de quien la visita, como la dirección IP. Los
+		El servicio que aloja la web (Cloudflare Pages, de Cloudflare, Inc., con servidores fuera de la Argentina) registra datos técnicos de quien la visita, como la dirección IP. Los
 		registra por seguridad y para que la web funcione.
 	</p>
 
