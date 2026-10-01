@@ -7,9 +7,8 @@
 // AA) cuando no se ve ninguno, así nunca hay dos azules llenos a la vista. Lo decide el script
 // de abajo; sin JavaScript queda de contorno.
 // En el celular y la tablet, un "Menú" abre un popover con las 5 secciones numeradas y el botón.
-import { Image } from 'astro:assets';
+import Isotipo from './Isotipo.astro';
 import Icono from './Icono.astro';
-import imagotipo from '../assets/identidad/imagotipo-azul.png';
 import { WHATSAPP_URL } from '../config';
 
 // `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada
@@ -34,7 +33,7 @@ const links = [
 			<span class="capsula__fondo" aria-hidden="true"></span>
 
 			<a href={`${raiz}#inicio`} class="capsula__logo">
-				<Image src={imagotipo} alt="Accelerate.ai" width={160} densities={[1, 2, 3]} loading="eager" />
+				<Isotipo id="cap" fondo="claro" />
 			</a>
 
 			<nav aria-label="Secciones" class="capsula__nav">
@@ -82,7 +81,7 @@ const links = [
    pointer-events: none del encabezado. */}
 <div id="menu" class="menu" popover>
 	<div class="menu__barra">
-		<Image src={imagotipo} alt="" width={140} densities={[1, 2, 3]} class="menu__logo" />
+		<Isotipo id="menu" fondo="claro" class="menu__logo" />
 		<button class="capsula__menu capsula__menu--cerrar" type="button" popovertarget="menu" popovertargetaction="hide">
 			<Icono nombre="x-bold" size={18} />
 			Cerrar
@@ -185,14 +184,20 @@ const links = [
 	.capsula__logo {
 		display: flex;
 		align-items: center;
+		min-width: 0;
 		min-height: 44px;
 		margin-right: auto;
 		padding-left: 8px;
+		/* Es un control: sin selección ni menú de iOS al dejar el dedo apretado. */
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		user-select: none;
 	}
 
-	.capsula__logo img {
+	/* El ancho del bloque da el tamaño del logo (Isotipo.astro): 140 px, 160 desde 640. Si falta lugar
+	   (letra grande) se achica entero, como la imagen de antes. */
+	.capsula__logo > :global(.isotipo) {
 		width: 140px;
-		height: auto;
 		transition: transform 0.3s var(--curva-salida);
 	}
 
@@ -388,7 +393,6 @@ const links = [
 
 	.menu :global(.menu__logo) {
 		width: 140px;
-		height: auto;
 	}
 
 	.menu__lista {
@@ -444,7 +448,7 @@ const links = [
 	}
 
 	@media (min-width: 640px) {
-		.capsula__logo img {
+		.capsula__logo > :global(.isotipo) {
 			width: 160px;
 		}
 
@@ -540,7 +544,7 @@ const links = [
 
 		@media (prefers-reduced-motion: no-preference) {
 			/* El logo arranca un poco hacia adelante, como la A. */
-			.capsula__logo:hover img {
+			.capsula__logo:hover > :global(.isotipo) {
 				transform: translateX(4px);
 			}
 		}
@@ -559,7 +563,7 @@ const links = [
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
-		.capsula__logo img {
+		.capsula__logo > :global(.isotipo) {
 			animation: encabezado-logo 0.8s var(--curva-salida) 0.1s backwards;
 		}
 	}

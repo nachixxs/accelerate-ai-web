@@ -76,7 +76,7 @@ async function revisarAncho({ nombre, width, height }) {
 	const pagina2 = await quieta.newPage();
 	await pagina2.goto(url, { waitUntil: 'load' });
 	await terminarCarga(pagina2);
-	// La captura completa no hace scroll: sin esto, las imágenes lazy (el logo del pie) no cargan.
+	// La captura completa no hace scroll: sin esto, las imágenes lazy (el avatar de Cómo trabajamos) no cargan.
 	await pagina2.evaluate(() => Promise.all([...document.querySelectorAll('img[loading="lazy"]')].map((img) => {
 		img.loading = 'eager';
 		return img.decode();
@@ -115,7 +115,10 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 		};
 	});
 
+	// El logo es un link cuyo nombre sale del texto "Accelerate.ai" (el SVG va oculto): uno solo, y es el de la cápsula.
+	const logos = await pagina.getByRole('link', { name: 'Accelerate.ai', exact: true }).evaluateAll((l) => l.map((a) => a.className));
 	const chequeos = [
+		[logos.length === 1 && logos[0] === 'capsula__logo', `el logo es un link con nombre accesible "Accelerate.ai" (${logos.length} encontrados)`],
 		[medidas.anchoPagina <= width, `sin scroll horizontal (página de ${medidas.anchoPagina} px)`],
 		[medidas.botonDerecha <= width - 16, `el botón entra con el margen (${medidas.botonAncho} px de ancho, termina en ${medidas.botonDerecha} px)`],
 		[medidas.botonAbajo <= height, `el botón de la portada se ve sin scroll (termina en ${medidas.botonAbajo} de ${height} px)`],

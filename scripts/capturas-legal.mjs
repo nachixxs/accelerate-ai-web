@@ -45,7 +45,8 @@ const medirPagina = (pagina) =>
 			const destino = document.getElementById(a.hash.slice(1));
 			return { id: a.hash, existe: !!destino, igual: destino?.textContent.trim() === a.textContent.trim() };
 		});
-		const azul = [...document.body.querySelectorAll('*')].filter((el) => {
+		// El isotipo del encabezado lleva la A en #2971f2 (la versión claro de la marca): no cuenta.
+		const azul = [...document.body.querySelectorAll('*:not(.isotipo *)')].filter((el) => {
 			const e = getComputedStyle(el);
 			return [e.color, e.backgroundColor, e.borderTopColor, e.fill].includes('rgb(41, 113, 242)');
 		});
@@ -123,6 +124,7 @@ async function revisarCombinacion(navegador, url, width, reducir) {
 	await terminarCarga(pagina);
 	const m = await medirPagina(pagina);
 	const sinAlto = await titulosBajoCapsula(pagina);
+	const logos = await pagina.getByRole('link', { name: 'Accelerate.ai', exact: true }).evaluateAll((l) => l.map((a) => a.className));
 	const ultimo = await pagina.evaluate(ultimoDelPie);
 	// El foco, al ancho de la combinación y, en la de escritorio, justo a cada lado del corte de 768 px.
 	let foco = await pagina.evaluate(focoEnOrden);
@@ -136,6 +138,7 @@ async function revisarCombinacion(navegador, url, width, reducir) {
 	const fallasLinks = reducir ? [] : await revisarLinks(navegador, url, width);
 	const malas = m.anclas.filter((a) => !a.existe || !a.igual).map((a) => a.id);
 	const chequeos = [
+		[logos.length === 1 && logos[0] === 'capsula__logo', `${etiqueta}: el logo es un link con nombre accesible "Accelerate.ai"`],
 		[errores.length === 0, `${etiqueta}: carga sin errores de consola${errores.length ? ': ' + errores.join(' | ') : ''}`],
 		[m.ancho[0] === m.ancho[1], `${etiqueta}: sin desborde horizontal (${m.ancho[0]} de ${m.ancho[1]} px)`],
 		[m.h1 === 1 && m.ordenOk, `${etiqueta}: una sola h1 y títulos en orden (h1: ${m.h1})`],
