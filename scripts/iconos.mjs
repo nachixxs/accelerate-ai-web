@@ -9,7 +9,6 @@ for (const [salida, lado] of Object.entries(ICONOS)) {
 	const pagina = await navegador.newPage({ viewport: { width: lado, height: lado } });
 	await pagina.goto(pathToFileURL('public/favicon.svg').href);
 	await pagina.screenshot({ path: salida });
-	await pagina.close();
 	console.log(`${salida}: ${lado} × ${lado}`);
 }
 await navegador.close();

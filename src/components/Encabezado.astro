@@ -81,7 +81,7 @@ const links = [
    pointer-events: none del encabezado. */}
 <div id="menu" class="menu" popover>
 	<div class="menu__barra">
-		<Isotipo id="menu" fondo="claro" class="menu__logo" />
+		<Isotipo id="menu" fondo="claro" class="menu__logo" oculto />
 		<button class="capsula__menu capsula__menu--cerrar" type="button" popovertarget="menu" popovertargetaction="hide">
 			<Icono nombre="x-bold" size={18} />
 			Cerrar
@@ -188,14 +188,8 @@ const links = [
 		min-height: 44px;
 		margin-right: auto;
 		padding-left: 8px;
-		/* Es un control: sin selección ni menú de iOS al dejar el dedo apretado. */
-		-webkit-touch-callout: none;
-		-webkit-user-select: none;
-		user-select: none;
 	}
 
-	/* El ancho del bloque da el tamaño del logo (Isotipo.astro): 140 px, 160 desde 640. Si falta lugar
-	   (letra grande) se achica entero, como la imagen de antes. */
 	.capsula__logo > :global(.isotipo) {
 		width: 140px;
 		transition: transform 0.3s var(--curva-salida);

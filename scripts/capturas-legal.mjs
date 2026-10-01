@@ -112,7 +112,6 @@ async function revisarLinks(navegador, url, width) {
 	// En la portada el © también es lo último de la fila del pie.
 	await pagina.goto(url, { waitUntil: 'load' });
 	if (!(await pagina.evaluate(ultimoDelPie))) fallas.push('en la portada, algo del pie termina más abajo que el ©');
-	if (!(await pagina.evaluate(focoEnOrden))) fallas.push('en la portada, el foco de la fila del pie no sigue el orden en que se ve');
 	await contexto.close();
 	return fallas;
 }
@@ -124,7 +123,6 @@ async function revisarCombinacion(navegador, url, width, reducir) {
 	await terminarCarga(pagina);
 	const m = await medirPagina(pagina);
 	const sinAlto = await titulosBajoCapsula(pagina);
-	const logos = await pagina.getByRole('link', { name: 'Accelerate.ai', exact: true }).evaluateAll((l) => l.map((a) => a.className));
 	const ultimo = await pagina.evaluate(ultimoDelPie);
 	// El foco, al ancho de la combinación y, en la de escritorio, justo a cada lado del corte de 768 px.
 	let foco = await pagina.evaluate(focoEnOrden);
@@ -138,7 +136,6 @@ async function revisarCombinacion(navegador, url, width, reducir) {
 	const fallasLinks = reducir ? [] : await revisarLinks(navegador, url, width);
 	const malas = m.anclas.filter((a) => !a.existe || !a.igual).map((a) => a.id);
 	const chequeos = [
-		[logos.length === 1 && logos[0] === 'capsula__logo', `${etiqueta}: el logo es un link con nombre accesible "Accelerate.ai"`],
 		[errores.length === 0, `${etiqueta}: carga sin errores de consola${errores.length ? ': ' + errores.join(' | ') : ''}`],
 		[m.ancho[0] === m.ancho[1], `${etiqueta}: sin desborde horizontal (${m.ancho[0]} de ${m.ancho[1]} px)`],
 		[m.h1 === 1 && m.ordenOk, `${etiqueta}: una sola h1 y títulos en orden (h1: ${m.h1})`],

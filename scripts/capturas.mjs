@@ -115,7 +115,6 @@ async function revisar(pagina, { nombre, width, height, sinTimeline, interruptor
 		};
 	});
 
-	// El logo es un link cuyo nombre sale del texto "Accelerate.ai" (el SVG va oculto): uno solo, y es el de la cápsula.
 	const logos = await pagina.getByRole('link', { name: 'Accelerate.ai', exact: true }).evaluateAll((l) => l.map((a) => a.className));
 	const chequeos = [
 		[logos.length === 1 && logos[0] === 'capsula__logo', `el logo es un link con nombre accesible "Accelerate.ai" (${logos.length} encontrados)`],
