@@ -1,0 +1,186 @@
+---
+// "El mes de prueba": la cifra en primer plano. El número de movimientos, enorme, y al lado un campo
+// con una marca por movimiento que se llena mientras el número cuenta (un solo bucle, en
+// scripts/trabajo-mes.ts); debajo, una barra con una marca por arqueo y los que no cuadraron en cian.
+// Todo sale del objeto `mes` de PrimerTrabajo. Sin JS o con movimiento reducido: el valor final; sin
+// JS, además, una textura de puntos de CSS en lugar del canvas.
+interface Props {
+	mes: { dias: number; movimientos: number; arqueos: number; conDiferencia: number };
+}
+const { mes } = Astro.props;
+const f = (n: number) => n.toLocaleString('es-AR');
+---
+
+<div class="mes" data-mes data-movimientos={mes.movimientos} data-arqueos={mes.arqueos} data-dif={mes.conDiferencia}>
+	<h3 class="mes__titulo t-label">El mes de prueba</h3>
+
+	<div class="mes__num">
+		<p class="mes__gigante" aria-hidden="true" data-numero data-final={f(mes.movimientos)}>{f(mes.movimientos)}</p>
+		<p class="mes__rotulo"><span class="solo-lector">{f(mes.movimientos)} </span>movimientos cargados en un mes simulado</p>
+	</div>
+
+	<div class="mes__campo">
+		<canvas class="mes__lienzo mes__lienzo--campo" aria-hidden="true" data-campo></canvas>
+		<p class="mes__nota">Cada marca es un movimiento. El orden no representa días ni horas.</p>
+	</div>
+
+	<p class="mes__datos">{mes.dias} días · {mes.arqueos} arqueos</p>
+
+	<div class="mes__arqueos">
+		<canvas class="mes__lienzo mes__lienzo--barra" aria-hidden="true" data-barra></canvas>
+		<p class="mes__leyenda">
+			<span class="mes__ok">Arqueo que cuadró</span>
+			<span class="mes__dif">Arqueo con diferencia: {mes.conDiferencia}</span>
+		</p>
+	</div>
+
+	<p class="mes__fuente">Un mes simulado con datos de prueba</p>
+</div>
+
+<style>
+	/* En el celular, todo apilado; desde 768, el número a la izquierda y las marcas a la derecha. */
+	.mes {
+		display: grid;
+		gap: var(--space-3);
+		margin-top: var(--space-6);
+		padding-top: var(--space-5);
+		border-top: 1px solid var(--border-light);
+	}
+
+	.mes__titulo {
+		font-weight: var(--fw-semibold);
+	}
+
+	/* 72 px a 360 de ancho, 176 px a 1280. */
+	.mes__gigante {
+		margin: 0;
+		color: var(--text-heading-dark);
+		font-size: clamp(4.5rem, 1.96rem + 11.3vw, 11rem);
+		font-weight: var(--fw-black);
+		line-height: 0.95;
+		letter-spacing: -0.04em;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Reserva el ancho del valor final: mientras cuenta, nada se corre. */
+	.mes__gigante::after {
+		content: attr(data-final);
+		display: block;
+		height: 0;
+		overflow: hidden;
+		visibility: hidden;
+	}
+
+	.mes__rotulo {
+		max-width: 20ch;
+		margin: var(--space-1) 0 0;
+		color: var(--text-heading-dark);
+		font-size: var(--type-label-size);
+		font-weight: var(--fw-semibold);
+		line-height: 1.3;
+		text-wrap: balance;
+	}
+
+	.mes__lienzo {
+		display: block;
+		width: 100%;
+		--marca: var(--slate-300);
+		--marca-dif: var(--cyan-600);
+	}
+
+	/* Sin JavaScript el lienzo queda en blanco: una textura de puntos ocupa su lugar. */
+	.mes__lienzo--campo {
+		min-height: 192px;
+		background: radial-gradient(circle, var(--slate-300) 2px, transparent 2.5px) 0 0 / 8px 8px;
+	}
+
+	.mes__lienzo--barra {
+		min-height: 24px;
+		background: linear-gradient(90deg, var(--slate-300) 0 3px, transparent 3px) 0 0 / 6px 24px;
+	}
+
+	.mes__lienzo.listo {
+		background: none;
+	}
+
+	.mes__nota,
+	.mes__fuente,
+	.mes__leyenda {
+		margin: var(--space-1) 0 0;
+		color: var(--text-muted-dark);
+		font-size: var(--type-meta-size);
+	}
+
+	.mes__datos {
+		margin: 0;
+		color: var(--text-heading-dark);
+		font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.25rem);
+		font-weight: var(--fw-bold);
+		letter-spacing: -0.02em;
+		line-height: 1.1;
+	}
+
+	.mes__leyenda {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px var(--space-3);
+	}
+
+	.mes__leyenda span {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+	}
+
+	.mes__leyenda span::before {
+		content: '';
+		width: 4px;
+		height: 16px;
+		background: var(--slate-300);
+	}
+
+	.mes__leyenda .mes__dif {
+		color: var(--text-heading-dark);
+		font-weight: var(--fw-semibold);
+	}
+
+	.mes__leyenda .mes__dif::before {
+		background: var(--cyan-600);
+	}
+
+	@media (min-width: 768px) {
+		.mes {
+			margin-top: 96px;
+			grid-template-columns: auto minmax(0, 1fr);
+			column-gap: var(--space-5);
+			align-items: start;
+		}
+
+		.mes__titulo,
+		.mes__fuente {
+			grid-column: 1 / -1;
+		}
+
+		.mes__datos,
+		.mes__arqueos {
+			align-self: center;
+		}
+
+		.mes__rotulo {
+			max-width: 14ch;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.mes {
+			column-gap: var(--space-6);
+		}
+	}
+</style>
+
+<script>
+	import { elMes } from '../../scripts/trabajo-mes';
+
+	const raiz = document.querySelector<HTMLElement>('[data-mes]');
+	if (raiz) elMes(raiz);
+</script>

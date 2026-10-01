@@ -1,0 +1,168 @@
+---
+// La conversación de ejemplo de #trabajo: la pregunta del dueño y la respuesta del asistente. Va en el
+// flujo del escenario, con 48 px afuera de su borde de abajo, y solo tapa el 8 % de abajo del celular
+// del frente. El texto completo está siempre en el DOM (las palabras son <span>): el alto está
+// reservado y el lector de pantalla lee el párrafo entero. El script (trabajo-escenario.ts) la arma
+// con .en en cada pieza; sin JS o con movimiento reducido queda completa y quieta.
+import Icono from '../Icono.astro';
+
+interface Props {
+	pregunta: string;
+	respuesta: string;
+}
+const { pregunta, respuesta } = Astro.props;
+const palabras = respuesta.split(' ');
+---
+
+<div class="conv" data-conv role="group" aria-label="Ejemplo de conversación con el asistente">
+	<p class="preg" data-preg><span class="solo-lector">Pregunta del dueño: </span>{pregunta}</p>
+	<div class="escribiendo" data-escribiendo aria-hidden="true">
+		<span style="--i:0"></span><span style="--i:1"></span><span style="--i:2"></span>
+	</div>
+	<div class="resp" data-resp>
+		<p class="resp__rotulo"><Icono nombre="sparkle-duotone" size={20} />Ejemplo de respuesta</p>
+		<p class="resp__texto">
+			{palabras.map((w, n) => (<><span class="w" style={`--w:${n}`}>{w}</span>{' '}</>))}
+		</p>
+	</div>
+</div>
+
+<style>
+	.conv {
+		grid-row: 2;
+		position: relative;
+		z-index: 3;
+		display: grid;
+		gap: var(--space-1);
+		width: min(86cqw, 340px);
+		margin: calc(var(--f) * -0.16) 0 calc(var(--space-5) * -1);
+		transform: translate3d(0, 0, var(--zc));
+		transition:
+			opacity 200ms var(--curva-salida),
+			transform 200ms var(--curva-salida);
+	}
+
+	@media (min-width: 768px) {
+		.conv {
+			justify-self: end;
+			margin-right: 6cqw;
+		}
+	}
+
+	/* Es del asistente: si el que está al frente es otro, se va y vuelve igual. */
+	:global(.escenario:not([data-frente='asistente'])) .conv {
+		opacity: 0;
+		transform: translate3d(0, 8px, var(--zc));
+		pointer-events: none;
+	}
+
+	.preg,
+	.resp,
+	.escribiendo {
+		background: var(--off-white);
+		color: var(--text-heading-dark);
+	}
+
+	.preg {
+		justify-self: end;
+		padding: 12px var(--space-2);
+		border-radius: 22px 22px 6px 22px;
+		background: var(--brand-primary-deep);
+		color: var(--off-white);
+		font-size: 0.9375rem;
+		font-weight: var(--fw-semibold);
+		line-height: 1.35;
+		box-shadow: var(--shadow-elevada-oscura);
+		transform-origin: 100% 100%;
+	}
+
+	.resp {
+		grid-area: 2 / 1;
+		padding: var(--space-2) var(--space-2) var(--space-3);
+		border-radius: 22px 22px 22px 6px;
+		box-shadow: 0 24px 48px rgba(15, 23, 42, 0.45);
+		transform-origin: 0 0;
+	}
+
+	.resp__rotulo {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		margin-bottom: var(--space-1);
+		color: var(--brand-primary-deep);
+		font-size: 0.8125rem;
+		font-weight: var(--fw-bold);
+	}
+
+	.resp__texto {
+		font-size: 0.9375rem;
+		line-height: 1.45;
+	}
+
+	/* "Escribiendo": tres puntos, una sola pasada, en el lugar de la respuesta. Invisible al final. */
+	.escribiendo {
+		grid-area: 2 / 1;
+		justify-self: start;
+		align-self: start;
+		display: flex;
+		gap: 6px;
+		padding: 14px var(--space-2);
+		border-radius: 22px 22px 22px 6px;
+		box-shadow: var(--shadow-elevada-oscura);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 120ms var(--curva-salida);
+	}
+
+	.escribiendo span {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--text-muted-dark);
+	}
+
+	@keyframes punto {
+		from { opacity: 0.25; }
+	}
+
+	/* Armado por el script: cada pieza entra cuando recibe .en. */
+	.conv[data-habla] .preg,
+	.conv[data-habla] .resp {
+		opacity: 0;
+		transform: translateY(12px) scale(0.96);
+	}
+
+	.conv[data-habla] .preg.en,
+	.conv[data-habla] .resp.en {
+		opacity: 1;
+		transform: none;
+		transition:
+			opacity 300ms var(--curva-salida),
+			transform 300ms var(--curva-salida);
+	}
+
+	.conv[data-habla] .escribiendo.en {
+		opacity: 1;
+	}
+
+	.conv[data-habla] .escribiendo.en span {
+		animation: punto 360ms var(--curva-salida) both;
+		animation-delay: calc(var(--i) * 120ms);
+	}
+
+	.conv[data-habla] .w {
+		opacity: 0;
+	}
+
+	.conv[data-habla] .resp.en .w {
+		opacity: 1;
+		transition: opacity 160ms var(--curva-salida) calc(100ms + var(--w) * 35ms);
+	}
+
+	/* Movimiento reducido: al cambiar de celular se va con un fundido, sin desplazarse. */
+	@media (prefers-reduced-motion: reduce) {
+		:global(.escenario:not([data-frente='asistente'])) .conv {
+			transform: translate3d(0, 0, var(--zc));
+		}
+	}
+</style>

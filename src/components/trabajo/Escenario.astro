@@ -1,0 +1,250 @@
+---
+// El escenario de #trabajo: los tres celulares sobre la card invertida (la única de la sección), la
+// conversación de ejemplo que cruza su borde de abajo. Ocupa el área 'escena' de la grilla de
+// PrimerTrabajo (el selector, el área 'selector'). El HTML ya trae el estado final y quieto;
+// scripts/trabajo-escenario.ts arma la llegada, la conversación, la inclinación y el cambio de celular.
+// Las capturas son 720x1560 y el marco es de proporción fija:
+// al reemplazarlas no se toca el CSS.
+import { Picture } from 'astro:assets';
+import Glow from '../Glow.astro';
+import Conversacion from './Conversacion.astro';
+import { pantallas } from './pantallas';
+
+interface Props {
+	pregunta: string;
+	respuesta: string;
+}
+const { pregunta, respuesta } = Astro.props;
+---
+
+<div class="escena" data-escena>
+	<div class="escenario" data-escenario data-frente="asistente">
+		<div class="fondo" aria-hidden="true">
+			<div class="glows">
+				<Glow tono="azul" fondo="oscuro" esquina="arriba-der" />
+				<Glow tono="cian" fondo="oscuro" esquina="arriba-der" />
+			</div>
+		</div>
+		{
+			pantallas.map((p) => (
+				<figure class="cel" data-cel={p.id} data-pose={p.pose}>
+					<div class="cel__nucleo">
+						<Picture
+							src={p.img}
+							alt={p.alt}
+							formats={['avif', 'webp']}
+							widths={[216, 324, 432, 648]}
+							sizes="(min-width: 1024px) 296px, (min-width: 768px) 280px, 50vw"
+							width={720}
+							height={1560}
+							class="cel__img"
+						/>
+					</div>
+				</figure>
+			))
+		}
+		<Conversacion pregunta={pregunta} respuesta={respuesta} />
+	</div>
+</div>
+
+<style>
+	/* --- El escenario --- */
+	/* Sangra a los costados de la ventana en el celular y la tablet; desde 1024, solo a la derecha.
+	   El contenedor da las medidas (cqw) de los celulares. */
+	.escena {
+		grid-area: escena;
+		container-type: inline-size;
+		margin: 0 calc(var(--space-2) * -1) var(--space-5);
+		touch-action: pan-y;
+	}
+
+	.escenario {
+		--f: 50cqw; /* ancho de cada celular; los de atrás se achican con scale */
+		--lado: 25cqw;
+		--z: 0px;
+		--zc: 0px;
+		position: relative;
+		display: grid;
+		justify-items: center;
+		padding-top: var(--space-5);
+	}
+
+	/* La card invertida, con su sombra. Se extiende más allá de la ventana para que la inclinación
+	   nunca deje ver el borde. La llegada la revela con clip-path (el final deja ver la sombra). */
+	.fondo {
+		position: absolute;
+		inset: 0 calc(var(--space-4) * -1);
+		background: var(--surface-card-dark);
+		box-shadow: var(--shadow-card);
+	}
+
+	.glows {
+		position: absolute;
+		inset: 0;
+		overflow: clip;
+		isolation: isolate;
+	}
+
+	/* Marco con doble bisel: cáscara, núcleo y pantalla con radios concéntricos. La pose (lugar,
+	   giro y tamaño) es un solo transform: el cambio de celular anima todo junto. */
+	.cel {
+		--x: 0px;
+		--y: 0px;
+		--r: 0deg;
+		--e: 1;
+		--t: translate3d(var(--x), var(--y), var(--z)) rotate(var(--r)) scale(var(--e));
+		grid-area: 1 / 1;
+		position: relative;
+		z-index: 1;
+		width: var(--f);
+		padding: calc(var(--f) * 0.025);
+		border-radius: calc(var(--f) * 0.15);
+		background: var(--navy-700);
+		box-shadow:
+			inset 0 1px 0 rgba(220, 232, 254, 0.28),
+			0 20px 40px rgba(2, 6, 18, 0.4);
+		transform: var(--t);
+		translate: 0 var(--lev, 0px);
+		transition:
+			transform 500ms var(--curva-cajon),
+			translate 200ms var(--curva-salida),
+			opacity 200ms var(--curva-salida);
+	}
+
+	/* La sombra honda del que está al frente, en una capa que solo cambia de opacidad. */
+	.cel::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		box-shadow: 0 40px 80px rgba(2, 6, 18, 0.6);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 300ms var(--curva-salida);
+	}
+
+	.cel[data-pose='frente'] {
+		--z: calc(var(--zf, 0px));
+		--sube: 64px;
+		--d: 280ms;
+		z-index: 2;
+	}
+	.cel[data-pose='izq'] { --x: calc(var(--lado) * -1); --y: 24px; --r: -4deg; --e: 0.82; --sube: 48px; --d: 200ms; --z: var(--zt, 0px); }
+	.cel[data-pose='der'] { --x: var(--lado); --y: 24px; --r: 4deg; --e: 0.82; --sube: 48px; --d: 120ms; --z: var(--zt, 0px); }
+	.cel[data-pose='frente']::after,
+	.cel[data-levantado]::after { opacity: 1; }
+	.cel[data-levantado] { --lev: -8px; }
+	.cel:not([data-pose='frente']) { cursor: pointer; }
+
+	.cel__nucleo {
+		padding: calc(var(--f) * 0.02);
+		border-radius: calc(var(--f) * 0.125);
+		background: #0b0d10;
+	}
+
+	.cel :global(.cel__img) {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 720 / 1560;
+		border-radius: calc(var(--f) * 0.105);
+		background: #16181c;
+	}
+
+	@media (min-width: 600px) {
+		.escenario {
+			--f: 40cqw;
+			--lado: 28cqw;
+		}
+	}
+
+	@media (min-width: 768px) {
+		.escena {
+			margin-inline: calc(var(--space-4) * -1);
+		}
+
+		.escenario {
+			padding-top: var(--space-6);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.escena {
+			margin: 0 calc((var(--space-4) + max(0px, (100vw - 1200px) / 2)) * -1) 0 0;
+		}
+
+		.escenario {
+			--f: 42cqw;
+		}
+
+		.fondo {
+			inset: 0 calc(var(--space-4) * -1) 0 0;
+			border-radius: var(--radius-card-lg) 0 0 var(--radius-card-lg);
+		}
+	}
+
+	/* Ratón: el escenario se inclina y las capas se separan en profundidad (tablet y celular, sin
+	   esto: todo plano). La pose del que está al frente sube 40 px; la conversación, 70. */
+	@media (hover: hover) and (pointer: fine) {
+		.escena {
+			perspective: 1200px;
+		}
+
+		.escenario {
+			--zf: 40px;
+			--zt: 2px;
+			--zc: 70px;
+			transform-style: preserve-3d;
+			transform: rotateX(0deg) rotateY(0deg);
+		}
+	}
+
+	/* --- Llegada (solo con JS y sin movimiento reducido: data-entra lo pone el script) --- */
+	.escenario[data-entra] .fondo {
+		clip-path: inset(10% 6% 0 6% round 28px);
+	}
+
+	.escenario[data-entra] .glows {
+		opacity: 0;
+	}
+
+	.escenario[data-entra] .cel {
+		opacity: 0;
+		transform: translate3d(var(--x), calc(var(--y) + var(--sube)), var(--z)) rotate(0deg) scale(calc(var(--e) * 0.94));
+		transition: none;
+	}
+
+	.escenario[data-entra][data-visto] .fondo {
+		clip-path: inset(-96px round 28px);
+		transition: clip-path 800ms var(--curva-salida);
+	}
+
+	.escenario[data-entra][data-visto] .glows {
+		opacity: 1;
+		transition: opacity 900ms var(--curva-salida) 760ms;
+	}
+
+	.escenario[data-entra][data-visto] .cel {
+		opacity: 1;
+		transform: var(--t);
+		transition:
+			opacity 700ms var(--curva-salida) var(--d),
+			transform 700ms var(--curva-salida) var(--d);
+	}
+
+	/* Movimiento reducido: el cambio de celular es un fundido (lo hace el script), sin desplazar la pose. */
+	@media (prefers-reduced-motion: reduce) {
+		.cel {
+			transition: opacity 200ms var(--curva-salida), translate 200ms var(--curva-salida);
+		}
+	}
+</style>
+
+<script>
+	import { escenario } from '../../scripts/trabajo-escenario';
+
+	const escena = document.querySelector<HTMLElement>('[data-escena]');
+	const selector = document.querySelector<HTMLElement>('[data-selector]');
+	if (escena && selector) escenario(escena, selector);
+</script>
