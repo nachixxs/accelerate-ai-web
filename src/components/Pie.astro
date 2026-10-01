@@ -3,12 +3,12 @@
 // sección de cierre, así se leen como un solo bloque; los separa la estela: las tres capas de
 // velocidad de la A (atrás, medio, frente), cortadas en diagonal como en el isotipo, que se
 // descubren con el scroll una detrás de la otra (clip-path).
-// Tres columnas: la marca (isotipo con el nombre + frase), las secciones y el contacto. Lo último de
+// Tres columnas: la marca (logo + frase), las secciones y el contacto. Lo último de
 // la página es la línea legal: nada va debajo.
 // El contacto, como en minificando: una línea discreta por canal (ícono, canal y dato), no un
 // número grande. Hoy el único canal es WhatsApp (SPECS §1); la lista queda por si se suma otro.
 import Icono from './Icono.astro';
-import Isotipo from './Isotipo.astro';
+import Logo from './Logo.astro';
 import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 
 // `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada.
@@ -36,7 +36,7 @@ const links = [
 	<div class="contenedor">
 		<div class="pie__grilla">
 			<div class="pie__bloque pie__marca" style="--i: 0">
-				<Isotipo id="pie" fondo="oscuro" class="pie__logo" />
+				<Logo id="pie" fondo="oscuro" class="pie__logo" />
 				<p>Sistemas a medida para pymes que repiten tareas todos los días.</p>
 			</div>
 

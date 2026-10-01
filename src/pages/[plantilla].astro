@@ -3,7 +3,7 @@
 // solo se genera cuando la pide scripts/og.mjs (npm run og); en el build normal no existe.
 // Repite la portada: fondo oscuro, glow desde arriba a la derecha y el mismo titular.
 import Glow from '../components/Glow.astro';
-import Isotipo from '../components/Isotipo.astro';
+import Logo from '../components/Logo.astro';
 import Base from '../layouts/Base.astro';
 
 export function getStaticPaths() {
@@ -16,7 +16,7 @@ export function getStaticPaths() {
 		<Glow tono="azul" esquina="arriba-der" />
 		<Glow tono="cian" esquina="arriba-der" />
 
-		<Isotipo id="og" fondo="oscuro" class="og__logo" />
+		<Logo id="og" fondo="oscuro" class="og__logo" />
 		<p class="og__titular">Tu equipo deja de <span class="texto-gradiente">copiar y pegar</span></p>
 		<div class="og__pie">
 			<p>Sistemas a medida para pymes</p>

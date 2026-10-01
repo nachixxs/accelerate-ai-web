@@ -45,8 +45,8 @@ const medirPagina = (pagina) =>
 			const destino = document.getElementById(a.hash.slice(1));
 			return { id: a.hash, existe: !!destino, igual: destino?.textContent.trim() === a.textContent.trim() };
 		});
-		// El isotipo del encabezado lleva la A en #2971f2 (la versión claro de la marca): no cuenta.
-		const azul = [...document.body.querySelectorAll('*:not(.isotipo *)')].filter((el) => {
+		// El logo del encabezado lleva la A en #2971f2 (la versión claro de la marca): no cuenta.
+		const azul = [...document.body.querySelectorAll('*:not(.logo *)')].filter((el) => {
 			const e = getComputedStyle(el);
 			return [e.color, e.backgroundColor, e.borderTopColor, e.fill].includes('rgb(41, 113, 242)');
 		});

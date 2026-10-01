@@ -7,7 +7,7 @@
 // AA) cuando no se ve ninguno, así nunca hay dos azules llenos a la vista. Lo decide el script
 // de abajo; sin JavaScript queda de contorno.
 // En el celular y la tablet, un "Menú" abre un popover con las 5 secciones numeradas y el botón.
-import Isotipo from './Isotipo.astro';
+import Logo from './Logo.astro';
 import Icono from './Icono.astro';
 import { WHATSAPP_URL } from '../config';
 
@@ -33,7 +33,7 @@ const links = [
 			<span class="capsula__fondo" aria-hidden="true"></span>
 
 			<a href={`${raiz}#inicio`} class="capsula__logo">
-				<Isotipo id="cap" fondo="claro" />
+				<Logo id="cap" fondo="claro" />
 			</a>
 
 			<nav aria-label="Secciones" class="capsula__nav">
@@ -81,7 +81,7 @@ const links = [
    pointer-events: none del encabezado. */}
 <div id="menu" class="menu" popover>
 	<div class="menu__barra">
-		<Isotipo id="menu" fondo="claro" class="menu__logo" oculto />
+		<Logo id="menu" fondo="claro" class="menu__logo" oculto />
 		<button class="capsula__menu capsula__menu--cerrar" type="button" popovertarget="menu" popovertargetaction="hide">
 			<Icono nombre="x-bold" size={18} />
 			Cerrar
@@ -190,7 +190,7 @@ const links = [
 		padding-left: 8px;
 	}
 
-	.capsula__logo > :global(.isotipo) {
+	.capsula__logo > :global(.logo) {
 		width: 140px;
 		transition: transform 0.3s var(--curva-salida);
 	}
@@ -442,7 +442,7 @@ const links = [
 	}
 
 	@media (min-width: 640px) {
-		.capsula__logo > :global(.isotipo) {
+		.capsula__logo > :global(.logo) {
 			width: 160px;
 		}
 
@@ -538,7 +538,7 @@ const links = [
 
 		@media (prefers-reduced-motion: no-preference) {
 			/* El logo arranca un poco hacia adelante, como la A. */
-			.capsula__logo:hover > :global(.isotipo) {
+			.capsula__logo:hover > :global(.logo) {
 				transform: translateX(4px);
 			}
 		}
@@ -557,7 +557,7 @@ const links = [
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
-		.capsula__logo > :global(.isotipo) {
+		.capsula__logo > :global(.logo) {
 			animation: encabezado-logo 0.8s var(--curva-salida) 0.1s backwards;
 		}
 	}
