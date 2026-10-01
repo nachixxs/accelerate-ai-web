@@ -127,11 +127,11 @@ const { pregunta, respuesta } = Astro.props;
 		/* La escena se estira a la altura de la columna de texto; el contenido queda centrado en la card. */
 		.escena {
 			display: grid;
-			margin: 0 calc((var(--space-4) + max(0px, (100vw - 1200px) / 2)) * -1) 0 0;
+			margin: 0;
 		}
 
 		.escenario {
-			--f: 42cqw;
+			--f: min(42cqw, calc((100svh - 200px) / 2.5)); /* en pantallas anchas y bajas, que el celular entre en alto */
 			align-content: center;
 		}
 
@@ -140,8 +140,8 @@ const { pregunta, respuesta } = Astro.props;
 		}
 
 		.fondo {
-			inset: 0 calc(var(--space-4) * -1) 0 0;
-			border-radius: var(--radius-card-lg) 0 0 var(--radius-card-lg);
+			inset: 0;
+			border-radius: var(--radius-card-lg);
 		}
 	}
 

@@ -179,7 +179,7 @@ export function elMes(raiz: HTMLElement) {
 	const volar = (tb: number) => {
 		if (!capa) armarCapa();
 		const { g, el, x0, y0, x1, y1 } = capa!;
-		g.clearRect(0, 0, el.width, el.height);
+		g.clearRect(0, 0, el.clientWidth, el.clientHeight); // en px de CSS: con el transform del dpr, el.width deja rastros si dpr < 1
 		g.fillStyle = nueva;
 		for (let i = 0; i < arqueos; i++) {
 			const t = tb - i * SALTO; // 0 = sale; VUELO = aterriza (ahí ya la dibuja la barra)
