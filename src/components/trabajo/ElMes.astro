@@ -29,7 +29,7 @@ const ok = (((mes.arqueos - mes.conDiferencia) / mes.arqueos) * 100).toFixed(3);
 	</div>
 
 	<p class="mes__datos">
-		<span>{mes.dias} días ·</span> <span>{mes.arqueos} arqueos</span>
+		<span>{mes.dias} días <span aria-hidden="true">·</span></span> <span>{mes.arqueos} arqueos</span>
 	</p>
 
 	<div class="mes__arqueos">
@@ -57,7 +57,6 @@ const ok = (((mes.arqueos - mes.conDiferencia) / mes.arqueos) * 100).toFixed(3);
 
 	/* 72 px a 360 de ancho, 176 px a 1280; nunca más de 24vw (con la letra al 200 % no se corta el 3). */
 	.mes__gigante {
-		margin: 0;
 		color: var(--text-heading-dark);
 		font-size: min(clamp(4.5rem, 1.96rem + 11.3vw, 11rem), 24vw);
 		font-weight: var(--fw-black);
@@ -117,11 +116,6 @@ const ok = (((mes.arqueos - mes.conDiferencia) / mes.arqueos) * 100).toFixed(3);
 		mask-image: repeating-linear-gradient(90deg, #000 0 calc(50% / var(--n)), transparent 0 calc(100% / var(--n)));
 	}
 
-	/* Con JS el lienzo se estira solo al alto que calcula el script: sin altos mínimos de la versión sin JS. */
-	.mes__lienzo.listo {
-		min-height: 0;
-	}
-
 	/* Sin el lienzo armado no hay 1.703 marcas: la nota no tiene de qué hablar. */
 	.mes__campo:has(.mes__lienzo:not(.listo)) .mes__nota {
 		display: none;
@@ -141,7 +135,6 @@ const ok = (((mes.arqueos - mes.conDiferencia) / mes.arqueos) * 100).toFixed(3);
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0 var(--space-1);
-		margin: 0;
 		color: var(--text-heading-dark);
 		font-size: var(--type-label-size);
 		font-weight: var(--fw-bold);

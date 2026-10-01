@@ -2,9 +2,9 @@
 // La conversación de ejemplo de #trabajo: la pregunta del dueño y la respuesta del asistente. Va en el
 // flujo del escenario: la pregunta apoya en el bisel de abajo del celular del frente (no tapa la
 // pantalla) y la respuesta cruza 48 px el borde de abajo del escenario. En `respuesta`, lo que va entre
-// [ ] es la frase clave y sale en negrita (el texto que lee el lector de pantalla no cambia). El texto completo está siempre en el DOM (las palabras son <span>): el alto está
-// reservado y el lector de pantalla lee el párrafo entero. El script (trabajo-escenario.ts) la arma
-// con .en en cada pieza; sin JS o con movimiento reducido queda completa y quieta.
+// [ ] es la frase clave y sale en negrita. El texto completo está siempre en el DOM (las palabras son
+// <span>): el alto está reservado y el lector de pantalla lee el párrafo entero. El script
+// (trabajo-escenario.ts) la arma con .en en cada pieza; sin JS o con movimiento reducido queda completa y quieta.
 import Icono from '../Icono.astro';
 
 interface Props {
@@ -14,6 +14,8 @@ interface Props {
 const { pregunta, respuesta } = Astro.props;
 let negrita = false;
 const palabras = respuesta.split(' ').map((w) => {
+	// […] marca un recorte de la respuesta: va tal cual, sin negrita.
+	if (w === '[…]') return { t: w, clave: false };
 	if (w.startsWith('[')) negrita = true;
 	const pieza = { t: w.replace(/[[\]]/g, ''), clave: negrita };
 	if (w.endsWith(']')) negrita = false;
@@ -73,10 +75,10 @@ const palabras = respuesta.split(' ').map((w) => {
 	.preg {
 		justify-self: end;
 		padding: 12px var(--space-2); /* 12 = 8 + 4: ajuste óptico de la burbuja */
-		border-radius: 22px 22px 6px 22px;
+		border-radius: var(--radius-card) var(--radius-card) 6px var(--radius-card); /* 6 px: la cola de la burbuja */
 		background: var(--brand-accent); /* cian = lo que no cuadra, el hilo con los 32 de la barra */
 		color: var(--navy-950);
-		font-size: 0.9375rem;
+		font-size: var(--type-meta-size);
 		font-weight: var(--fw-bold);
 		line-height: 1.35;
 		box-shadow: var(--shadow-elevada-oscura);
@@ -86,8 +88,8 @@ const palabras = respuesta.split(' ').map((w) => {
 	.resp {
 		grid-area: 2 / 1;
 		padding: var(--space-2) var(--space-2) var(--space-3);
-		border-radius: 22px 22px 22px 6px;
-		box-shadow: var(--shadow-card-oscura);
+		border-radius: var(--radius-card) var(--radius-card) var(--radius-card) 6px; /* 6 px: la cola de la burbuja */
+		box-shadow: var(--shadow-card); /* cuelga sobre el fondo claro: la sombra de las cards claras */
 		transform-origin: 0 0;
 	}
 
@@ -102,7 +104,7 @@ const palabras = respuesta.split(' ').map((w) => {
 	}
 
 	.resp__texto {
-		font-size: 0.9375rem;
+		font-size: var(--type-meta-size);
 		line-height: 1.45;
 	}
 
@@ -119,7 +121,7 @@ const palabras = respuesta.split(' ').map((w) => {
 		display: flex;
 		gap: var(--space-1);
 		padding: 12px var(--space-2); /* 12 = 8 + 4: ajuste óptico de la burbuja */
-		border-radius: 22px 22px 22px 6px;
+		border-radius: var(--radius-card) var(--radius-card) var(--radius-card) 6px; /* 6 px: la cola de la burbuja */
 		box-shadow: var(--shadow-elevada-oscura);
 		opacity: 0;
 		pointer-events: none;

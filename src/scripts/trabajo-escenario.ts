@@ -15,10 +15,8 @@ export function escenario(escena: HTMLElement, selector: HTMLElement) {
 	const tablero = un(escena, '[data-escenario]');
 	const celulares = todos(escena, '[data-cel]');
 	const conv = un(escena, '[data-conv]');
-	const glows = un(escena, '.glows');
 	const lista = un(selector, 'ul');
 	const items = todos(selector, '[data-sel]');
-	const limpiezas: Array<() => void> = [];
 	const timers: number[] = [];
 	const preg = un(conv, '[data-preg]');
 	const escribiendo = un(conv, '[data-escribiendo]');
@@ -26,18 +24,26 @@ export function escenario(escena: HTMLElement, selector: HTMLElement) {
 	const paso = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
 	let fuera: IntersectionObserver | undefined;
 	let iniciada = false;
+	selector.setAttribute('data-listo', ''); // con JS, el control segmentado del celular (Selector.astro)
 
-	// Deja todo en su estado final al instante (la sección se fue de pantalla antes de terminar, o se eligió otro celular).
-	const completar = () => {
+	// Corta los pasos pendientes de la conversación: lo que se ve queda donde está.
+	const parar = () => {
 		timers.forEach(clearTimeout);
 		timers.length = 0;
+	};
+	// Deja todo en su estado final al instante (la sección se fue de pantalla antes de terminar).
+	const completar = () => {
+		parar();
+		fuera?.disconnect();
 		tablero.removeAttribute('data-entra');
 		tablero.removeAttribute('data-visto');
+		tablero.removeAttribute('data-elegido');
 		conv.removeAttribute('data-habla');
-		fuera?.disconnect();
 	};
 
-	// La conversación: `t` son los instantes de la pregunta, los puntos, la respuesta y el cierre; `pw`, los ms entre palabras.
+	// La conversación: `t` son los instantes de la pregunta, los puntos y la respuesta; `pw`, los ms entre palabras.
+	// El cierre llega cuando apareció la última palabra (100 ms de espera + una por `pw` + su fundido).
+	const palabras = conv.querySelectorAll('.w').length;
 	const decir = (t: number[], pw: number) => {
 		[preg, escribiendo, resp].forEach((e) => e.classList.remove('en'));
 		conv.style.setProperty('--pw', `${pw}ms`);
@@ -48,7 +54,7 @@ export function escenario(escena: HTMLElement, selector: HTMLElement) {
 			escribiendo.classList.remove('en');
 			resp.classList.add('en');
 		});
-		paso(t[3], completar);
+		paso(t[2] + 100 + palabras * pw + 200, completar);
 	};
 
 	conv.inert = tablero.dataset.frente !== 'asistente';
@@ -71,35 +77,32 @@ export function escenario(escena: HTMLElement, selector: HTMLElement) {
 			[frente, nuevo].forEach((c) => c.animate({ opacity: [0.3, 1] }, { duration: 200, easing: SALIDA }));
 			return;
 		}
-		completar();
-		if (id === 'asistente' && iniciada) decir([120, 320, 720, 1800], 20);
+		// La conversación se congela donde está y se va con el fundido de .conv (lo que no salió no aparece
+		// de golpe). Si la llegada sigue en curso, termina sola; los celulares pasan a la transición del cambio.
+		parar();
+		tablero.setAttribute('data-elegido', '');
+		if (id === 'asistente' && iniciada) decir([120, 320, 720], 20);
 	};
 
-	const alClic = (e: Event) => {
+	selector.addEventListener('click', (e) => {
 		const li = (e.target as HTMLElement).closest<HTMLElement>('[data-sel]');
 		if (li) elegir(li.dataset.sel!);
-	};
-	selector.addEventListener('click', alClic);
-	const alToque = (e: Event) => {
+	});
+	escena.addEventListener('click', (e) => {
 		const cel = (e.target as HTMLElement).closest<HTMLElement>('[data-cel]');
 		if (cel) elegir(cel.dataset.cel!);
-	};
-	escena.addEventListener('click', alToque);
-	limpiezas.push(() => {
-		selector.removeEventListener('click', alClic);
-		escena.removeEventListener('click', alToque);
 	});
 
 	// Deslizar con el dedo sobre el escenario (48 px o más de 0,11 px/ms): trae el celular del lado hacia donde se
 	// desliza, el que se ve en pantalla en ese lado.
 	let x0 = NaN;
 	let t0 = 0;
-	const abajo = (e: PointerEvent) => {
+	escena.addEventListener('pointerdown', (e) => {
 		if (!e.isPrimary) return;
 		x0 = e.clientX;
 		t0 = e.timeStamp;
-	};
-	const arriba = (e: PointerEvent) => {
+	});
+	escena.addEventListener('pointerup', (e) => {
 		if (e.pointerType !== 'touch' || !e.isPrimary || Number.isNaN(x0)) return;
 		const dx = e.clientX - x0;
 		x0 = NaN;
@@ -108,37 +111,26 @@ export function escenario(escena: HTMLElement, selector: HTMLElement) {
 			const c = celulares.find((c) => c.dataset.pose === lado);
 			if (c) elegir(c.dataset.cel!);
 		}
-	};
-	const cancelar = () => (x0 = NaN);
-	escena.addEventListener('pointerdown', abajo);
-	escena.addEventListener('pointerup', arriba);
-	escena.addEventListener('pointercancel', cancelar);
-	limpiezas.push(() => {
-		escena.removeEventListener('pointerdown', abajo);
-		escena.removeEventListener('pointerup', arriba);
-		escena.removeEventListener('pointercancel', cancelar);
 	});
+	escena.addEventListener('pointercancel', () => (x0 = NaN));
 
-	const raton = matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-	// Con ratón, el celular del ítem se levanta 8 px mientras se lo señala.
-	if (raton) {
+	if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+		// Con ratón, el celular del ítem se levanta 8 px mientras se lo señala.
 		for (const li of items) {
 			const cel = celulares.find((c) => c.dataset.cel === li.dataset.sel)!;
-			const sube = () => cel.setAttribute('data-levantado', '');
-			const baja = () => cel.removeAttribute('data-levantado');
-			li.addEventListener('pointerenter', sube);
-			li.addEventListener('pointerleave', baja);
-			limpiezas.push(() => {
-				li.removeEventListener('pointerenter', sube);
-				li.removeEventListener('pointerleave', baja);
-			});
+			li.addEventListener('pointerenter', () => cel.setAttribute('data-levantado', ''));
+			li.addEventListener('pointerleave', () => cel.removeAttribute('data-levantado'));
 		}
 
 		// --- M4: inclinación con resorte crítico (rigidez 170, amortiguación 26, sin rebote). ---
 		const reducido = movimientoReducido();
 		const max = reducido ? { x: 2.5, y: 2 } : { x: 5, y: 4 };
 		const mitad = reducido ? 0.5 : 1; // los glows, a la mitad con movimiento reducido
+		// Luz de escena: cada glow se corre al revés de la inclinación, el cian más que el azul (px a fondo).
+		const luces = [
+			[un(escena, '.glow--azul-oscuro'), 48, 32],
+			[un(escena, '.glow--cian-oscuro'), 72, 48],
+		] as const;
 		const K = 170;
 		const C = 26;
 		let x = 0, y = 0, vx = 0, vy = 0, tx = 0, ty = 0;
@@ -159,8 +151,7 @@ export function escenario(escena: HTMLElement, selector: HTMLElement) {
 			const quieto = Math.abs(tx - x) < 0.002 && Math.abs(ty - y) < 0.002 && Math.abs(vx) < 0.01 && Math.abs(vy) < 0.01;
 			if (quieto) [x, y, vx, vy] = [tx, ty, 0, 0];
 			tablero.style.transform = `rotateX(${(-y * max.y).toFixed(3)}deg) rotateY(${(x * max.x).toFixed(3)}deg)`;
-			glows.style.setProperty('--tx', (x * mitad).toFixed(3));
-			glows.style.setProperty('--ty', (y * mitad).toFixed(3));
+			for (const [glow, ax, ay] of luces) glow.style.translate = `${(-x * mitad * ax).toFixed(2)}px ${(-y * mitad * ay).toFixed(2)}px`;
 			cuadro = quieto ? 0 : requestAnimationFrame(mover1);
 		};
 		const arrancar = () => {
@@ -168,26 +159,17 @@ export function escenario(escena: HTMLElement, selector: HTMLElement) {
 			antes = performance.now();
 			cuadro = requestAnimationFrame(mover1);
 		};
-		const entrar = (e: PointerEvent) => e.pointerType !== 'touch' && medir(e.timeStamp);
-		const mover = (e: PointerEvent) => {
+		escena.addEventListener('pointerenter', (e) => e.pointerType !== 'touch' && medir(e.timeStamp));
+		escena.addEventListener('pointermove', (e) => {
 			if (e.pointerType === 'touch') return;
 			if (e.timeStamp - medido > 300) medir(e.timeStamp);
 			tx = Math.max(-1, Math.min(1, (e.clientX - caja.left - caja.width / 2) / (caja.width / 2)));
 			ty = Math.max(-1, Math.min(1, (e.clientY - caja.top - caja.height / 2) / (caja.height / 2)));
 			arrancar();
-		};
-		const salir = () => {
+		});
+		escena.addEventListener('pointerleave', () => {
 			tx = ty = 0;
 			arrancar();
-		};
-		escena.addEventListener('pointerenter', entrar);
-		escena.addEventListener('pointermove', mover);
-		escena.addEventListener('pointerleave', salir);
-		limpiezas.push(() => {
-			escena.removeEventListener('pointerenter', entrar);
-			escena.removeEventListener('pointermove', mover);
-			escena.removeEventListener('pointerleave', salir);
-			cancelAnimationFrame(cuadro);
 		});
 	}
 
@@ -204,27 +186,19 @@ export function escenario(escena: HTMLElement, selector: HTMLElement) {
 					completar();
 					return;
 				}
-				if (!e.isIntersecting) return;
+				// El primer aviso llega con cualquier pedazo a la vista: la llegada espera al 25 %.
+				if (e.intersectionRatio < 0.25) return;
 				io.disconnect();
 				iniciada = true;
 				tablero.setAttribute('data-visto', '');
-				decir([900, 1250, 1850, 3000], 35);
-				paso(1700, () => {
-					tablero.removeAttribute('data-entra');
-					tablero.removeAttribute('data-visto');
-				});
+				decir([900, 1250, 1850], 35);
+				// Fin de la llegada: fuera de `timers`, para que elegir otro celular a mitad de camino no la corte.
+				window.setTimeout(() => ['data-entra', 'data-visto', 'data-elegido'].forEach((a) => tablero.removeAttribute(a)), 1700);
 				fuera = new IntersectionObserver(([s]) => !s.isIntersecting && completar());
 				fuera.observe(escena);
 			},
 			{ threshold: 0.25 },
 		);
 		io.observe(escena);
-		limpiezas.push(() => io.disconnect());
 	}
-	limpiezas.push(() => {
-		fuera?.disconnect();
-		timers.forEach(clearTimeout);
-	});
-
-	return () => limpiezas.forEach((l) => l());
 }

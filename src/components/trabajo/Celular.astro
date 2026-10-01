@@ -1,0 +1,148 @@
+---
+// Un celular del escenario de #trabajo (Escenario.astro): marco con doble bisel y la captura. Las medidas
+// (--f, --lado) y la profundidad (--zf, --zt) las hereda de .escenario; la pose (frente, izq, der) la cambia
+// scripts/trabajo-escenario.ts. Las capturas son 720x1560 y el marco es de proporción fija: al
+// reemplazarlas no se toca el CSS.
+import { Picture } from 'astro:assets';
+import type { Pantalla } from './pantallas';
+
+interface Props {
+	p: Pantalla;
+}
+const { p } = Astro.props;
+---
+
+<figure class="cel" data-cel={p.id} data-pose={p.pose}>
+	<div class="cel__nucleo">
+		<Picture
+			src={p.img}
+			alt={p.alt}
+			formats={['avif', 'webp']}
+			widths={[216, 324, 432, 648]}
+			sizes="(min-width: 1024px) min(22vw, 340px), (min-width: 768px) 38vw, 46vw"
+			width={720}
+			height={1560}
+			class="cel__img"
+		/>
+	</div>
+</figure>
+
+<style>
+	/* Marco con doble bisel: cáscara, núcleo y pantalla con radios concéntricos. La pose (lugar,
+	   giro y tamaño) es un solo transform: el cambio de celular anima todo junto. El z-index cambia a
+	   los 80 ms, cuando los dos se cruzan: sin preserve-3d (táctil), el de atrás no salta encima del otro. */
+	.cel {
+		--x: 0px;
+		--y: 0px;
+		--r: 0deg;
+		--e: 1;
+		--t: translate3d(var(--x), var(--y), var(--z)) rotate(var(--r)) scale(var(--e));
+		--cambio: transform 500ms var(--curva-cajon), translate 200ms var(--curva-salida), opacity 200ms var(--curva-salida), z-index 0s linear 80ms;
+		grid-area: 1 / 1;
+		position: relative;
+		z-index: 1;
+		width: var(--f);
+		padding: calc(var(--f) * 0.025);
+		border-radius: calc(var(--f) * 0.15);
+		background: var(--navy-700);
+		box-shadow:
+			inset 0 1px 0 rgba(220, 232, 254, 0.28), /* el filo de luz del marco: no hay token para este tinte */
+			var(--shadow-card-oscura);
+		transform: var(--t);
+		translate: 0 var(--lev, 0px);
+		transition: var(--cambio);
+	}
+
+	/* La sombra honda del que está al frente, en una capa que solo cambia de opacidad (más honda que
+	   --shadow-card-oscura: no hay token equivalente). */
+	.cel::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		box-shadow: 0 40px 80px rgba(2, 6, 18, 0.6);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 300ms var(--curva-salida);
+	}
+
+	/* --d: retraso de la llegada; --llega: su duración (el del frente, último y un poco más lento). */
+	.cel[data-pose='frente'] {
+		--z: var(--zf, 0px);
+		--sube: 64px;
+		--d: 280ms;
+		--llega: 750ms;
+		z-index: 2;
+	}
+	.cel[data-pose='izq'] { --x: calc(var(--lado) * -1); --y: 24px; --r: -4deg; --e: 0.82; --sube: 48px; --d: 200ms; --z: var(--zt, 0px); }
+	.cel[data-pose='der'] { --x: var(--lado); --y: 24px; --r: 4deg; --e: 0.82; --sube: 48px; --d: 120ms; --z: var(--zt, 0px); }
+	.cel[data-pose='frente']::after,
+	.cel[data-levantado]::after { opacity: 1; }
+	.cel[data-levantado] { --lev: -8px; }
+	.cel:not([data-pose='frente']) { cursor: pointer; }
+
+	/* Alarga 8 px abajo la zona del toque de los de atrás: al levantarse no se les escapa el puntero. */
+	.cel:not([data-pose='frente'])::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 -8px;
+	}
+
+	.cel__nucleo {
+		padding: calc(var(--f) * 0.02);
+		border-radius: calc(var(--f) * 0.125);
+		background: var(--navy-950); /* el bisel del marco */
+	}
+
+	/* El celular es un control: tocarlo lo trae al frente, no abre el menú de la imagen. */
+	.cel :global(.cel__img) {
+		-webkit-touch-callout: none;
+		-webkit-user-drag: none;
+		user-select: none;
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 720 / 1560;
+		border-radius: calc(var(--f) * 0.105);
+		background: var(--navy-900); /* hasta que carga la captura */
+	}
+
+	/* Los de atrás se levantan 8 px al señalarlos. */
+	@media (hover: hover) and (pointer: fine) {
+		.cel:not([data-pose='frente']):hover {
+			--lev: -8px;
+		}
+
+		.cel:not([data-pose='frente']):hover::after {
+			opacity: 1;
+		}
+	}
+
+	/* --- Llegada (solo con JS y sin movimiento reducido: data-entra lo pone el script) --- */
+	:global(.escenario[data-entra]) .cel {
+		opacity: 0;
+		transform: translate3d(var(--x), calc(var(--y) + var(--sube)), var(--z)) rotate(0deg) scale(calc(var(--e) * 0.94));
+		transition: none;
+	}
+
+	:global(.escenario[data-entra][data-visto]) .cel {
+		opacity: 1;
+		transform: var(--t);
+		transition:
+			opacity var(--llega, 700ms) var(--curva-salida) var(--d),
+			transform var(--llega, 700ms) var(--curva-salida) var(--d);
+	}
+
+	/* Si se elige otro celular antes de que termine la llegada, los celulares pasan a la transición del cambio. */
+	:global(.escenario[data-entra][data-visto][data-elegido]) .cel {
+		transition: var(--cambio);
+	}
+
+	/* Movimiento reducido: el cambio de celular es un fundido (lo hace el script), sin desplazar la pose. */
+	@media (prefers-reduced-motion: reduce) {
+		.cel {
+			transition: opacity 200ms var(--curva-salida), translate 200ms var(--curva-salida);
+		}
+	}
+</style>

@@ -17,7 +17,9 @@ export const pantallas = [
 	},
 	{
 		id: 'asistente', pose: 'frente', img: asistente, icono: 'chat-circle-text-duotone', corto: 'Asistente', momento: 'Si no cuadra', nombre: 'Asistente',
-		texto: 'Le preguntás «¿por qué no cuadra?» y te dice qué movimiento mirar. Solo consulta: no carga ni cambia nada.',
+		texto: 'Le preguntás «¿por qué no cuadra?» y te dice qué revisar. Solo consulta: no carga ni cambia nada.',
 		alt: 'Chat del asistente de la app: una pregunta sobre un arqueo que no cuadra y la respuesta que señala qué movimiento revisar.',
 	},
 ];
+
+export type Pantalla = (typeof pantallas)[number];

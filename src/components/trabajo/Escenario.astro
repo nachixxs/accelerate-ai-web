@@ -1,14 +1,12 @@
 ---
 // El escenario de #trabajo: los tres celulares sobre la card invertida (la única de la sección), la
 // conversación de ejemplo que cruza su borde de abajo y el sello de demo, montado sobre su borde de
-// arriba. Ocupa el área 'escena' de la grilla de
-// PrimerTrabajo (el selector, el área 'selector'). El HTML ya trae el estado final y quieto;
-// scripts/trabajo-escenario.ts arma la llegada, la conversación, la inclinación y el cambio de celular.
-// Las capturas son 720x1560 y el marco es de proporción fija:
-// al reemplazarlas no se toca el CSS.
-import { Picture } from 'astro:assets';
+// arriba. Ocupa el área 'escena' de la grilla de PrimerTrabajo (el selector, el área 'selector'). Cada
+// celular es un Celular.astro. El HTML ya trae el estado final y quieto; scripts/trabajo-escenario.ts arma
+// la llegada, la conversación, la inclinación y el cambio de celular.
 import Glow from '../Glow.astro';
 import Icono from '../Icono.astro';
+import Celular from './Celular.astro';
 import Conversacion from './Conversacion.astro';
 import { pantallas } from './pantallas';
 
@@ -28,24 +26,7 @@ const { pregunta, respuesta } = Astro.props;
 				<Glow tono="cian" fondo="oscuro" esquina="arriba-der" />
 			</div>
 		</div>
-		{
-			pantallas.map((p) => (
-				<figure class="cel" data-cel={p.id} data-pose={p.pose}>
-					<div class="cel__nucleo">
-						<Picture
-							src={p.img}
-							alt={p.alt}
-							formats={['avif', 'webp']}
-							widths={[216, 324, 432, 648]}
-							sizes="(min-width: 1024px) min(22vw, 340px), (min-width: 768px) 38vw, 46vw"
-							width={720}
-							height={1560}
-							class="cel__img"
-						/>
-					</div>
-				</figure>
-			))
-		}
+		{pantallas.map((p) => <Celular p={p} />)}
 		<Conversacion pregunta={pregunta} respuesta={respuesta} />
 	</div>
 </div>
@@ -64,7 +45,6 @@ const { pregunta, respuesta } = Astro.props;
 	.escenario {
 		--f: 50cqw; /* ancho de cada celular; los de atrás se achican con scale */
 		--lado: 25cqw;
-		--z: 0px;
 		--zc: 0px;
 		position: relative;
 		display: grid;
@@ -121,85 +101,6 @@ const { pregunta, respuesta } = Astro.props;
 		isolation: isolate;
 	}
 
-	/* Marco con doble bisel: cáscara, núcleo y pantalla con radios concéntricos. La pose (lugar,
-	   giro y tamaño) es un solo transform: el cambio de celular anima todo junto. */
-	.cel {
-		--x: 0px;
-		--y: 0px;
-		--r: 0deg;
-		--e: 1;
-		--t: translate3d(var(--x), var(--y), var(--z)) rotate(var(--r)) scale(var(--e));
-		grid-area: 1 / 1;
-		position: relative;
-		z-index: 1;
-		width: var(--f);
-		padding: calc(var(--f) * 0.025);
-		border-radius: calc(var(--f) * 0.15);
-		background: var(--navy-700);
-		box-shadow:
-			inset 0 1px 0 rgba(220, 232, 254, 0.28), /* el filo de luz del marco: no hay token para este tinte */
-			var(--shadow-card-oscura);
-		transform: var(--t);
-		translate: 0 var(--lev, 0px);
-		transition:
-			transform 500ms var(--curva-cajon),
-			translate 200ms var(--curva-salida),
-			opacity 200ms var(--curva-salida);
-	}
-
-	/* La sombra honda del que está al frente, en una capa que solo cambia de opacidad (más honda que
-	   --shadow-card-oscura: no hay token equivalente). */
-	.cel::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		border-radius: inherit;
-		box-shadow: 0 40px 80px rgba(2, 6, 18, 0.6);
-		opacity: 0;
-		pointer-events: none;
-		transition: opacity 300ms var(--curva-salida);
-	}
-
-	.cel[data-pose='frente'] {
-		--z: calc(var(--zf, 0px));
-		--sube: 64px;
-		--d: 280ms;
-		z-index: 2;
-	}
-	.cel[data-pose='izq'] { --x: calc(var(--lado) * -1); --y: 24px; --r: -4deg; --e: 0.82; --sube: 48px; --d: 200ms; --z: var(--zt, 0px); }
-	.cel[data-pose='der'] { --x: var(--lado); --y: 24px; --r: 4deg; --e: 0.82; --sube: 48px; --d: 120ms; --z: var(--zt, 0px); }
-	.cel[data-pose='frente']::after,
-	.cel[data-levantado]::after { opacity: 1; }
-	.cel[data-levantado] { --lev: -8px; }
-	.cel:not([data-pose='frente']) { cursor: pointer; }
-
-	/* Alarga 8 px abajo la zona del toque de los de atrás: al levantarse no se les escapa el puntero. */
-	.cel:not([data-pose='frente'])::before {
-		content: '';
-		position: absolute;
-		inset: 0 0 -8px;
-	}
-
-	.cel__nucleo {
-		padding: calc(var(--f) * 0.02);
-		border-radius: calc(var(--f) * 0.125);
-		background: var(--navy-950); /* el bisel del marco */
-	}
-
-	/* El celular es un control: tocarlo lo trae al frente, no abre el menú de la imagen. */
-	.cel :global(.cel__img) {
-		-webkit-touch-callout: none;
-		-webkit-user-drag: none;
-		user-select: none;
-		display: block;
-		width: 100%;
-		height: auto;
-		aspect-ratio: 720 / 1560;
-		border-radius: calc(var(--f) * 0.105);
-		background: var(--navy-900); /* hasta que carga la captura */
-	}
-
 	@media (min-width: 600px) {
 		.escenario {
 			--f: 40cqw;
@@ -214,6 +115,11 @@ const { pregunta, respuesta } = Astro.props;
 
 		.escenario {
 			padding-top: var(--space-6);
+		}
+
+		/* Que el sello no se salga de la columna del texto (la card sangra 32 px). */
+		.sello {
+			left: var(--space-4);
 		}
 	}
 
@@ -261,33 +167,16 @@ const { pregunta, respuesta } = Astro.props;
 			transform: rotateX(0deg) rotateY(0deg);
 		}
 
-		/* Luz de escena: los glows se corren al revés de la inclinación (--tx y --ty los pone el script). */
+		/* Luz de escena: el script corre cada glow (translate) al revés de la inclinación. */
 		.glows :global(.glow--azul-oscuro),
 		.glows :global(.glow--cian-oscuro) {
 			will-change: translate;
 		}
-
-		.glows :global(.glow--azul-oscuro) {
-			translate: calc(var(--tx, 0) * -48px) calc(var(--ty, 0) * -32px);
-		}
-
-		.glows :global(.glow--cian-oscuro) {
-			translate: calc(var(--tx, 0) * -72px) calc(var(--ty, 0) * -48px);
-		}
-
-		/* Los de atrás se levantan 8 px al señalarlos. */
-		.cel:not([data-pose='frente']):hover {
-			--lev: -8px;
-		}
-
-		.cel:not([data-pose='frente']):hover::after {
-			opacity: 1;
-		}
 	}
 
-	/* --- Llegada (solo con JS y sin movimiento reducido: data-entra lo pone el script) --- */
+	/* --- Llegada (solo con JS y sin movimiento reducido: data-entra lo pone el script; la de los celulares, en Celular.astro) --- */
 	.escenario[data-entra] .fondo {
-		clip-path: inset(10% 6% 0 6% round 28px);
+		clip-path: inset(10% 6% 0 6% round var(--radius-card-lg));
 	}
 
 	.escenario[data-entra] .glows,
@@ -295,14 +184,8 @@ const { pregunta, respuesta } = Astro.props;
 		opacity: 0;
 	}
 
-	.escenario[data-entra] .cel {
-		opacity: 0;
-		transform: translate3d(var(--x), calc(var(--y) + var(--sube)), var(--z)) rotate(0deg) scale(calc(var(--e) * 0.94));
-		transition: none;
-	}
-
 	.escenario[data-entra][data-visto] .fondo {
-		clip-path: inset(-96px round 28px);
+		clip-path: inset(-96px round var(--radius-card-lg));
 		transition: clip-path 800ms var(--curva-salida);
 	}
 
@@ -310,21 +193,6 @@ const { pregunta, respuesta } = Astro.props;
 	.escenario[data-entra][data-visto] .sello {
 		opacity: 1;
 		transition: opacity 900ms var(--curva-salida) 760ms;
-	}
-
-	.escenario[data-entra][data-visto] .cel {
-		opacity: 1;
-		transform: var(--t);
-		transition:
-			opacity 700ms var(--curva-salida) var(--d),
-			transform 700ms var(--curva-salida) var(--d);
-	}
-
-	/* Movimiento reducido: el cambio de celular es un fundido (lo hace el script), sin desplazar la pose. */
-	@media (prefers-reduced-motion: reduce) {
-		.cel {
-			transition: opacity 200ms var(--curva-salida), translate 200ms var(--curva-salida);
-		}
 	}
 </style>
 

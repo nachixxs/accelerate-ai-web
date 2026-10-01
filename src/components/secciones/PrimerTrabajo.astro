@@ -16,9 +16,10 @@ import ElMes from '../trabajo/ElMes.astro';
 const mes = { dias: 26, movimientos: 1703, arqueos: 104, conDiferencia: 32 };
 
 const pregunta = '¿Por qué no cuadra este arqueo?';
-// PROVISORIO: la respuesta sale de la especificación del asistente, no de la demo (va rotulada "Ejemplo").
-// Lo que va entre [ ] sale en negrita (cero, uno o varios fragmentos); el texto no cambia.
-const respuesta = 'Faltan $30.000. [Hay un fiado de Pérez por $30.000 cargado a las 11:42.] Fijate si además te pagó en efectivo y no lo registraste.';
+// Respuesta textual del asistente de la demo a esa pregunta, sobre un arqueo del mes simulado (la app la manda
+// sola al tocar "Preguntarle al asistente" en un arqueo que no cuadra). Recortada con […]: la completa tiene tres
+// párrafos y estiraba el escenario (decisión de Nacho, 2026-10-01). Lo que va entre [ ] sale en negrita; el texto no cambia.
+const respuesta = '[Faltan $280 en efectivo] en la Caja grande, turno mañana del 10/09. Las boletas cuadran. […] [Fijate si hubo algún pago de premio chico] en ese turno que no se cargó o que se cargó distinto.';
 ---
 
 <section id="trabajo" class="seccion trabajo con-glow" aria-labelledby="trabajo-titulo">
@@ -101,8 +102,6 @@ const respuesta = 'Faltan $30.000. [Hay un fiado de Pérez por $30.000 cargado a
 	}
 
 	.trabajo__codigo:focus-visible {
-		outline: 3px solid var(--brand-primary-deep);
-		outline-offset: 3px;
 		border-radius: var(--radius-input);
 	}
 
@@ -121,9 +120,9 @@ const respuesta = 'Faltan $30.000. [Hay un fiado de Pérez por $30.000 cargado a
 		}
 	}
 
-	/* Escritorio: dos columnas. Los separadores de 1fr centran el texto y el selector en alto contra
-	   el escenario (que se estira a la altura de la columna); la fila de 48 px de abajo es donde asoma
-	   la conversación. */
+	/* Escritorio: dos columnas. El escenario es más alto que la columna de texto y selector; los
+	   separadores de 1fr la centran en alto contra él (si la columna es más alta, empiezan y terminan
+	   juntos). La fila de 48 px de abajo es donde asoma la conversación. */
 	@media (min-width: 1024px) {
 		.trabajo__intro {
 			margin-bottom: 0;

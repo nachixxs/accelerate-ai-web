@@ -72,6 +72,7 @@ export function elMes(raiz: HTMLElement) {
 	let nCampo = movimientos;
 	let nBarra = arqueos;
 	let tinte = Infinity;
+	let vuelo = Infinity; // ms desde que salió la primera partícula: cada marca aterriza en tinta fresca y se funde a su color
 	let pintadas = 0; // marcas del campo ya dibujadas (el campo solo crece: se dibuja lo que falta)
 	let frescas: Array<{ a: number; b: number; t: number }> = []; // rangos de marcas todavía en tinta fresca
 	let [cols, paso, lado] = [1, 8, 2];
@@ -79,7 +80,7 @@ export function elMes(raiz: HTMLElement) {
 
 	const geometria = (ancho: number) => {
 		const celda = ancho >= 520 ? 8 : 6;
-		cols = Math.floor(ancho / celda);
+		cols = Math.max(1, Math.floor(ancho / celda));
 		paso = ancho / cols;
 		lado = campo.px(Math.max(2, paso - 3));
 		return Math.ceil(movimientos / cols) * paso;
@@ -128,6 +129,13 @@ export function elMes(raiz: HTMLElement) {
 			const x = barra.px(i * p);
 			barra.g.fillStyle = ok;
 			barra.g.fillRect(x, 8, w, 16);
+			const fresca = 1 - tramo((vuelo - (i * SALTO + VUELO)) / FRESCA);
+			if (fresca > 0) {
+				barra.g.globalAlpha = fresca;
+				barra.g.fillStyle = nueva;
+				barra.g.fillRect(x, 8, w, 16);
+				barra.g.globalAlpha = 1;
+			}
 			const k = i - (arqueos - dif); // los últimos `dif` son los que no cuadraron
 			if (k >= 0 && tinte > 0) {
 				barra.g.globalAlpha = salida(tramo((tinte - k * ESCALON) / TINTE));
@@ -196,6 +204,7 @@ export function elMes(raiz: HTMLElement) {
 		dibujarCampo(false, ahora);
 		const tb = t - MS - PAUSA;
 		if (tb >= 0) {
+			vuelo = tb;
 			if (tb < TODAS) volar(tb);
 			else quitarCapa();
 			nBarra = tb >= VUELO ? Math.min(arqueos, Math.floor((tb - VUELO) / SALTO) + 1) : 0;
@@ -212,7 +221,7 @@ export function elMes(raiz: HTMLElement) {
 		corriendo = false;
 		quitarCapa();
 		numero.textContent = unidades(movimientos);
-		[nCampo, nBarra, tinte] = [movimientos, arqueos, Infinity];
+		[nCampo, nBarra, tinte, vuelo] = [movimientos, arqueos, Infinity, Infinity];
 		dibujar();
 	};
 
@@ -228,19 +237,14 @@ export function elMes(raiz: HTMLElement) {
 	ro.observe(campo.el);
 
 	// Si cambia la densidad de píxeles (otro monitor, zoom), las marcas se vuelven a alinear.
-	let densidad: MediaQueryList | undefined;
 	const alCambiarDensidad = () => {
 		if (corriendo) final();
 		else dibujar();
 		vigilar();
 	};
-	const vigilar = () => {
-		densidad = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-		densidad.addEventListener('change', alCambiarDensidad, { once: true });
-	};
+	const vigilar = () => matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener('change', alCambiarDensidad, { once: true });
 	vigilar();
 
-	let io: IntersectionObserver | undefined;
 	if (movimientoReducido()) {
 		final();
 	} else {
@@ -248,17 +252,17 @@ export function elMes(raiz: HTMLElement) {
 		[nCampo, nBarra, tinte] = [0, 0, -1];
 		numero.textContent = '0';
 		dibujar();
-		io = new IntersectionObserver(
+		const io = new IntersectionObserver(
 			([e]) => {
 				// Si al cargar ya quedó arriba de la pantalla (scroll restaurado): el valor final directo.
 				if (e.boundingClientRect.bottom < 0) {
-					io!.disconnect();
+					io.disconnect();
 					final();
 					return;
 				}
 				// Con el 60 % a la vista; en pantallas bajas, donde el bloque no entra, con la mitad del alto.
 				if (e.intersectionRatio < 0.6 && e.intersectionRect.height < innerHeight * 0.5) return;
-				io!.disconnect();
+				io.disconnect();
 				t0 = performance.now();
 				corriendo = true;
 				cuadro = requestAnimationFrame(paseo);
@@ -267,13 +271,4 @@ export function elMes(raiz: HTMLElement) {
 		);
 		io.observe(raiz);
 	}
-
-	return () => {
-		io?.disconnect();
-		ro.disconnect();
-		densidad?.removeEventListener('change', alCambiarDensidad);
-		cancelAnimationFrame(cuadro);
-		cancelAnimationFrame(pendiente);
-		quitarCapa();
-	};
 }

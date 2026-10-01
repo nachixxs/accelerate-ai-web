@@ -1,8 +1,8 @@
 ---
 // El selector de pantallas de #trabajo: trae un celular al frente del escenario (el que lo mueve es
 // scripts/trabajo-escenario.ts). Tres botones con aria-pressed. En el celular, control segmentado con una
-// píldora que se desliza (--activa) y el texto del momento elegido debajo; desde 768, cada momento
-// con su texto, siempre visible, en una tarjeta con borde.
+// píldora que se desliza (--activa) y el texto del momento elegido debajo (sin JS, data-listo no está: los
+// tres textos, sin botones); desde 768, cada momento con su texto, siempre visible, en una tarjeta con borde.
 import Icono from '../Icono.astro';
 import { pantallas } from './pantallas';
 
@@ -15,7 +15,7 @@ const activa = pantallas.findIndex((p) => p.pose === 'frente');
 		{
 			pantallas.map((p, i) => (
 				<li class="sel" data-sel={p.id} data-activa={p.pose === 'frente' ? '' : undefined} style={`--n:${i + 1}`}>
-					<button type="button" class="sel__boton" aria-pressed={p.pose === 'frente' ? 'true' : 'false'} aria-label={`${p.nombre}: ${p.momento}`}>
+					<button type="button" class="sel__boton" aria-pressed={p.pose === 'frente' ? 'true' : 'false'} aria-label={`${p.nombre}: ${p.momento.toLowerCase()}`}>
 						<Icono nombre={p.icono} size={32} class="sel__icono" />
 						<span class="sel__corto">{p.corto}</span>
 						<span class="sel__momento">{p.momento}</span>
@@ -37,9 +37,6 @@ const activa = pantallas.findIndex((p) => p.pose === 'frente');
 	.selector__lista {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		margin: 0;
-		padding: 0;
-		list-style: none;
 	}
 
 	.sel__boton {
@@ -160,9 +157,20 @@ const activa = pantallas.findIndex((p) => p.pose === 'frente');
 			transition: opacity 200ms var(--curva-salida);
 		}
 
-		.sel:not([data-activa]) .sel__texto {
+		.selector[data-listo] .sel:not([data-activa]) .sel__texto {
 			opacity: 0;
 			visibility: hidden;
+		}
+
+		/* Sin JS los botones no hacen nada: no se muestran y los tres textos van uno debajo del otro. */
+		.selector:not([data-listo]) .selector__lista::before,
+		.selector:not([data-listo]) :is(.sel__pildora, .sel__boton) {
+			display: none;
+		}
+
+		.selector:not([data-listo]) .sel__texto {
+			grid-area: auto / 1 / auto / -1;
+			margin-top: var(--space-1);
 		}
 	}
 
@@ -195,7 +203,27 @@ const activa = pantallas.findIndex((p) => p.pose === 'frente');
 			width: 100%;
 			min-height: 48px;
 			padding: 0;
-			font-size: 1.0625rem;
+			font-size: var(--type-cuerpo-size);
+			text-align: start;
+		}
+
+		.sel__texto {
+			margin-top: var(--space-1);
+		}
+
+		/* El foco es el de la card entera (con su radio), no un rectángulo que pisa el texto. */
+		.sel__boton:focus-visible {
+			outline: none;
+		}
+
+		.sel:has(.sel__boton:focus-visible) {
+			outline: 3px solid var(--brand-primary-deep);
+			outline-offset: 3px;
+		}
+
+		/* Al tocar: solo cambia el fondo (sin escala, regla de la marca). */
+		.sel:has(.sel__boton:active):not([data-activa]) {
+			background: var(--slate-100);
 		}
 
 		.sel__boton[aria-pressed='true'] {
@@ -226,6 +254,14 @@ const activa = pantallas.findIndex((p) => p.pose === 'frente');
 		}
 	}
 
+	/* Tablet: tres cards angostas; el ícono va arriba y la etiqueta entera en una línea, igual en las tres. */
+	@media (min-width: 768px) and (max-width: 1023.98px) {
+		.sel__boton {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+
 	@media (min-width: 1024px) {
 		.selector__lista {
 			grid-template-columns: 1fr;
@@ -253,6 +289,11 @@ const activa = pantallas.findIndex((p) => p.pose === 'frente');
 		}
 
 		.sel:hover:not([data-activa]) .sel__boton {
+			color: var(--brand-primary-deep);
+		}
+
+		.sel:hover:not([data-activa]) .sel__boton :global(.sel__icono) {
+			background: var(--blue-50);
 			color: var(--brand-primary-deep);
 		}
 	}
