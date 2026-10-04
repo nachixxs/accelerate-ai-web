@@ -100,7 +100,14 @@ async function revisarLinks(navegador, url, width) {
 		if (selector.startsWith('.pie')) await pagina.locator(selector).scrollIntoViewIfNeeded().then(() => pagina.waitForTimeout(400));
 		// 'commit': la portada tarda en cargar con los otros chequeos corriendo; lo que importa es adónde va y dónde queda el scroll.
 		await Promise.all([pagina.waitForURL((u) => u.pathname === '/' && u.hash === `#${id}`, { timeout: 15000, waitUntil: 'commit' }), pagina.locator(selector).click()]).catch(() => {});
-		await pagina.waitForFunction((i) => Math.abs(document.getElementById(i)?.getBoundingClientRect().top ?? 9999) < 200, id, { timeout: 10000 }).catch(() => {});
+		// La portada llega con scroll suave: se mide cuando la sección quedó quieta, no al pasar los 200 px a mitad
+		// del viaje (en #preguntas, el más largo, la espera se cumplía en 199,97 y, redondeado, daba 200; quieta queda en 96).
+		await pagina.waitForFunction((i) => {
+			const arriba = Math.round(document.getElementById(i)?.getBoundingClientRect().top ?? 9999);
+			const quieta = arriba === window.__arriba;
+			window.__arriba = arriba;
+			return quieta && Math.abs(arriba) < 200;
+		}, id, { timeout: 10000, polling: 150 }).catch(() => {});
 		const [ruta, arriba] = await pagina.evaluate((i) => [location.pathname + location.hash, Math.round(document.getElementById(i)?.getBoundingClientRect().top ?? 9999)], id);
 		if (ruta !== `/#${id}` || Math.abs(arriba) >= 200) fallas.push(`${selector} termina en ${ruta} con la sección a ${arriba} px`);
 	}
