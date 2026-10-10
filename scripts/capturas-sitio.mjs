@@ -61,6 +61,27 @@ for (const width of [360, 1280]) {
 	await pagina.close();
 }
 
+// La 404 es corta: el pie entra en la primera pantalla y tiene que verse entero, sin quedar a mitad de su
+// fundido por scroll. Y sin JS, el CTA del encabezado ya arranca en contorno (no hay quien lo cambie).
+{
+	const contexto = await navegador.newContext({ viewport: { width: 1280, height: 720 }, reducedMotion: 'no-preference' });
+	const pagina = await contexto.newPage();
+	await pagina.goto(`${url}esta-ruta-no-existe/`, { waitUntil: 'load' });
+	await terminarCarga(pagina);
+	const opacidad = await pagina.evaluate(() => {
+		const efectiva = (el) => (el ? Number(getComputedStyle(el).opacity) * efectiva(el.parentElement) : 1);
+		return Math.min(...[...document.querySelectorAll('.pie a, .pie p, .pie h2, .pie h3')].map(efectiva));
+	});
+	chequear(opacidad > 0.99, `404 1280x720: el pie se ve entero sin scrollear (opacidad mínima ${opacidad.toFixed(2)})`);
+	await contexto.close();
+	const sinJs = await navegador.newContext({ viewport: { width: 1280, height: 800 }, javaScriptEnabled: false });
+	const pagina2 = await sinJs.newPage();
+	await pagina2.goto(`${url}esta-ruta-no-existe/`, { waitUntil: 'load' });
+	const llenoSinJs = await pagina2.evaluate(() => document.querySelector('.capsula__cta').classList.contains('capsula__cta--lleno'));
+	chequear(!llenoSinJs, '404 sin JS: el CTA del encabezado arranca en contorno');
+	await sinJs.close();
+}
+
 // Menú abierto a 768 y la ventana se ensancha a 1280 (tablet que gira): el menú se cierra y libera el scroll.
 {
 	const pagina = await navegador.newPage({ viewport: { width: 768, height: 1024 } });
