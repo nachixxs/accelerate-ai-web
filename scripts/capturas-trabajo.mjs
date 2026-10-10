@@ -163,7 +163,7 @@ async function revisarViaje(navegador, url, width) {
 	// Scroll de golpe hasta pasar de largo el bloque: espera sin quedar a medias; al volver a verla, viaja una sola vez.
 	const [contexto2, p2] = await nuevaPagina();
 	await p2.evaluate(() => scrollTo(0, document.querySelector('#trabajo [data-mes]').getBoundingClientRect().top + scrollY - innerHeight * 0.2));
-	await p2.waitForTimeout(300); // arranca el conteo; la barra todavía no entra
+	await p2.waitForFunction(() => document.querySelector('#trabajo [data-numero]').textContent !== '0', null, { timeout: 3000 }).catch(() => {}); // arrancó el conteo; la barra todavía no entra
 	await p2.evaluate(() => scrollTo(0, document.querySelector('#trabajo [data-mes]').getBoundingClientRect().bottom + scrollY + 100));
 	await p2.waitForTimeout(3500);
 	const quieta = await estado(p2);
