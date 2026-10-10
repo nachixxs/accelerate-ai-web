@@ -196,11 +196,7 @@ export function elMes(raiz: HTMLElement) {
 	// Un solo bucle: número y marcas con el mismo valor en cada cuadro; después, el viaje y el tinte.
 	// El viaje espera a que la barra esté a la vista (barraVista): hasta entonces el reloj queda en la pausa,
 	// y cuando las marcas frescas del campo terminan de fundirse el bucle se frena (esperando) hasta que llegue.
-	let cuadro = 0;
-	let t0 = 0;
-	let corriendo = false;
-	let barraVista = false;
-	let esperando = false;
+	let [cuadro, t0, corriendo, barraVista, esperando] = [0, 0, false, false, false];
 	const paseo = (ahora: number) => {
 		const espera = !barraVista && ahora - t0 >= MS + PAUSA;
 		if (espera) t0 = ahora - MS - PAUSA;
@@ -263,15 +259,12 @@ export function elMes(raiz: HTMLElement) {
 		[nCampo, nBarra, tinte] = [0, 0, -1];
 		numero.textContent = '0';
 		dibujar();
-		const cerrar = () => {
-			io.disconnect();
-			ioBarra.disconnect();
-		};
 		const io = new IntersectionObserver(
 			([e]) => {
 				// Si al cargar ya quedó arriba de la pantalla (scroll restaurado): el valor final directo.
 				if (e.boundingClientRect.bottom < 0) {
-					cerrar();
+					io.disconnect();
+					ioBarra.disconnect();
 					final();
 					return;
 				}
