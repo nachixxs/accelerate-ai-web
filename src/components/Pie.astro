@@ -13,7 +13,9 @@ import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 
 // `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada.
 // "Volver arriba" queda en la misma página (#inicio existe en las dos).
-const { raiz = '' } = Astro.props;
+// `quieto` apaga el fundido atado al scroll: en la 404 el pie entra entero en la primera pantalla y
+// el fundido quedaba a mitad.
+const { raiz = '', quieto = false } = Astro.props;
 
 const contactos = [
 	{ icono: 'si:whatsapp', canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
@@ -36,7 +38,7 @@ const links = [
 ];
 ---
 
-<footer class="seccion--oscura pie">
+<footer class:list={['seccion--oscura pie', { 'pie--quieto': quieto }]}>
 	<div class="pie__estela" aria-hidden="true"><span></span><span></span><span></span></div>
 
 	<div class="contenedor">
@@ -220,16 +222,18 @@ const links = [
 		transition: color 0.12s var(--curva-salida);
 	}
 
-	/* Las redes: dos botones de ícono en fila, con el mismo recuadro que el de WhatsApp. El link mide
-	   44 px y el recuadro 40, centrado. */
+	/* Las redes: dos botones de ícono en fila, con el mismo recuadro que el de WhatsApp y a su borde
+	   izquierdo. El link mide 44 px y el recuadro 40, pegado a la izquierda: con 4 px de gap quedan
+	   8 entre recuadros, y el margen de 4 deja 24 entre el de WhatsApp y las redes. */
 	.pie__redes {
 		display: flex;
-		gap: var(--space-1);
+		gap: 4px;
+		margin-top: 4px;
 	}
 
 	.pie__red {
 		display: grid;
-		place-items: center;
+		place-items: center start;
 		width: 44px;
 		height: 44px;
 	}
@@ -436,7 +440,9 @@ const links = [
 
 			/* Tab puede llevar el foco a un link antes de que su bloque termine de entrar (el
 			   navegador sólo scrollea lo mínimo): con el foco adentro, se ve entero. */
-			.pie__bloque:focus-within {
+			.pie__bloque:focus-within,
+			.pie--quieto .pie__bloque,
+			.pie--quieto .pie__estela span {
 				animation: none;
 			}
 		}
