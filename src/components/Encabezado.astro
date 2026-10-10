@@ -142,7 +142,8 @@ const links = [
 		}
 		cta.classList.toggle('capsula__cta--lleno', aLaVista.size === 0);
 	});
-	document.querySelectorAll('main .boton--principal').forEach((boton) => observador.observe(boton));
+	// Principal es el botón de WhatsApp azul o cualquiera que se marque con data-cta-principal (el "Ir a la portada" de la 404).
+	document.querySelectorAll('main .boton--principal, main [data-cta-principal]').forEach((boton) => observador.observe(boton));
 </script>
 
 <style>
