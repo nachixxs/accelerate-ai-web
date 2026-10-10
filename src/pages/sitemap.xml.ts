@@ -3,7 +3,7 @@
 import type { APIRoute } from 'astro';
 
 const paginas = Object.keys(import.meta.glob('./*.astro'))
-	.filter((archivo) => !archivo.includes('['))
+	.filter((archivo) => !archivo.includes('[') && archivo !== './404.astro')
 	.map((archivo) => archivo.slice(2, -'.astro'.length))
 	.map((nombre) => (nombre === 'index' ? '/' : `/${nombre}/`));
 
