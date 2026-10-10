@@ -19,6 +19,12 @@ const contactos = [
 	{ icono: 'si:whatsapp', canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
 ];
 
+// Solo las redes de la agencia, sin cuentas personales. Cada una es un botón de ícono (44 px).
+const redes = [
+	{ icono: 'instagram-logo-duotone', nombre: 'Instagram', href: 'https://www.instagram.com/accelerate.ai.arg/' },
+	{ icono: 'linkedin-logo-duotone', nombre: 'LinkedIn', href: 'https://www.linkedin.com/company/accelerateai-ar/' },
+];
+
 const anio = new Date().getFullYear();
 
 const links = [
@@ -67,7 +73,19 @@ const links = [
 						))
 					}
 				</ul>
-				{/* TODO: links a las redes. Faltan las URL (REVISION-TEXTOS.md). */}
+				<ul class="pie__redes">
+					{
+						redes.map(({ icono, nombre, href }) => (
+							<li>
+								<a class="pie__red" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${nombre} de Accelerate.ai (se abre en otra pestaña)`}>
+									<span class="pie__contacto-icono">
+										<Icono nombre={icono} size={20} />
+									</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
 			</div>
 		</div>
 
@@ -202,6 +220,25 @@ const links = [
 		transition: color 0.12s var(--curva-salida);
 	}
 
+	/* Las redes: dos botones de ícono en fila, con el mismo recuadro que el de WhatsApp. El link mide
+	   44 px y el recuadro 40, centrado. */
+	.pie__redes {
+		display: flex;
+		gap: var(--space-1);
+	}
+
+	.pie__red {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+	}
+
+	.pie__red:active .pie__contacto-icono {
+		border-color: var(--cyan-300);
+		transition: border-color 0.12s var(--curva-salida);
+	}
+
 	.pie__contacto-texto {
 		display: grid;
 		min-width: 0;
@@ -297,7 +334,7 @@ const links = [
 			color: var(--text-heading-light);
 		}
 
-		.pie__contacto:hover .pie__contacto-icono {
+		:is(.pie__contacto, .pie__red):hover .pie__contacto-icono {
 			border-color: var(--cyan-300);
 		}
 
@@ -321,8 +358,12 @@ const links = [
 	}
 
 	/* El anillo (cian) sale de .seccion--oscura; acá solo se redondea. */
-	.pie :is(.pie__link, .pie__contacto):focus-visible {
+	.pie :is(.pie__link, .pie__contacto, .pie__red):focus-visible {
 		border-radius: 4px;
+	}
+
+	.pie .pie__red:focus-visible {
+		border-radius: 12px;
 	}
 
 	/* Entre 768 y 1023, 2 columnas: la marca a lo ancho arriba y secciones + contacto abajo. Las 3
