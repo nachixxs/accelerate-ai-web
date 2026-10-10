@@ -3,8 +3,9 @@
 // que flota sobre la página desde arriba de todo (borde fino y sombra teñida de navy, sin vidrio
 // ni blur) y baja 4 px al empezar el scroll. La sección en la que estás queda marcada.
 // El botón de WhatsApp está siempre (pedido del usuario, 2026-09-25): de contorno mientras se ve
-// un botón principal (el de la portada o el del cierre) y lleno de #1f57c2 (con texto blanco,
-// AA) cuando no se ve ninguno, así nunca hay dos azules llenos a la vista. Lo decide el script
+// un botón de relleno (el principal de la portada y el cierre, o un secundario; decisión del
+// usuario, 2026-10-10) y lleno de #1f57c2 (con texto blanco, AA) cuando no se ve ninguno, así
+// nunca hay dos botones de relleno a la vista. Lo decide el script
 // de abajo. Sin JavaScript queda de contorno, salvo en las páginas sin botón principal propio
 // (/legal: `raiz` sin `ctaPropio`), donde arranca lleno desde el HTML.
 // En el celular y la tablet, un "Menú" abre un popover con las 5 secciones numeradas y el botón.
@@ -150,7 +151,8 @@ const links = [
 		cta.classList.toggle('capsula__cta--lleno', aLaVista.size === 0);
 	});
 	// Principal es el botón de WhatsApp azul o cualquiera que se marque con data-cta-principal (el "Ir a la portada" de la 404).
-	document.querySelectorAll('main .boton--principal, main [data-cta-principal]').forEach((boton) => observador.observe(boton));
+	// Los secundarios (relleno azul, o cian sobre oscuro) cuentan igual: el relleno del encabezado no convive con otro relleno.
+	document.querySelectorAll('main .boton--principal, main .boton--secundario, main [data-cta-principal]').forEach((boton) => observador.observe(boton));
 </script>
 
 <style>
