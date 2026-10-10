@@ -15,6 +15,11 @@ import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 // "Volver arriba" queda en la misma página (#inicio existe en las dos).
 // `quieto` apaga el fundido atado al scroll: en la 404 el pie entra entero en la primera pantalla y
 // el fundido quedaba a mitad.
+interface Props {
+	raiz?: string;
+	quieto?: boolean;
+}
+
 const { raiz = '', quieto = false } = Astro.props;
 
 const contactos = [
