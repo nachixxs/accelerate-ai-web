@@ -277,7 +277,7 @@ export function elMes(raiz: HTMLElement) {
 			},
 			{ threshold: [0, 0.1, 0.25, 0.4, 0.6] },
 		);
-		// El viaje sale cuando la barra se ve entera (con 48 px de aire contra el borde de abajo), una sola vez.
+		// El viaje sale cuando la barra se ve entera (sin la cápsula del encabezado, 80 px, ni 48 px de aire abajo), una sola vez.
 		// Si el lector pasa de largo, queda esperando: al volver a verla, viaja.
 		const ioBarra = new IntersectionObserver(
 			(entradas) => {
@@ -289,7 +289,7 @@ export function elMes(raiz: HTMLElement) {
 				t0 = performance.now() - MS - PAUSA;
 				cuadro = requestAnimationFrame(paseo);
 			},
-			{ threshold: [0, 0.95], rootMargin: '0px 0px -48px 0px' },
+			{ threshold: [0, 0.95], rootMargin: '-80px 0px -48px 0px' },
 		);
 		io.observe(raiz);
 		ioBarra.observe(barra.el);
