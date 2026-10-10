@@ -4,6 +4,7 @@
 //   trata el sitio como SPA y sirve la portada con 200 en cualquier ruta).
 // - La 404 a 360 y 1280: una sola h1, un link a la portada de 44 px o más, sin desborde, sin errores
 //   de consola, con noindex y fuera del sitemap.
+// - En la 404, el CTA del encabezado en contorno; el menú abierto a 768 se cierra al pasar a 1280.
 // - public/_headers llega a dist con caché inmutable para /_astro/* y las cabeceras de seguridad.
 import { readFile } from 'node:fs/promises';
 import { preview } from 'astro';
@@ -47,6 +48,30 @@ for (const width of [360, 1280]) {
 	chequear(m.desborde <= 0, `404 ${width}: sin desborde horizontal (${m.desborde} px)`);
 	chequear(m.noindex && !m.canonical, `404 ${width}: meta robots noindex y sin canonical`);
 	chequear(!errores.length, `404 ${width}: sin errores de consola${errores.length ? ` (${errores.join(' | ')})` : ''}`);
+	await pagina.close();
+}
+
+// En la 404 a 1280 el CTA del encabezado queda en contorno mientras se ve "Ir a la portada" (nunca dos azules llenos).
+{
+	const pagina = await navegador.newPage({ viewport: { width: 1280, height: 800 } });
+	await pagina.goto(`${url}esta-ruta-no-existe/`, { waitUntil: 'load' });
+	await terminarCarga(pagina);
+	const lleno = await pagina.evaluate(() => document.querySelector('.capsula__cta').classList.contains('capsula__cta--lleno'));
+	chequear(!lleno, '404 1280: el CTA del encabezado en contorno con "Ir a la portada" a la vista');
+	await pagina.close();
+}
+
+// Menú abierto a 768 y la ventana se ensancha a 1280 (tablet que gira): el menú se cierra y libera el scroll.
+{
+	const pagina = await navegador.newPage({ viewport: { width: 768, height: 1024 } });
+	await pagina.goto(url, { waitUntil: 'load' });
+	await terminarCarga(pagina);
+	await pagina.click('.encabezado .capsula__menu');
+	const abierto = await pagina.evaluate(() => document.querySelector('#menu').matches(':popover-open'));
+	await pagina.setViewportSize({ width: 1280, height: 800 });
+	await pagina.waitForTimeout(300);
+	const despues = await pagina.evaluate(() => ({ abierto: document.querySelector('#menu').matches(':popover-open'), bloqueado: getComputedStyle(document.documentElement).overflowY === 'hidden' }));
+	chequear(abierto && !despues.abierto && !despues.bloqueado, `menú: abierto a 768, al pasar a 1280 se cierra y libera el scroll (abrió ${abierto}, sigue abierto ${despues.abierto}, scroll bloqueado ${despues.bloqueado})`);
 	await pagina.close();
 }
 
