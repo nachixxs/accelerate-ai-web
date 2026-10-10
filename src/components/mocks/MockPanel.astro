@@ -195,7 +195,9 @@ const movimientos = [
 		// tablero ya se ve en la primera pantalla, el conteo esperaba esa entrada antes de arrancar
 		// (si no, contaba con la tarjeta todavía invisible).
 		const tarjeta = cifras[0]?.closest<HTMLElement>('.cifra');
-		contarAlVer(cifras, formato, () => Promise.all(tarjeta?.getAnimations().map((a) => a.finished) ?? []));
+		// Umbral bajo (10 %): con ventanas de ~790 px la fila de cifras queda justo en el borde de
+		// abajo, cortada, y con el 60 % la cifra se veía quieta en su valor de partida.
+		contarAlVer(cifras, formato, () => Promise.all(tarjeta?.getAnimations().map((a) => a.finished) ?? []), 0.1);
 	}
 
 	// El gráfico sigue al cursor (o al dedo): la guía y el punto van al día más cercano y la

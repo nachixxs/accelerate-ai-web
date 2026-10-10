@@ -30,8 +30,10 @@ export function contar(el: HTMLElement, desde: number, hasta: number, formato: (
 // Cada elemento con data-valor cuenta cuando se ve entero, con 80 ms entre uno y otro. Parte de
 // data-desde (0 si no está, como Reponer del stock). `esperar`, si se pasa, es una promesa a
 // esperar antes de arrancar el conteo (ej. que termine la animación de entrada de la tarjeta):
-// se ignora cualquier rechazo, así que si no hay nada que esperar arranca enseguida.
-export function contarAlVer(elementos: HTMLElement[], formato: (n: number) => string, esperar?: () => Promise<unknown>) {
+// se ignora cualquier rechazo, así que si no hay nada que esperar arranca enseguida. `umbral` es
+// cuánto del primer elemento tiene que verse (0 a 1) para arrancar: bajo en una cifra chica que
+// queda cortada por el borde de la pantalla, donde con el 60 % se vería quieta, en su valor de partida.
+export function contarAlVer(elementos: HTMLElement[], formato: (n: number) => string, esperar?: () => Promise<unknown>, umbral = 0.6) {
 	if (movimientoReducido() || !elementos.length) return;
 	const desdeDe = (el: HTMLElement) => Number(el.dataset.desde ?? 0);
 	elementos.forEach((el) => (el.textContent = formato(desdeDe(el))));
@@ -53,7 +55,7 @@ export function contarAlVer(elementos: HTMLElement[], formato: (n: number) => st
 			if (esperar) Promise.resolve(esperar()).catch(() => {}).then(arrancar);
 			else arrancar();
 		},
-		{ threshold: 0.6 },
+		{ threshold: umbral },
 	);
 	observador.observe(elementos[0]);
 }

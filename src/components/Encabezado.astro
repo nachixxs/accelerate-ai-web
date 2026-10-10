@@ -125,6 +125,13 @@ const links = [
 		}
 	});
 
+	// Si la ventana se agranda (una tablet que se gira) y el botón "Menú" se va, el menú abierto se
+	// cierra con él: ya no se puede abrir y con los links a la vista sobra.
+	const botonMenu = document.querySelector<HTMLElement>('.capsula__menu')!;
+	new ResizeObserver(() => {
+		if (!botonMenu.offsetWidth && menu.matches(':popover-open')) menu.hidePopover();
+	}).observe(document.querySelector('.encabezado')!);
+
 	// El botón se llena de azul cuando no hay ningún botón principal a la vista.
 	const cta = document.querySelector('.capsula__cta')!;
 	const aLaVista = new Set<Element>();
@@ -158,6 +165,7 @@ const links = [
 		z-index: 10;
 		padding-block: 8px;
 		pointer-events: none;
+		container-type: inline-size;
 	}
 
 	.capsula {
@@ -466,18 +474,17 @@ const links = [
 		}
 	}
 
-	/* Escritorio: los links en la cápsula y sin menú. En em (67.5em = 1080px con la letra al 100 %):
-	   si la letra crece (150 %), el corte sube con ella y la cápsula pasa al modo menú antes de
-	   que los links no entren, en vez de quedar recortados a 1080px físicos fijos. */
-	@media (min-width: 67.5em) {
+	/* Escritorio: los links en la cápsula y sin menú. Container query y no media query: el em de una
+	   media query es siempre el de fábrica del navegador (16px), así que si la letra se agranda con un
+	   `font-size` (extensión, hoja de usuario, 200 % en el html) el corte no sube y los links se salen
+	   de la cápsula. El rem de un container query es el del html: 67.5rem = 1080px con la letra al
+	   100 %, y crece con ella (el em no: el body es fluido, 20px a 1280). */
+	@container (min-width: 67.5rem) {
 		.capsula__nav {
 			display: block;
 		}
 
-		/* El menú también: si quedó abierto y la ventana se agranda (una tablet que se gira), se
-		   iría con él su botón de cerrar. */
-		.capsula__menu,
-		.menu {
+		.capsula__menu {
 			display: none;
 		}
 	}
