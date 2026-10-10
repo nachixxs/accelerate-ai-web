@@ -4,7 +4,8 @@
 // sin desborde, el sello de demo montado en el borde del escenario y a la vista, las burbujas sin tapar
 // las pantallas de los celulares, la columna de texto centrada en alto contra el escenario (desde 1024),
 // el selector sin pegarse a la conversación, y las cifras en el valor que dice el HTML (no en 0).
-// Con JS, además, elegir otra pantalla la trae al frente y deja la conversación fuera del foco.
+// Con JS, además, elegir otra pantalla la trae al frente y deja la conversación fuera del foco, y las marcas
+// del mes esperan a ver la barra de arqueos para viajar (revisarViaje).
 const ANCHOS = [360, 768, 1024, 1280];
 const MODOS = ['movimiento', 'reducido', 'sin JS'];
 
@@ -119,8 +120,67 @@ async function revisarCaso(navegador, url, width, modo) {
 	return chequeos;
 }
 
+// #7: las marcas del mes salen cuando la barra de arqueos está a la vista, no antes. Un lector llega hasta que
+// arranca el conteo con la barra todavía debajo del borde: las marcas no salen; al bajar hasta verla,
+// viajan y la barra termina completa. Si baja de golpe y la barra queda arriba, va al valor final sin viaje.
+async function revisarViaje(navegador, url, width) {
+	const nuevaPagina = async () => {
+		const contexto = await navegador.newContext({ viewport: { width, height: 480 }, reducedMotion: 'no-preference' });
+		const pagina = await contexto.newPage();
+		await pagina.goto(url, { waitUntil: 'load' });
+		await pagina.evaluate(() => (document.documentElement.style.scrollBehavior = 'auto'));
+		return [contexto, pagina];
+	};
+	const estado = (pagina) =>
+		pagina.evaluate(() => {
+			const mes = document.querySelector('#trabajo [data-mes]');
+			const b = mes.querySelector('[data-barra]').getBoundingClientRect();
+			const n = mes.querySelector('[data-numero]');
+			const lienzo = mes.querySelector('[data-barra]');
+			const pintada = lienzo.getContext('2d').getImageData(0, 0, lienzo.width, lienzo.height).data.some((v, i) => i % 4 === 3 && v > 0);
+			return { pintada, lienzos: mes.querySelectorAll('canvas').length, cuenta: n.textContent, final: n.dataset.final, dif: [mes.querySelector('[data-dif-n]').textContent, mes.dataset.dif], visible: b.top >= 0 && b.bottom <= innerHeight };
+		});
+	const terminado = () => {
+		const m = document.querySelector('#trabajo [data-mes]');
+		const n = m.querySelector('[data-numero]');
+		return m.querySelectorAll('canvas').length === 2 && n.textContent === n.dataset.final && m.querySelector('[data-dif-n]').textContent === m.dataset.dif;
+	};
+	const et = `${width} px, viaje de las marcas`;
+
+	const [contexto, pagina] = await nuevaPagina();
+	// La barra queda justo debajo del borde (24 px); el bloque se ve de sobra para que arranque el conteo.
+	await pagina.evaluate(() => scrollTo(0, document.querySelector('#trabajo [data-barra]').getBoundingClientRect().bottom + scrollY - innerHeight - 24));
+	await pagina.waitForFunction(() => document.querySelector('#trabajo [data-numero]').textContent !== '0', null, { timeout: 3000 }).catch(() => {});
+	const arranque = await estado(pagina);
+	await pagina.waitForTimeout(3500); // el conteo, la pausa y el fundido: el viaje saldría si no esperara
+	const espera = await estado(pagina);
+	await pagina.evaluate(() => document.querySelector('#trabajo [data-barra]').scrollIntoView({ block: 'center' }));
+	// Sale con la barra a la vista (se mira en cada cuadro) y termina completa.
+	const sale = await pagina.waitForFunction(() => { const b = document.querySelector('#trabajo [data-barra]').getBoundingClientRect(); return document.querySelectorAll('#trabajo [data-mes] canvas').length === 3 && b.top >= 0 && b.bottom <= innerHeight; }, null, { timeout: 3000, polling: 'raf' }).then(() => true, () => false);
+	const completo = await pagina.waitForFunction(terminado, null, { timeout: 6000 }).then(() => true, () => false);
+	await contexto.close();
+
+	// Scroll de golpe hasta pasar de largo el bloque: espera sin quedar a medias; al volver a verla, viaja una sola vez.
+	const [contexto2, p2] = await nuevaPagina();
+	await p2.evaluate(() => scrollTo(0, document.querySelector('#trabajo [data-mes]').getBoundingClientRect().top + scrollY - innerHeight * 0.2));
+	await p2.waitForTimeout(300); // arranca el conteo; la barra todavía no entra
+	await p2.evaluate(() => scrollTo(0, document.querySelector('#trabajo [data-mes]').getBoundingClientRect().bottom + scrollY + 100));
+	await p2.waitForTimeout(3500);
+	const quieta = await estado(p2);
+	await p2.evaluate(() => document.querySelector('#trabajo [data-barra]').scrollIntoView({ block: 'center' }));
+	const vuelve = await p2.waitForFunction(() => document.querySelectorAll('#trabajo [data-mes] canvas').length === 3, null, { timeout: 3000, polling: 'raf' }).then(() => true, () => false);
+	const cierra = await p2.waitForFunction(terminado, null, { timeout: 6000 }).then(() => true, () => false);
+	await contexto2.close();
+
+	return [
+		[!arranque.visible && arranque.lienzos === 2 && espera.lienzos === 2 && !espera.pintada && !espera.visible && espera.cuenta === espera.final, `${et}: con la barra fuera de vista no sale ninguna marca (conteo en ${espera.cuenta}, barra ${espera.pintada ? 'con marcas' : 'vacía'})`],
+		[sale && completo, `${et}: al ver la barra las marcas viajan (${sale ? 'salen' : 'no salen'}) y la barra termina completa (${completo ? 'sí' : 'no'})`],
+		[quieta.lienzos === 2 && !quieta.pintada && quieta.cuenta === quieta.final && vuelve && cierra, `${et}: si el scroll pasa de largo la barra, espera sin quedar a medias y viaja al volver a verla`],
+	];
+}
+
 export async function revisarTrabajo(navegador, url) {
 	const inicio = Date.now();
-	const casos = await Promise.all(ANCHOS.flatMap((w) => MODOS.map((modo) => revisarCaso(navegador, url, w, modo))));
+	const casos = await Promise.all([...ANCHOS.flatMap((w) => MODOS.map((modo) => revisarCaso(navegador, url, w, modo))), ...[360, 768, 1280].map((w) => revisarViaje(navegador, url, w))]);
 	return { chequeos: casos.flat(), ms: Date.now() - inicio };
 }

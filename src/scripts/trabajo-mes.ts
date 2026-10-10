@@ -1,7 +1,8 @@
 // "El mes de prueba" (ElMes.astro). Un solo bucle de cuadros mueve el número y las marcas juntos
 // (1600 ms, salida cúbica, la misma de contar.ts): marcas dibujadas = valor que se ve, y cada marca
 // nace en tinta fresca. Después, una partícula por arqueo viaja del campo a la barra, y los que no
-// cuadraron pasan a cian mientras el 32 de la leyenda cuenta. Los valores salen de los data-* del HTML.
+// cuadraron pasan a cian mientras el 32 de la leyenda cuenta; el viaje espera a que la barra esté a la vista.
+// Los valores salen de los data-* del HTML.
 // Sin movimiento reducido y sin JS el HTML ya trae el valor final.
 import { movimientoReducido, unidades } from './contar';
 
@@ -193,17 +194,23 @@ export function elMes(raiz: HTMLElement) {
 	};
 
 	// Un solo bucle: número y marcas con el mismo valor en cada cuadro; después, el viaje y el tinte.
-	let cuadro = 0;
-	let t0 = 0;
-	let corriendo = false;
+	// El viaje espera a que la barra esté a la vista (barraVista): hasta entonces el reloj queda en la pausa,
+	// y cuando las marcas frescas del campo terminan de fundirse el bucle se frena (esperando) hasta que llegue.
+	let [cuadro, t0, corriendo, barraVista, esperando] = [0, 0, false, false, false];
 	const paseo = (ahora: number) => {
+		const espera = !barraVista && ahora - t0 >= MS + PAUSA;
+		if (espera) t0 = ahora - MS - PAUSA;
 		const t = ahora - t0;
 		const valor = Math.round(movimientos * salida(tramo(t / MS)));
 		numero.textContent = unidades(valor);
 		nCampo = valor;
 		dibujarCampo(false, ahora);
 		const tb = t - MS - PAUSA;
-		if (tb >= 0) {
+		if (espera && !frescas.length) {
+			esperando = true;
+			return;
+		}
+		if (tb >= 0 && !espera) {
 			vuelo = tb;
 			if (tb < TODAS) volar(tb);
 			else quitarCapa();
@@ -218,7 +225,7 @@ export function elMes(raiz: HTMLElement) {
 
 	const final = () => {
 		cancelAnimationFrame(cuadro);
-		corriendo = false;
+		corriendo = esperando = false;
 		quitarCapa();
 		numero.textContent = unidades(movimientos);
 		[nCampo, nBarra, tinte, vuelo] = [movimientos, arqueos, Infinity, Infinity];
@@ -257,6 +264,7 @@ export function elMes(raiz: HTMLElement) {
 				// Si al cargar ya quedó arriba de la pantalla (scroll restaurado): el valor final directo.
 				if (e.boundingClientRect.bottom < 0) {
 					io.disconnect();
+					ioBarra.disconnect();
 					final();
 					return;
 				}
@@ -269,6 +277,21 @@ export function elMes(raiz: HTMLElement) {
 			},
 			{ threshold: [0, 0.1, 0.25, 0.4, 0.6] },
 		);
+		// El viaje sale cuando la barra se ve entera (con 48 px de aire contra el borde de abajo), una sola vez.
+		// Si el lector pasa de largo, queda esperando: al volver a verla, viaja.
+		const ioBarra = new IntersectionObserver(
+			(entradas) => {
+				if (entradas[entradas.length - 1].intersectionRatio < 0.95) return; // el estado más reciente
+				ioBarra.disconnect();
+				barraVista = true;
+				if (!esperando) return;
+				esperando = false;
+				t0 = performance.now() - MS - PAUSA;
+				cuadro = requestAnimationFrame(paseo);
+			},
+			{ threshold: [0, 0.95], rootMargin: '0px 0px -48px 0px' },
+		);
 		io.observe(raiz);
+		ioBarra.observe(barra.el);
 	}
 }
