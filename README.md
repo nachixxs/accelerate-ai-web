@@ -74,13 +74,13 @@ npm run dev
 | `npm run dev` | Dev server at `http://localhost:4321` (the next free port if it is taken). |
 | `npm run build` | Static site into `dist/`. |
 | `npm run preview` | Serves the build locally. |
-| `npm run capturas` | Builds, then runs Playwright at 360, 768 and 1280 px, with and without reduced motion: screenshots in `capturas/` and automated checks (no horizontal scroll, touch targets, internal links, scroll animations, axe accessibility, 200 % text, forced colors, Chromium, Firefox and WebKit, `/legal`, Open Graph tags and image). Exits with an error if any check fails. |
+| `npm run capturas` | Runs `astro check`, builds, then runs Playwright at 360, 768 and 1280 px, with and without reduced motion: screenshots in `capturas/` and automated checks (no horizontal scroll, touch targets, internal links, scroll animations, axe accessibility, 200 % text, forced colors, Chromium, Firefox and WebKit, `/legal`, Open Graph tags and image), plus site checks (404 page, sitemap, `_headers`). Exits with an error if any check fails. |
 | `npm run check` | `astro check`: types for the scripts and component props. |
 | `npm run og` | Regenerates `public/og.jpg` from the template. Run it when the headline or the logo changes. |
 | `npm run iconos` | Regenerates the favicon PNGs from `public/favicon.svg`. |
 
-`og`, `iconos` and `capturas` use Playwright's Chromium, installed once with
-`npx playwright install chromium`.
+`og` and `iconos` use Playwright's Chromium; `capturas` also runs Firefox and WebKit. Install
+them once with `npx playwright install chromium firefox webkit`.
 
 ## Project structure
 

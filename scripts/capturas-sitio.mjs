@@ -20,7 +20,9 @@ const chequear = (ok, texto) => chequeos.push([Boolean(ok), texto]);
 for (const width of [360, 1280]) {
 	const pagina = await navegador.newPage({ viewport: { width, height: 800 } });
 	const errores = [];
-	pagina.on('console', (m) => m.type() === 'error' && !m.text().includes('404') && errores.push(m.text()));
+	// El 404 del documento es el esperado; cualquier otro recurso que falte (fuente, script, ícono) es error.
+	pagina.on('response', (r) => r.status() >= 400 && !r.url().includes('esta-ruta-no-existe') && errores.push(`${r.status()} ${r.url()}`));
+	pagina.on('console', (m) => m.type() === 'error' && !m.text().startsWith('Failed to load resource') && errores.push(m.text()));
 	pagina.on('pageerror', (e) => errores.push(String(e)));
 	const respuesta = await pagina.goto(`${url}esta-ruta-no-existe/`, { waitUntil: 'load' });
 	await terminarCarga(pagina);
@@ -35,6 +37,7 @@ for (const width of [360, 1280]) {
 			links: aPortada.length,
 			desborde: document.documentElement.scrollWidth - innerWidth,
 			noindex: document.querySelector('meta[name="robots"]')?.content.includes('noindex') ?? false,
+			canonical: !!document.querySelector('link[rel="canonical"]'),
 		};
 	});
 	await pagina.screenshot({ path: `capturas/404-${width}.png`, fullPage: true });
@@ -42,7 +45,7 @@ for (const width of [360, 1280]) {
 	chequear(m.propia && m.h1 === 1, `404 ${width}: página propia con una sola h1 ("${m.titulo}")`);
 	chequear(m.links > 0 && m.altoLink >= 44, `404 ${width}: link a la portada de 44 px o más (${m.links} link(s), ${Math.round(m.altoLink)} px)`);
 	chequear(m.desborde <= 0, `404 ${width}: sin desborde horizontal (${m.desborde} px)`);
-	chequear(m.noindex, `404 ${width}: meta robots noindex`);
+	chequear(m.noindex && !m.canonical, `404 ${width}: meta robots noindex y sin canonical`);
 	chequear(!errores.length, `404 ${width}: sin errores de consola${errores.length ? ` (${errores.join(' | ')})` : ''}`);
 	await pagina.close();
 }
