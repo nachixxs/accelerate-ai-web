@@ -4,7 +4,7 @@
 //   trata el sitio como SPA y sirve la portada con 200 en cualquier ruta).
 // - La 404 a 360 y 1280: una sola h1, un link a la portada de 44 px o más, sin desborde, sin errores
 //   de consola, con noindex y fuera del sitemap.
-// - En la 404, el CTA del encabezado en contorno; el menú abierto a 768 se cierra al pasar a 1280.
+// - En la 404 y con un secundario a la vista, el CTA del encabezado en contorno; el menú abierto a 768 se cierra al pasar a 1280.
 // - public/_headers llega a dist con caché inmutable para /_astro/* y las cabeceras de seguridad.
 import { readFile } from 'node:fs/promises';
 import { preview } from 'astro';
@@ -80,6 +80,21 @@ for (const width of [360, 1280]) {
 	const llenoSinJs = await pagina2.evaluate(() => document.querySelector('.capsula__cta').classList.contains('capsula__cta--lleno'));
 	chequear(!llenoSinJs, '404 sin JS: el CTA del encabezado arranca en contorno');
 	await sinJs.close();
+}
+
+// Un solo azul lleno a la vista (Nacho, 2026-10-10): con un secundario en pantalla, el CTA del encabezado va en contorno.
+for (const width of [360, 1280]) {
+	const pagina = await navegador.newPage({ viewport: { width, height: 800 } });
+	await pagina.goto(url, { waitUntil: 'load' });
+	await terminarCarga(pagina);
+	const llenos = [];
+	for (let i = 0; i < (await pagina.locator('main .boton--secundario').count()); i++) {
+		await pagina.evaluate((i) => document.querySelectorAll('main .boton--secundario')[i].scrollIntoView({ block: 'center', behavior: 'instant' }), i);
+		await pagina.waitForTimeout(400);
+		if (await pagina.evaluate(() => document.querySelector('.capsula__cta').classList.contains('capsula__cta--lleno'))) llenos.push(i);
+	}
+	chequear(!llenos.length, `secundarios ${width}: el CTA del encabezado en contorno con cada secundario a la vista${llenos.length ? ` (lleno con el secundario ${llenos.join(', ')})` : ''}`);
+	await pagina.close();
 }
 
 // Menú abierto a 768 y la ventana se ensancha a 1280 (tablet que gira): el menú se cierra y libera el scroll.
