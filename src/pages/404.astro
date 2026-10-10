@@ -10,7 +10,7 @@ import BotonWhatsApp from '../components/BotonWhatsApp.astro';
 ---
 
 <Base title="Página no encontrada | Accelerate.ai" description="Esta página no existe." noindex>
-	<Encabezado raiz="/" />
+	<Encabezado raiz="/" ctaPropio />
 	<main id="contenido">
 		<div id="inicio" class="franja con-glow">
 			<Glow tono="cian" fondo="claro" esquina="arriba-izq" />
@@ -29,7 +29,7 @@ import BotonWhatsApp from '../components/BotonWhatsApp.astro';
 			</div>
 		</div>
 	</main>
-	<Pie raiz="/" />
+	<Pie raiz="/" quieto />
 </Base>
 
 <style>
@@ -49,10 +49,6 @@ import BotonWhatsApp from '../components/BotonWhatsApp.astro';
 		gap: var(--space-3);
 	}
 
-	.t-cuerpo {
-		color: var(--text-body-dark);
-	}
-
 	.acciones {
 		display: flex;
 		flex-wrap: wrap;
@@ -61,8 +57,8 @@ import BotonWhatsApp from '../components/BotonWhatsApp.astro';
 		margin-top: var(--space-2);
 	}
 
-	/* El mismo relleno que el botón secundario de WhatsApp, sin el brillo ni el despegue: es un link
-	   interno y no suma animación. */
+	/* Copia el relleno del botón secundario de BotonWhatsApp, sin el brillo ni el despegue: es un
+	   link interno y no suma animación. */
 	.volver {
 		display: inline-flex;
 		align-items: center;
@@ -76,7 +72,6 @@ import BotonWhatsApp from '../components/BotonWhatsApp.astro';
 		font-weight: var(--fw-semibold);
 		line-height: 1.2;
 		box-shadow: var(--shadow-elevada);
-		-webkit-tap-highlight-color: transparent;
 		transition: background-color 0.2s;
 	}
 
@@ -90,10 +85,5 @@ import BotonWhatsApp from '../components/BotonWhatsApp.astro';
 			background: var(--blue-800);
 			color: var(--white);
 		}
-	}
-
-	.volver:focus-visible {
-		outline: 3px solid var(--brand-primary-deep);
-		outline-offset: 3px;
 	}
 </style>
