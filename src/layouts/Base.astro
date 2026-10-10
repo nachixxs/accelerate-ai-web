@@ -5,9 +5,10 @@ import '../styles/global.css';
 interface Props {
 	title: string;
 	description: string;
+	noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 
 // Open Graph y el canonical piden URL completas: salen del `site` de astro.config.mjs (provisorio por ahora).
 // La imagen se genera con npm run og.
@@ -29,7 +30,8 @@ const imagen = new URL('/og.jpg', Astro.site);
 		<Font cssVariable="--font-archivo" preload />
 		<title>{title}</title>
 		<meta name="description" content={description} />
-		<link rel="canonical" href={url} />
+		{/* noindex (la 404): ni indexar ni canonical a sí misma. */}
+		{noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={url} />}
 		<link rel="sitemap" href="/sitemap.xml" />
 
 		<!-- Vista previa al compartir el link (WhatsApp, redes). -->

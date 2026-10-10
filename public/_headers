@@ -1,0 +1,18 @@
+# Cabeceras de Cloudflare Pages (se leen del build, no son parte del sitio).
+
+# Archivos de Astro con hash en el nombre (las fuentes): nunca cambian de contenido, se cachean un año.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Todas las páginas.
+# - nosniff: el navegador respeta el tipo de archivo declarado.
+# - Referrer-Policy: a otros sitios (WhatsApp) solo viaja el origen, sin la ruta.
+# - Permissions-Policy: la web no usa ninguna de estas funciones, quedan apagadas.
+# - frame-ancestors y X-Frame-Options: nadie puede mostrar la web dentro de un iframe.
+#   Es la única directiva de CSP: el CSS y los scripts van dentro del HTML, una CSP estricta los rompería.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
