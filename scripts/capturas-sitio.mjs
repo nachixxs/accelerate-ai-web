@@ -8,6 +8,7 @@
 import { readFile } from 'node:fs/promises';
 import { preview } from 'astro';
 import { chromium } from 'playwright';
+import { terminarCarga } from './capturas-utils.mjs';
 
 const servidor = await preview({ root: '.', logLevel: 'error' });
 const url = `http://localhost:${servidor.port}/`;
@@ -22,6 +23,7 @@ for (const width of [360, 1280]) {
 	pagina.on('console', (m) => m.type() === 'error' && !m.text().includes('404') && errores.push(m.text()));
 	pagina.on('pageerror', (e) => errores.push(String(e)));
 	const respuesta = await pagina.goto(`${url}esta-ruta-no-existe/`, { waitUntil: 'load' });
+	await terminarCarga(pagina);
 	const m = await pagina.evaluate(() => {
 		const aPortada = [...document.querySelectorAll('main a')].filter((a) => new URL(a.href).pathname === '/');
 		return {
