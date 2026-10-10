@@ -10,7 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "capturas": "astro build && node scripts/capturas.mjs",
+    "capturas": "astro check && astro build && node scripts/capturas.mjs && node scripts/capturas-sitio.mjs",
     "og": "node scripts/og.mjs",
     "iconos": "node scripts/iconos.mjs",
     "check": "astro check"
