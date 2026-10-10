@@ -30,8 +30,10 @@ const tipos = [
 ---
 
 <section id="sistemas" class="seccion seccion--oscura con-glow sistemas" aria-labelledby="sistemas-titulo">
-	<Glow tono="azul" esquina="arriba-der" />
-	<Glow tono="cian" esquina="arriba-der" />
+	<div class="sistemas__luz">
+		<Glow tono="azul" esquina="arriba-der" />
+		<Glow tono="cian" esquina="arriba-der" />
+	</div>
 
 	<div class="contenedor">
 		<div class="encabezado-seccion revelar">
@@ -114,6 +116,24 @@ const tipos = [
 </section>
 
 <style>
+	/* Los glows nacen pegados al borde de arriba y la sección los recorta ahí: sin esto el brillo
+	   llega entero hasta la línea y se corta recto contra la sección clara. La máscara los
+	   desvanece desde el borde (transparente) hasta --fundido (entero): 120 px en el celular, donde el
+	   glow es más chico, y 200 px desde 768. */
+	.sistemas__luz {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		--fundido: 120px;
+		-webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--fundido));
+		mask-image: linear-gradient(to bottom, transparent, #000 var(--fundido));
+	}
+
+	@media (min-width: 768px) {
+		.sistemas__luz { --fundido: 200px; }
+	}
+
 	.sistemas .encabezado-seccion .t-cuerpo {
 		color: var(--text-body-light);
 	}
