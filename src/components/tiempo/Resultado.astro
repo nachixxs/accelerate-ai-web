@@ -160,8 +160,8 @@ const columnas = String(total).padStart(3, ' ').split('');
 		.tiempo__cifra { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); }
 	}
 
-	/* Escritorio: el botón entra en la card, en contorno sobre oscuro. Las tres piezas comparten
-	   columna: el fondo abarca las filas de la cifra y del botón, y la card reserva el alto del botón
+	/* Escritorio: el botón entra en la card (variante contorno-card de BotonWhatsApp). Las tres piezas
+	   comparten columna: el fondo abarca las filas de la cifra y del botón, y la card reserva el alto del botón
 	   porque el botón ocupa su fila (con letra grande baja de línea y la card crece con él). */
 	@media (min-width: 1024px) {
 		.tiempo__unidad { margin-top: var(--space-1); }
@@ -171,17 +171,5 @@ const columnas = String(total).padStart(3, ' ').split('');
 		.tiempo__contenido { grid-area: 1 / 1; padding-bottom: 0; }
 		.tiempo__accion { grid-area: 2 / 1; justify-self: start; padding: var(--space-3) var(--space-5) var(--space-5); }
 		.tiempo__ejemplo { grid-area: 3 / 1; margin-top: var(--space-3); }
-
-		/* Contorno cian claro sobre la card oscura (el ajuste de BotonWhatsApp para oscuro cuelga de
-		   .seccion--oscura, y esta sección es clara). Los colores cambian sin transición: fundir el
-		   texto y el fondo a la vez los deja casi del mismo tono a mitad de camino (en el presionado,
-		   cian sobre cian). Solo el hover del mouse mueve el botón (transform, como los demás). */
-		.tiempo__accion :global(.boton--contorno) { border-color: var(--cyan-300); color: var(--cyan-300); transition: transform 0.25s var(--curva-salida); }
-		.tiempo__accion :global(.boton:focus-visible) { outline-color: var(--brand-accent); }
-		/* Al presionar se invierte: cian lleno con texto navy (12:1). Más específico que el hover. */
-		.tiempo__accion :global(.boton--contorno.boton:active) { border-color: var(--cyan-300); background: var(--cyan-300); color: var(--navy-950); transition: transform 0.25s var(--curva-salida); }
-	}
-	@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
-		.tiempo__accion :global(.boton--contorno:hover) { border-color: var(--cyan-200); background: var(--navy-800); color: var(--cyan-200); }
 	}
 </style>
