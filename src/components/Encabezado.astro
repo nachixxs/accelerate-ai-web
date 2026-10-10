@@ -5,7 +5,8 @@
 // El botón de WhatsApp está siempre (pedido del usuario, 2026-09-25): de contorno mientras se ve
 // un botón principal (el de la portada o el del cierre) y lleno de #1f57c2 (con texto blanco,
 // AA) cuando no se ve ninguno, así nunca hay dos azules llenos a la vista. Lo decide el script
-// de abajo; sin JavaScript queda de contorno.
+// de abajo. Sin JavaScript queda de contorno, salvo en las páginas sin botón principal propio
+// (/legal: `raiz` sin `ctaPropio`), donde arranca lleno desde el HTML.
 // En el celular y la tablet, un "Menú" abre un popover con las 5 secciones numeradas y el botón.
 import Logo from './Logo.astro';
 import Icono from './Icono.astro';
@@ -13,8 +14,9 @@ import { WHATSAPP_URL } from '../config';
 
 // `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada
 // (/#tiempo) y no se marca ninguna como activa. Ahí tampoco hay un botón principal de la página: el
-// de la cápsula queda lleno desde el arranque, sin esperar al script.
-const { raiz = '' } = Astro.props;
+// de la cápsula queda lleno desde el arranque, sin esperar al script. `ctaPropio` es para la página
+// que trae su propio botón principal con data-cta-principal (la 404): ahí arranca de contorno.
+const { raiz = '', ctaPropio = false } = Astro.props;
 
 // --s-* son los timelines de las secciones (global.css): marcan cuál está en pantalla.
 const links = [
@@ -53,7 +55,7 @@ const links = [
 			</nav>
 
 			<div class="capsula__acciones">
-				<a class:list={['capsula__cta', { 'capsula__cta--lleno': raiz }]} href={WHATSAPP_URL} target="_blank" rel="noopener">
+				<a class:list={['capsula__cta', { 'capsula__cta--lleno': raiz && !ctaPropio }]} href={WHATSAPP_URL} target="_blank" rel="noopener">
 					<span class="capsula__cta-cara">
 						<Icono nombre="si:whatsapp" size={20} />
 						<span class="capsula__cta-texto solo-lector">Escribinos por WhatsApp</span>
@@ -433,6 +435,7 @@ const links = [
 		gap: 8px;
 		min-height: 56px;
 		margin: 8px 8px 0;
+		padding-inline: 24px;
 		border-radius: var(--radius-pill);
 		background: var(--brand-primary-deep);
 		color: var(--white);
