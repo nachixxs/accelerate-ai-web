@@ -274,7 +274,7 @@ const [resultados, axe, letra200, altoContraste, otrosNavegadores, legal, trabaj
 ]);
 ANCHOS.forEach(({ nombre }, i) => imprimir(nombre, resultados[i]));
 imprimir('axe (accesibilidad, 360 y 1280, estado final)', axe.chequeos);
-imprimir('letra al 200 % (360 y 320, recorriendo la página)', letra200.chequeos);
+imprimir('letra al 200 % (360 y 320; 1280 y 1100 con font-size en el html; recorriendo la página)', letra200.chequeos);
 imprimir('alto contraste de windows (360)', altoContraste.chequeos);
 imprimir('webkit y firefox (360 y 1280, con y sin movimiento)', otrosNavegadores.chequeos);
 imprimir('/legal (privacidad y términos, 360 y 1280, con y sin movimiento)', legal.chequeos);

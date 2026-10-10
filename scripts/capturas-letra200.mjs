@@ -3,7 +3,9 @@
 // no reproduce. Recorre la página entera con scroll, de a una pantalla, y en cada parada confirma
 // que document.documentElement.scrollWidth no supera el clientWidth (si lo supera, algo se corta
 // sin avisar: el proyecto usa overflow-x: clip en vez de scroll).
-const ANCHOS = [360, 320];
+// Además, a 1280 y 1100, la letra agrandada con un font-size en el html (extensiones, hojas de usuario):
+// las media queries en em no la ven, y así se desbordaba la cápsula del encabezado (138 px).
+const CASOS = [[360, 'cdp'], [320, 'cdp'], [1280, 'html'], [1100, 'html']];
 const ALTO_VENTANA = 800;
 
 // El texto que se sale, no la caja del elemento (que puede medir 320px y aun así desbordar por
@@ -48,18 +50,18 @@ async function elementosQueSeSalen(pagina) {
 	});
 }
 
-async function revisarUnAncho(navegador, url, width, prefijo) {
+async function revisarUnAncho(navegador, url, width, tecnica, prefijo) {
 	const contexto = await navegador.newContext({ viewport: { width, height: ALTO_VENTANA }, reducedMotion: 'reduce' });
 	const pagina = await contexto.newPage();
 	const cdp = await contexto.newCDPSession(pagina);
 	await cdp.send('Page.enable');
 	// standard y fixed al 200 % de los valores por default del navegador (16 px y 13 px).
-	await cdp.send('Page.setFontSizes', { fontSizes: { standard: 32, fixed: 26 } });
+	if (tecnica === 'cdp') await cdp.send('Page.setFontSizes', { fontSizes: { standard: 32, fixed: 26 } });
 	await pagina.goto(url, { waitUntil: 'load' });
 	await pagina.evaluate(async () => {
 		await document.fonts.ready;
 	});
-	await pagina.addStyleTag({ content: '*, *::before, *::after { animation: none !important; }' });
+	await pagina.addStyleTag({ content: `*, *::before, *::after { animation: none !important; }${tecnica === 'html' ? ' html { font-size: 200% !important; }' : ''}` });
 	const alto = await pagina.evaluate(() => document.documentElement.scrollHeight);
 
 	let clientWidth = width;
@@ -87,7 +89,7 @@ async function revisarUnAncho(navegador, url, width, prefijo) {
 	if (fallas) {
 		await pagina.evaluate(() => scrollTo(0, 0));
 		salidos = await elementosQueSeSalen(pagina);
-		await pagina.screenshot({ path: `capturas/${prefijo}letra-200-${width}px-desborde.png`, fullPage: true });
+		await pagina.screenshot({ path: `capturas/${prefijo}letra-200-${tecnica}-${width}px-desborde.png`, fullPage: true });
 	}
 	await contexto.close();
 	return { clientWidth, anchoMaximo, fallas, primeraFallaY, ultimaFallaY, salidos };
@@ -95,16 +97,16 @@ async function revisarUnAncho(navegador, url, width, prefijo) {
 
 export async function revisarLetra200(navegador, url, prefijo = '') {
 	const inicio = Date.now();
-	const porAncho = await Promise.all(ANCHOS.map(async (width) => ({ width, r: await revisarUnAncho(navegador, url, width, prefijo) })));
+	const porAncho = await Promise.all(CASOS.map(async ([width, tecnica]) => ({ width: `${width}px${tecnica === 'html' ? ' (font-size en el html)' : ''}`, r: await revisarUnAncho(navegador, url, width, tecnica, prefijo) })));
 	const chequeos = [];
 	for (const { width, r } of porAncho) {
 		if (!r.fallas) {
-			chequeos.push([true, `letra al 200 % en ${width}px: sin scroll horizontal en todo el recorrido`]);
+			chequeos.push([true, `letra al 200 % en ${width}: sin scroll horizontal en todo el recorrido`]);
 			continue;
 		}
 		chequeos.push([
 			false,
-			`letra al 200 % en ${width}px: scrollWidth llega a ${r.anchoMaximo}px (viewport ${r.clientWidth}px) en ${r.fallas} parada(s) de scroll, de y=${r.primeraFallaY}px a y=${r.ultimaFallaY}px. Elementos que más se salen: ${r.salidos.join(', ') || 'sin elemento identificado'}`,
+			`letra al 200 % en ${width}: scrollWidth llega a ${r.anchoMaximo}px (viewport ${r.clientWidth}px) en ${r.fallas} parada(s) de scroll, de y=${r.primeraFallaY}px a y=${r.ultimaFallaY}px. Elementos que más se salen: ${r.salidos.join(', ') || 'sin elemento identificado'}`,
 		]);
 	}
 	return { chequeos, ms: Date.now() - inicio };
