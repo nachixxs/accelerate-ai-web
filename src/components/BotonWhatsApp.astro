@@ -4,6 +4,9 @@
 //   portada y en el cierre, con el texto de la marca.
 // - secundario: fill #1f57c2 sobre claro, o cian sobre oscuro (el acento de cada fondo).
 // - contorno: borde y texto, para no competir con una card que ya pesa.
+// - contorno-card: el contorno de un botón que desde 1024 queda dentro de una card oscura en una
+//   sección clara (la card de "Tu tiempo"): cian claro encima de ella; debajo de 1024 queda el
+//   contorno de siempre, porque ahí el botón está sobre el fondo claro.
 // - link: texto con flecha, para cerrar una sección sin sumar otro botón.
 // Cada uno lleva su propio texto y su propio mensaje de WhatsApp según la sección, como
 // minificando. Con el mouse encima se despegan, los cruza un brillo y el ícono se mueve
@@ -14,14 +17,14 @@ import { whatsappUrl } from '../config';
 interface Props {
 	texto?: string;
 	mensaje?: string;
-	variante?: 'principal' | 'secundario' | 'contorno' | 'link';
+	variante?: 'principal' | 'secundario' | 'contorno' | 'contorno-card' | 'link';
 	class?: string;
 }
 
 const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', class: clase } = Astro.props;
 ---
 
-<a class:list={['boton', `boton--${variante}`, clase]} href={whatsappUrl(mensaje)} target="_blank" rel="noopener">
+<a class:list={['boton', `boton--${variante}`, variante === 'contorno-card' && 'boton--contorno', clase]} href={whatsappUrl(mensaje)} target="_blank" rel="noopener">
 	{(variante === 'principal' || variante === 'secundario') && <span class="boton__brillo" aria-hidden="true"></span>}
 	<span class="boton__texto">{texto}</span>
 	<span class="solo-lector"> (abre WhatsApp)</span>
@@ -270,6 +273,40 @@ const { texto = 'Escribinos por WhatsApp', mensaje, variante = 'principal', clas
 
 		.boton:hover .boton__brillo::before {
 			animation: brillo-cruza 0.6s var(--curva-cruce);
+		}
+	}
+
+	/* contorno-card, desde 1024: contorno cian claro sobre la card oscura. Los colores cambian sin
+	   transición: fundir el texto y el fondo a la vez los deja casi del mismo tono a mitad de camino
+	   (en el presionado, cian sobre cian). Solo el hover del mouse mueve el botón (transform, como
+	   los demás). Al presionar se invierte: cian lleno con texto navy (12:1), después del hover para
+	   ganarle con la misma especificidad. */
+	@media (min-width: 1024px) {
+		.boton--contorno-card.boton--contorno {
+			border-color: var(--cyan-300);
+			color: var(--cyan-300);
+			transition: transform 0.25s var(--curva-salida);
+		}
+
+		.boton--contorno-card.boton:focus-visible {
+			outline-color: var(--brand-accent);
+		}
+	}
+
+	@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+		.boton--contorno-card.boton--contorno:hover {
+			border-color: var(--cyan-200);
+			background: var(--navy-800);
+			color: var(--cyan-200);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.boton--contorno-card.boton--contorno.boton:active {
+			border-color: var(--cyan-300);
+			background: var(--cyan-300);
+			color: var(--navy-950);
+			transition: transform 0.25s var(--curva-salida);
 		}
 	}
 
