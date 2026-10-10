@@ -210,7 +210,7 @@ const links = [
 
 	/* Feedback al apretar, igual que el hover pero más rápido: al soltar vuelve con la transición
 	   de reposo de cada elemento (0.2s), más lenta que la de presionar (0.12s). */
-	.pie__contacto:active .pie__contacto-icono {
+	:is(.pie__contacto, .pie__red):active .pie__contacto-icono {
 		border-color: var(--cyan-300);
 		transition: border-color 0.12s var(--curva-salida);
 	}
@@ -232,11 +232,6 @@ const links = [
 		place-items: center;
 		width: 44px;
 		height: 44px;
-	}
-
-	.pie__red:active .pie__contacto-icono {
-		border-color: var(--cyan-300);
-		transition: border-color 0.12s var(--curva-salida);
 	}
 
 	.pie__contacto-texto {
@@ -358,7 +353,7 @@ const links = [
 	}
 
 	/* El anillo (cian) sale de .seccion--oscura; acá solo se redondea. */
-	.pie :is(.pie__link, .pie__contacto, .pie__red):focus-visible {
+	.pie :is(.pie__link, .pie__contacto):focus-visible {
 		border-radius: 4px;
 	}
 
