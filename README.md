@@ -184,7 +184,7 @@ it, Cloudflare Pages serves the home page with a 200 on any route.
   They were found in a design review on 2026-10-12.
 - **High contrast is emulated** with Playwright's `forcedColors`, not tested on Windows.
 - **Some components are long**: `MockPanel` is 1,230 lines, `ComoTrabajamos` 962, `MockOrdenes`
-  728. Each mixes markup, styles and its script. I would split them first.
+  728. Each mixes markup, styles and its script. Next step: split them.
 - **Spanish only**, with `lang="es-AR"`.
 
 ## License
