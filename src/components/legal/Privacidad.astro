@@ -1,9 +1,11 @@
 ---
-// Primera parte de /legal. El marcador entre corchetes ([MAIL], va a ser ignacionogpa@accelerate.com.ar
-// cuando esté el dominio) se reemplaza con el dato real antes de publicar: la página no sale con él
-// (SPECS §4, scripts/capturas-legal.mjs avisa si quedan). El texto de la AAIP va literal (Res. AAIP 14/2018, art. 3).
+// Primera parte de /legal. El mail sale de src/dominio.mjs (ignacionogpa@ + dominio). Mientras el
+// dominio sea provisorio queda el marcador [MAIL], y la página no se publica con él (SPECS §4,
+// scripts/capturas-legal.mjs avisa si quedan). El texto de la AAIP va literal (Res. AAIP 14/2018, art. 3).
 import { whatsappUrl } from '../../config';
+import { MAIL } from '../../dominio.mjs';
 
+const mail = MAIL ?? '[MAIL]';
 const consulta = whatsappUrl('Hola, quiero consultar los datos míos que tienen.');
 ---
 
@@ -44,7 +46,7 @@ const consulta = whatsappUrl('Hola, quiero consultar los datos míos que tienen.
 	<h3 id="whatsapp">WhatsApp y Meta</h3>
 	<p>
 		WhatsApp es un servicio de Meta Platforms, no nuestro. Cuando nos escribís, Meta procesa tus mensajes en
-		servidores que están fuera de la Argentina. Si preferís no usarlo, podés escribirnos por mail a <a href="mailto:[MAIL]">[MAIL]</a>.
+		servidores que están fuera de la Argentina. Si preferís no usarlo, podés escribirnos por mail a <a href={`mailto:${mail}`}>{mail}</a>.
 	</p>
 
 	<h3 id="hosting">Hosting y datos técnicos</h3>
@@ -75,7 +77,7 @@ const consulta = whatsappUrl('Hola, quiero consultar los datos míos que tienen.
 	</ul>
 	<p>Corregir, actualizar o borrar no tiene costo, y lo hacemos dentro de los 5&nbsp;días hábiles.</p>
 	<p>
-		Podés pedirlo <a href={consulta} target="_blank" rel="noopener">escribiéndonos por WhatsApp<span class="solo-lector"> (abre WhatsApp)</span></a> o por mail a <a href="mailto:[MAIL]">[MAIL]</a>. No hace falta ningún formato especial: alcanza con que nos cuentes qué necesitás.
+		Podés pedirlo <a href={consulta} target="_blank" rel="noopener">escribiéndonos por WhatsApp<span class="solo-lector"> (abre WhatsApp)</span></a> o por mail a <a href={`mailto:${mail}`}>{mail}</a>. No hace falta ningún formato especial: alcanza con que nos cuentes qué necesitás.
 	</p>
 
 	<h3 id="aaip">Reclamos ante la AAIP</h3>
