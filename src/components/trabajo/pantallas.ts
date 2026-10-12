@@ -13,12 +13,12 @@ export const pantallas = [
 	{
 		id: 'arqueo', pose: 'izq', img: arqueo, icono: 'scales-duotone', corto: 'Arqueo', momento: 'Al cerrar la caja', nombre: 'Arqueo',
 		texto: 'Cargás lo que contaste y te dice al instante si cierra o de cuánto es la diferencia.',
-		alt: 'Pantalla de arqueo de la app: dos campos para el efectivo y las boletas contados, y el resultado, que cierra o muestra la diferencia.',
+		alt: 'Pantalla de arqueo de la app: el efectivo y las boletas contados, y el resultado «Cuadra», con lo esperado y la diferencia de cada uno.',
 	},
 	{
 		id: 'asistente', pose: 'frente', img: asistente, icono: 'chat-circle-text-duotone', corto: 'Asistente', momento: 'Si no cuadra', nombre: 'Asistente',
 		texto: 'Le preguntás «¿por qué no cuadra?» y te dice qué revisar. Solo consulta: no carga ni cambia nada.',
-		alt: 'Chat del asistente de la app: una pregunta sobre un arqueo que no cuadra y la respuesta que señala qué movimiento revisar.',
+		alt: 'Pantalla del asistente de la app: la pregunta «¿Quién debe hace más de 30 días?» y la respuesta, que nombra la deuda más vieja y su saldo.',
 	},
 ];
 
