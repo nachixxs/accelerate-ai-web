@@ -150,7 +150,7 @@ Playwright, and exits with an error if any check fails. Screenshots go to `captu
   404 with JavaScript off.
 - WebKit and Firefox, compared against Chromium.
 
-Last full run recorded on 2026-10-12: 247 checks passed and 0 failed. `npm run check` reports
+Last full run recorded on 2026-10-12: 256 checks passed and 0 failed. `npm run check` reports
 0 errors, 0 warnings and 0 hints over 57 files, run again for this README. The suite is split
 by script in [the architecture notes](docs/ARCHITECTURE.md#check-suite).
 
@@ -179,9 +179,6 @@ it, Cloudflare Pages serves the home page with a 200 on any route.
   data.
   <!-- TODO: screenshots after tanda 3: add real captures of #trabajo here once they replace the placeholders (docs/img/, under 1 MB each) -->
 - **No CI.** There is no `.github/` folder, so the suite only runs on a developer's machine.
-- **Known layout bugs at 200 % text** that the suite does not catch: in `MockStock` at 1280 px,
-  product names overlap the bar, and in `MockCaja` the "Cierra" seal icon shrinks to a few pixels.
-  They were found in a design review on 2026-10-12.
 - **High contrast is emulated** with Playwright's `forcedColors`, not tested on Windows.
 - **Some components are long**: `MockPanel` is 1,230 lines, `ComoTrabajamos` 962, `MockOrdenes`
   728. Each mixes markup, styles and its script. Next step: split them.

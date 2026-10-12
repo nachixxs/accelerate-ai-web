@@ -91,9 +91,9 @@ flowchart LR
 | `capturas-navegadores.mjs` | WebKit and Firefox at 360 and 1280 px, with and without reduced motion: no console errors, no horizontal scroll, opacity compared with Chromium. |
 | `capturas-legal.mjs` | `/legal` at 360 and 1280 px, with and without reduced motion. |
 | `capturas-trabajo.mjs` | `#trabajo` at 360, 768, 1024 and 1280 px, with motion, with reduced motion and with JavaScript off. |
-| `capturas-sitio.mjs` | The 404 page (status 404, one `h1`, no console errors), the header CTA state, the mobile menu anchors (768 px at 200 % and 100 %, 360 px), `404.html` in the build, the sitemap, and the headers in `public/_headers`. |
+| `capturas-sitio.mjs` | The 404 page (status 404, one `h1`, no console errors), the header CTA state, the mobile menu anchors (768 px at 200 % and 100 %, 360 px), the stock and cash-close mockups at 200 % text (no overlaps, seal icon size, amounts on one line), `404.html` in the build, the sitemap, and the headers in `public/_headers`. |
 
-Last full run recorded on 2026-10-12: 247 checks passed, 0 failed (218 from `capturas.mjs` and
-the modules it calls, 29 from `capturas-sitio.mjs`). The checks use class names and ids as
+Last full run recorded on 2026-10-12: 256 checks passed, 0 failed (218 from `capturas.mjs` and
+the modules it calls, 38 from `capturas-sitio.mjs`). The checks use class names and ids as
 selectors (`.capsula__cta`, `#tiempo`), so renaming one in a component means updating the
 script.
