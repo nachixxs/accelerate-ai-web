@@ -1,4 +1,4 @@
-// Chequeos del sitio que no son de una página: la 404 y las cabeceras de Cloudflare Pages.
+// Chequeos del sitio que no son de una página: la 404, las cabeceras de Cloudflare Pages y el menú de la portada.
 // Va aparte de capturas.mjs (que está en su techo de líneas) y corre después, con su propio preview.
 // - Una ruta que no existe responde 404 con la página propia (sin dist/404.html, Cloudflare Pages
 //   trata el sitio como SPA y sirve la portada con 200 en cualquier ruta).
@@ -112,8 +112,8 @@ for (const width of [360, 1280]) {
 	await pagina.close();
 }
 
-// Cada link del menú del celular lleva su sección bajo el encabezado, con movimiento (scroll suave) y con la
-// letra al 200 % (CDP, como capturas-letra200.mjs). El destino del scroll suave se calcula al tocar, con la
+// Los links del menú del celular que pasan por el ticket y el mes llevan su sección bajo el encabezado, con
+// movimiento (scroll suave) y con la letra al 200 % (CDP, como capturas-letra200.mjs). El destino del scroll suave se calcula al tocar, con la
 // página todavía a medio acomodar por el cierre del menú: si algo cambia de alto después (el campo de marcas
 // del mes, el total del ticket), la sección queda pasada o corta (a 768 con letra al 200 %: 311 px pasada).
 // El título tiene que quedar a scroll-padding-top (96 px) del borde, con 16 px de margen.
@@ -126,7 +126,7 @@ for (const [width, letra] of [[768, 200], [768, 100], [360, 100]]) {
 	await pagina.goto(url, { waitUntil: 'load' });
 	await terminarCarga(pagina);
 	const tops = {};
-	for (const id of ['tiempo', 'sistemas', 'preguntas']) {
+	for (const id of ['tiempo', 'sistemas', 'proceso', 'preguntas']) {
 		await pagina.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
 		await pagina.click('.encabezado .capsula__menu');
 		await pagina.click(`#menu a[href$="#${id}"]`);

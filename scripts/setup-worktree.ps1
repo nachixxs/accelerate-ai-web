@@ -17,3 +17,4 @@ Get-Content .worktreeinclude | Where-Object { $_ -and -not $_.StartsWith('#') } 
 }
 
 npm ci
+exit $LASTEXITCODE

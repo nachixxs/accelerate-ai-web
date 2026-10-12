@@ -189,11 +189,11 @@ const ok = (((mes.arqueos - mes.conDiferencia) / mes.arqueos) * 100).toFixed(3);
 		}
 	}
 
-	/* En em y no en px: con la letra del navegador al 200 % el corte pasa a 1536 px y el mes sigue apilado. A 768 las
+	/* También en em: con la letra del navegador al 200 % el corte pasa a 1536 px y el mes sigue apilado. A 768 las
 	   dos columnas no entraban: el campo quedaba de 54 px y un píxel de diferencia le movía el alto 270 px mientras
 	   el menú llevaba a "Tu tiempo", que quedaba pasada. (Una container query lo resolvía igual, pero en WebKit
 	   dejaba sin terminar los fundidos de las secciones de abajo.) */
-	@media (min-width: 48em) {
+	@media (min-width: 768px) and (min-width: 48em) {
 		.mes {
 			grid-template-columns: auto minmax(0, 1fr);
 			grid-template-areas: 'titulo titulo' 'num campo' 'datos arqueos';
