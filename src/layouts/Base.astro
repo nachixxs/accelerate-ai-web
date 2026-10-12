@@ -10,7 +10,7 @@ interface Props {
 
 const { title, description, noindex = false } = Astro.props;
 
-// Open Graph y el canonical piden URL completas: salen del `site` de astro.config.mjs (provisorio por ahora).
+// Open Graph y el canonical piden URL completas: salen del `site` de astro.config.mjs, que sale de src/dominio.mjs.
 // La imagen se genera con npm run og.
 const url = new URL(Astro.url.pathname, Astro.site);
 const imagen = new URL('/og.jpg', Astro.site);

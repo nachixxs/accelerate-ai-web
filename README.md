@@ -5,10 +5,11 @@ One-page Astro site for Accelerate.ai, an agency that builds custom software for
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE) [![Node 22.12 or later](https://img.shields.io/badge/node-%E2%89%A522.12-339933)](package.json)
 
 **Status:** in development, not published. There is no live URL yet, and the domain in
-`astro.config.mjs` is a placeholder.
+`src/dominio.mjs` is a placeholder.
 
-<!-- TODO: screenshots after tanda 3: the landing's first screen at 360 px (phone) and at 1280 px, from `npm run capturas`, in docs/img/. Until then, the Open Graph card below. -->
-![Preview card: the Accelerate.ai logo and the headline "Tu equipo deja de copiar y pegar" on dark blue, with an "Auditoría gratis" chip](public/og.jpg)
+<img src="docs/img/escritorio-1280.png" width="640" alt="The landing at 1280 px: the headline &quot;Tu equipo deja de copiar y pegar&quot;, the WhatsApp button and a dashboard of a business with sales, orders and a weekly chart"> <img src="docs/img/celular-360.png" width="180" alt="The same first screen on a 360 px phone: the header with the WhatsApp icon and the menu, the headline and the button, with the dashboard below">
+
+The first screen at 1280 px and on a 360 px phone, taken by `npm run capturas`.
 
 ## The problem
 
@@ -172,12 +173,8 @@ it, Cloudflare Pages serves the home page with a 200 on any route.
 
 - **Not published.** Hosting is not connected and the domain is a placeholder
   (`accelerate-ai.example`). Until it changes, the canonical link and the Open Graph URLs point
-  to it and link previews will not work. `/legal` still has a `[MAIL]` placeholder in
-  `src/components/legal/Privacidad.astro`.
-- **`#trabajo` uses placeholder images.** The three phone screens are files labeled "Imagen de
-  reemplazo" in `src/assets/trabajo/`, to be replaced with real screenshots of the app with test
-  data.
-  <!-- TODO: screenshots after tanda 3: add real captures of #trabajo here once they replace the placeholders (docs/img/, under 1 MB each) -->
+  to it and link previews will not work, and `/legal` shows a `[MAIL]` placeholder. Publishing means
+  changing one value, `DOMINIO` in `src/dominio.mjs`: the site URL and the contact mail derive from it.
 - **No CI.** There is no `.github/` folder, so the suite only runs on a developer's machine.
 - **High contrast is emulated** with Playwright's `forcedColors`, not tested on Windows.
 - **Some components are long**: `MockPanel` is 1,230 lines, `ComoTrabajamos` 962, `MockOrdenes`
@@ -187,5 +184,6 @@ it, Cloudflare Pages serves the home page with a 200 on any route.
 ## License
 
 [MIT](LICENSE). It covers the source code only. The Accelerate.ai name and logo, the images in
-`src/assets/identidad/` and in `public/` (`og.jpg` and the favicons), and the texts of the site
+`src/assets/identidad/`, `src/assets/trabajo/`, `docs/img/` and `public/` (`og.jpg` and the
+favicons), and the texts of the site
 are not covered: all rights reserved.

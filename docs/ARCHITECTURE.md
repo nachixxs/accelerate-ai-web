@@ -12,7 +12,7 @@ setup steps are in the [README](../README.md).
 | `/` | `src/pages/index.astro` | The landing. Sections are composed in this file, in page order. |
 | `/legal/` | `src/pages/legal.astro` | Privacy and terms. Same header and footer as the landing. |
 | `/404.html` | `src/pages/404.astro` | Marked `noindex`, no canonical, left out of the sitemap. |
-| `/robots.txt`, `/sitemap.xml` | `src/pages/robots.txt.ts`, `src/pages/sitemap.xml.ts` | Built from `site` in `astro.config.mjs`. The sitemap lists the `.astro` files in `src/pages/` except the 404 and dynamic routes. |
+| `/robots.txt`, `/sitemap.xml` | `src/pages/robots.txt.ts`, `src/pages/sitemap.xml.ts` | Built from `site` in `astro.config.mjs`, which comes from `DOMINIO` in `src/dominio.mjs`. The sitemap lists the `.astro` files in `src/pages/` except the 404 and dynamic routes. |
 
 `src/pages/[plantilla].astro` is the Open Graph image template. `getStaticPaths()` returns a
 route only when `OG_PLANTILLA` is set, which `scripts/og.mjs` does. A normal build does not
