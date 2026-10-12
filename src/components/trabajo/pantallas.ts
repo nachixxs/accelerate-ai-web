@@ -1,5 +1,5 @@
-// Las tres pantallas de la app de la demo. Las capturas son 720x1560 (src/assets/trabajo/): se pisan
-// con las reales sin tocar CSS. `pose` es el lugar inicial en el escenario (el asistente, al frente).
+// Las tres pantallas de la app de la demo: capturas reales, 720x1560 (src/assets/trabajo/).
+// `pose` es el lugar inicial en el escenario (el asistente, al frente).
 import cargaRapida from '../../assets/trabajo/carga-rapida.png';
 import arqueo from '../../assets/trabajo/arqueo.png';
 import asistente from '../../assets/trabajo/asistente.png';
