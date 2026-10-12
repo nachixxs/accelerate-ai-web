@@ -357,6 +357,11 @@ const links = [
 		transition: background-color 0.15s var(--curva-salida);
 	}
 
+	/* Con la letra al 200 % la pastilla no tiene lugar para el texto y el ícono: sin esto, el ícono cede y queda de 5 px. */
+	.capsula__menu :global(svg) {
+		flex-shrink: 0;
+	}
+
 	.capsula__menu--cerrar {
 		border-color: var(--navy-950);
 		background: var(--navy-950);

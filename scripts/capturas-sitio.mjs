@@ -127,6 +127,9 @@ for (const [width, letra] of [[768, 200], [768, 100], [360, 100]]) {
 	if (letra === 200) await cdp.send('Page.setFontSizes', { fontSizes: { standard: 32, fixed: 26 } });
 	await pagina.goto(url, { waitUntil: 'load' });
 	await terminarCarga(pagina);
+	// El ícono del botón "Menú" no cede su ancho al texto (a 768 con letra al 200 % quedaba de 5 px).
+	const icono = await pagina.evaluate(() => document.querySelector('.encabezado .capsula__menu svg').getBoundingClientRect().width);
+	chequear(icono >= 16, `menú ${width} con letra al ${letra} %: el ícono de "Menú" mide 16 px o más (${icono.toFixed(1)} px)`);
 	const tops = {};
 	for (const id of ['tiempo', 'sistemas', 'proceso', 'preguntas']) {
 		await pagina.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
@@ -167,7 +170,10 @@ for (const width of [1280, 360]) {
 			return [...r.getClientRects()].some((q) => q.width > 1 && q.left < b.right && b.left < q.right && q.top < b.bottom + 4 && b.top - 4 < q.bottom);
 		}).map((p) => p.querySelector('.producto__nombre').firstChild.textContent.trim());
 		const montos = [...document.querySelectorAll('.ticket__monto')].map((d) => ({ texto: d.firstChild.textContent, lineas: lineas(d.firstChild), aDerecha: Math.abs(d.getBoundingClientRect().right - d.closest('.ticket__fila').getBoundingClientRect().right) < 1 }));
-		montos.push({ texto: 'Diferencia $ 0', lineas: lineas(document.querySelector('.ticket__cierre span')), aDerecha: true });
+		const cierre = document.querySelector('.ticket__cierre');
+		montos.push({ texto: 'Diferencia $ 0', lineas: lineas(cierre.querySelector('span')), aDerecha: true });
+		// El sello va rotado 4°: su caja sobresale ~1,5 px del borde.
+		montos.push({ texto: 'sello "Cierra"', lineas: 1, aDerecha: Math.abs(cierre.querySelector('.ticket__sello').getBoundingClientRect().right - cierre.getBoundingClientRect().right) < 3 });
 		return { solapes, icono: parseFloat(getComputedStyle(document.querySelector('.ticket__sello svg')).width), mal: montos.filter((x) => x.lineas !== 1 || !x.aDerecha).map((x) => `${x.texto} (${x.lineas} línea(s)${x.aDerecha ? '' : ', no queda a la derecha'})`) };
 	});
 	chequear(!m.solapes.length, `stock ${width} con letra al 200 %: ningún nombre se superpone con su barra${m.solapes.length ? ` (pisa: ${m.solapes.join(', ')})` : ''}`);

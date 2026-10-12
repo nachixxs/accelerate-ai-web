@@ -149,7 +149,8 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 	/* `margin-inline-start: auto`: si la fila se apila (letra grande), el monto queda a la derecha,
 	   como en las demás. */
 	.ticket__fila dd {
-		margin: 0 0 0 auto;
+		margin: 0;
+		margin-inline-start: auto;
 		color: var(--text-heading-dark);
 		font-weight: var(--fw-medium);
 	}
