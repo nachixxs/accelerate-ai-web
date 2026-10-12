@@ -6,6 +6,8 @@
 //   de consola, con noindex y fuera del sitemap.
 // - En la 404 y con un secundario a la vista, el CTA del encabezado en contorno; el menú abierto a 768 se cierra al pasar a 1280.
 // - Los links del menú del celular (768 con letra al 200 % y al 100 %, 360) dejan su sección bajo el encabezado.
+// - Con la letra al 200 % (a 1280 y 360): los nombres del stock no pisan su barra, el ícono del sello "Cierra" mide 12 px o más
+//   y cada monto del ticket queda en una línea, pegado a la derecha como los demás.
 // - public/_headers llega a dist con caché inmutable para /_astro/* y las cabeceras de seguridad.
 import { readFile } from 'node:fs/promises';
 import { preview } from 'astro';
@@ -142,6 +144,35 @@ for (const [width, letra] of [[768, 200], [768, 100], [360, 100]]) {
 	}
 	const fuera = Object.entries(tops).filter(([, top]) => top < 80 || top > 112);
 	chequear(!fuera.length, `menú ${width} con letra al ${letra} %: cada link lleva su sección a 96 ± 16 px del borde (${Object.entries(tops).map(([id, top]) => `#${id} ${top}`).join(', ')})`);
+	await contexto.close();
+}
+
+// Los mocks de stock y de caja con la letra al 200 % (CDP). Con movimiento reducido, para medir sin la entrada por scroll.
+// Antes: los nombres del stock se montaban sobre la barra (3 columnas con un corte en px), el ícono del sello quedaba en 3-5 px
+// y "Diferencia $ 0" se partía; "Transferencias" dejaba su monto a la izquierda.
+for (const width of [1280, 360]) {
+	const contexto = await navegador.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+	const pagina = await contexto.newPage();
+	const cdp = await contexto.newCDPSession(pagina);
+	await cdp.send('Page.enable');
+	await cdp.send('Page.setFontSizes', { fontSizes: { standard: 32, fixed: 26 } });
+	await pagina.goto(url, { waitUntil: 'load' });
+	await terminarCarga(pagina);
+	const m = await pagina.evaluate(() => {
+		const lineas = (el) => { const r = document.createRange(); r.selectNodeContents(el); return new Set([...r.getClientRects()].filter((q) => q.width > 1).map((q) => Math.round(q.top / 4))).size; };
+		const solapes = [...document.querySelectorAll('.producto')].filter((p) => {
+			const b = p.querySelector('.producto__nivel').getBoundingClientRect();
+			const r = document.createRange();
+			r.selectNodeContents(p.querySelector('.producto__nombre'));
+			return [...r.getClientRects()].some((q) => q.width > 1 && q.left < b.right && b.left < q.right && q.top < b.bottom + 4 && b.top - 4 < q.bottom);
+		}).map((p) => p.querySelector('.producto__nombre').firstChild.textContent.trim());
+		const montos = [...document.querySelectorAll('.ticket__monto')].map((d) => ({ texto: d.firstChild.textContent, lineas: lineas(d.firstChild), aDerecha: Math.abs(d.getBoundingClientRect().right - d.closest('.ticket__fila').getBoundingClientRect().right) < 1 }));
+		montos.push({ texto: 'Diferencia $ 0', lineas: lineas(document.querySelector('.ticket__cierre span')), aDerecha: true });
+		return { solapes, icono: parseFloat(getComputedStyle(document.querySelector('.ticket__sello svg')).width), mal: montos.filter((x) => x.lineas !== 1 || !x.aDerecha).map((x) => `${x.texto} (${x.lineas} línea(s)${x.aDerecha ? '' : ', no queda a la derecha'})`) };
+	});
+	chequear(!m.solapes.length, `stock ${width} con letra al 200 %: ningún nombre se superpone con su barra${m.solapes.length ? ` (pisa: ${m.solapes.join(', ')})` : ''}`);
+	chequear(m.icono >= 12, `ticket ${width} con letra al 200 %: el ícono del sello mide 12 px o más (${m.icono.toFixed(1)} px)`);
+	chequear(!m.mal.length, `ticket ${width} con letra al 200 %: cada monto en una sola línea, a la derecha${m.mal.length ? ` (${m.mal.join(', ')})` : ''}`);
 	await contexto.close();
 }
 

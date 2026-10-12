@@ -436,8 +436,9 @@ const pedido = productos.filter((p) => p.bajo).map(({ i, nombre, repuesto }) => 
 
 	/* Consulta de contenedor: la card mide distinto según la grilla, no según la pantalla. La
 	   tercera columna es de ancho fijo (no `auto`): si no, "Al día" y "Reponer" corren la barra a
-	   distinto punto en cada fila. */
-	@container (min-width: 420px) {
+	   distinto punto en cada fila. En `em` (30em = 420 px a la letra normal de la card, 14 px): con
+	   la letra grande, las tres columnas no entran y los nombres se montaban sobre la barra. */
+	@container (min-width: 30em) {
 		.producto {
 			grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 7.5rem;
 		}

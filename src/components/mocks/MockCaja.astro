@@ -100,7 +100,9 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 	   hover (drop-shadow recalcula sobre lo ya pintado, incluido el translate del hijo). */
 	.ticket-sombra {
 		width: 100%;
-		max-width: 300px;
+		/* En rem (300 px a letra normal): con la letra grande el ticket crece con ella, hasta donde
+		   deja la card. */
+		max-width: 18.75rem;
 		filter: drop-shadow(var(--shadow-elevada-oscura));
 	}
 
@@ -144,8 +146,10 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 		padding-block: 8px;
 	}
 
+	/* `margin-inline-start: auto`: si la fila se apila (letra grande), el monto queda a la derecha,
+	   como en las demás. */
 	.ticket__fila dd {
-		margin: 0;
+		margin: 0 0 0 auto;
 		color: var(--text-heading-dark);
 		font-weight: var(--fw-medium);
 	}
@@ -154,6 +158,7 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 	   total pasaba a otra línea al terminar y la página crecía 46 px a mitad de un scroll). */
 	.ticket__monto {
 		text-align: end;
+		white-space: nowrap;
 	}
 
 	.ticket__monto::after {
@@ -179,11 +184,13 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 	.ticket__cierre {
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
 		justify-content: space-between;
-		gap: 12px;
+		gap: 8px 12px;
 		margin-top: 8px;
 		color: var(--text-muted-dark);
 		font-size: 0.8125rem;
+		white-space: nowrap;
 	}
 
 	.ticket__sello {
@@ -196,6 +203,13 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 		color: var(--brand-primary-deep);
 		font-weight: var(--fw-bold);
 		rotate: -4deg;
+		/* Si el cierre se apila, el sello queda a la derecha, alineado con los montos. */
+		margin-inline-start: auto;
+	}
+
+	/* El ícono no se achica: sin esto, con la letra grande el flex lo dejaba en 3-5 px. */
+	.ticket__sello :global(svg) {
+		flex-shrink: 0;
 	}
 
 	/* Con el mouse encima del ticket (no de todo el mock) se endereza y sube, y el sello se vuelve
