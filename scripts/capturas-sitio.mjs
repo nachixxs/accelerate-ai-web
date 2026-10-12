@@ -5,6 +5,7 @@
 // - La 404 a 360 y 1280: una sola h1, un link a la portada de 44 px o más, sin desborde, sin errores
 //   de consola, con noindex y fuera del sitemap.
 // - En la 404 y con un secundario a la vista, el CTA del encabezado en contorno; el menú abierto a 768 se cierra al pasar a 1280.
+// - Los links del menú del celular (768 con letra al 200 % y al 100 %, 360) dejan su sección bajo el encabezado.
 // - public/_headers llega a dist con caché inmutable para /_astro/* y las cabeceras de seguridad.
 import { readFile } from 'node:fs/promises';
 import { preview } from 'astro';
@@ -109,6 +110,39 @@ for (const width of [360, 1280]) {
 	const despues = await pagina.evaluate(() => ({ abierto: document.querySelector('#menu').matches(':popover-open'), bloqueado: getComputedStyle(document.documentElement).overflowY === 'hidden' }));
 	chequear(abierto && !despues.abierto && !despues.bloqueado, `menú: abierto a 768, al pasar a 1280 se cierra y libera el scroll (abrió ${abierto}, sigue abierto ${despues.abierto}, scroll bloqueado ${despues.bloqueado})`);
 	await pagina.close();
+}
+
+// Cada link del menú del celular lleva su sección bajo el encabezado, con movimiento (scroll suave) y con la
+// letra al 200 % (CDP, como capturas-letra200.mjs). El destino del scroll suave se calcula al tocar, con la
+// página todavía a medio acomodar por el cierre del menú: si algo cambia de alto después (el campo de marcas
+// del mes, el total del ticket), la sección queda pasada o corta (a 768 con letra al 200 %: 311 px pasada).
+// El título tiene que quedar a scroll-padding-top (96 px) del borde, con 16 px de margen.
+for (const [width, letra] of [[768, 200], [768, 100], [360, 100]]) {
+	const contexto = await navegador.newContext({ viewport: { width, height: width === 360 ? 800 : 1024 }, reducedMotion: 'no-preference' });
+	const pagina = await contexto.newPage();
+	const cdp = await contexto.newCDPSession(pagina);
+	await cdp.send('Page.enable');
+	if (letra === 200) await cdp.send('Page.setFontSizes', { fontSizes: { standard: 32, fixed: 26 } });
+	await pagina.goto(url, { waitUntil: 'load' });
+	await terminarCarga(pagina);
+	const tops = {};
+	for (const id of ['tiempo', 'sistemas', 'preguntas']) {
+		await pagina.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+		await pagina.click('.encabezado .capsula__menu');
+		await pagina.click(`#menu a[href$="#${id}"]`);
+		// Quieto: la misma posición en 5 lecturas seguidas, una cada 100 ms (con tope de 8 s).
+		let ultimo = NaN;
+		for (let quietas = 0, i = 0; quietas < 5 && i < 80; i++) {
+			await pagina.waitForTimeout(100);
+			const top = await pagina.evaluate((id) => Math.round(document.getElementById(id).getBoundingClientRect().top), id);
+			quietas = top === ultimo ? quietas + 1 : 0;
+			ultimo = top;
+		}
+		tops[id] = ultimo;
+	}
+	const fuera = Object.entries(tops).filter(([, top]) => top < 80 || top > 112);
+	chequear(!fuera.length, `menú ${width} con letra al ${letra} %: cada link lleva su sección a 96 ± 16 px del borde (${Object.entries(tops).map(([id, top]) => `#${id} ${top}`).join(', ')})`);
+	await contexto.close();
 }
 
 // La 404 sale del build y no entra al sitemap.

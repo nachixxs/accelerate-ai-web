@@ -30,13 +30,13 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 					movimientos.map(({ medio, monto }) => (
 						<div class="ticket__fila">
 							<dt>{medio}</dt>
-							<dd class="ticket__monto" data-valor={monto}>{pesos(monto)}</dd>
+							<dd class="ticket__monto" data-valor={monto} data-final={pesos(monto)}>{pesos(monto)}</dd>
 						</div>
 					))
 				}
 				<div class="ticket__fila ticket__fila--total">
 					<dt>Total</dt>
-					<dd class="ticket__monto" data-valor={total}>{pesos(total)}</dd>
+					<dd class="ticket__monto" data-valor={total} data-final={pesos(total)}>{pesos(total)}</dd>
 				</div>
 			</dl>
 			<div class="ticket__cierre">
@@ -148,6 +148,20 @@ const total = movimientos.reduce((suma, { monto }) => suma + monto, 0);
 		margin: 0;
 		color: var(--text-heading-dark);
 		font-weight: var(--fw-medium);
+	}
+
+	/* Reserva el ancho del monto final: mientras cuenta desde $ 0 la fila no cambia de alto (con la letra grande el
+	   total pasaba a otra línea al terminar y la página crecía 46 px a mitad de un scroll). */
+	.ticket__monto {
+		text-align: end;
+	}
+
+	.ticket__monto::after {
+		content: attr(data-final);
+		display: block;
+		height: 0;
+		overflow: hidden;
+		visibility: hidden;
 	}
 
 	.ticket__fila--total {
