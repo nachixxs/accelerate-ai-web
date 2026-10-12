@@ -1,8 +1,7 @@
 // Capturas de la web en celular (360 px), tablet (768 px) y escritorio (1280 px), más los chequeos que una
 // captura no muestra a simple vista. Uso: npm run capturas (compila antes). Salida en capturas/.
-// La captura completa va con prefers-reduced-motion y sin animaciones: lo que se arma con el scroll
-// saldría a medio camino en una foto sin scrollear. La primera pantalla va con movimiento, cuando la
-// historia de la portada ya terminó. Los tres anchos corren a la vez, cada uno en su pestaña.
+// La captura completa va con movimiento reducido y sin animaciones (lo que se arma con el scroll saldría a
+// medio camino); la primera pantalla, con movimiento y la portada ya armada. Los tres anchos corren a la vez.
 // Los chequeos del botón se repiten con la letra al 150 % (las secciones con glow tienen
 // overflow: hidden: lo que se sale no hace scroll horizontal, queda recortado sin aviso).
 import { preview } from 'astro';
@@ -12,6 +11,7 @@ import { revisarLetra200 } from './capturas-letra200.mjs';
 import { revisarAltoContraste } from './capturas-contraste.mjs';
 import { revisarNavegadores } from './capturas-navegadores.mjs';
 import { revisarLegal } from './capturas-legal.mjs';
+import { revisarTrabajo } from './capturas-trabajo.mjs';
 import { terminarCarga } from './capturas-utils.mjs';
 
 const ANCHOS = [
@@ -263,24 +263,24 @@ function imprimir(titulo, chequeos) {
 // Todo corre a la vez: los tres anchos de siempre, más axe, la letra al 200 % y el alto
 // contraste (los tres con la misma instancia de Chromium) y WebKit/Firefox (instancias propias).
 const inicioExtra = Date.now();
-const [resultados, axe, letra200, altoContraste, otrosNavegadores, legal] = await Promise.all([
+const [resultados, axe, letra200, altoContraste, otrosNavegadores, legal, trabajo] = await Promise.all([
 	Promise.all(ANCHOS.map(revisarAncho)),
 	revisarAxe(navegador, url),
 	revisarLetra200(navegador, url),
 	revisarAltoContraste(navegador, url),
 	revisarNavegadores(navegador, url),
 	revisarLegal(navegador, url),
+	revisarTrabajo(navegador, url),
 ]);
 ANCHOS.forEach(({ nombre }, i) => imprimir(nombre, resultados[i]));
 imprimir('axe (accesibilidad, 360 y 1280, estado final)', axe.chequeos);
-imprimir('letra al 200 % (360 y 320, recorriendo la página)', letra200.chequeos);
+imprimir('letra al 200 % (360 y 320; 1280 y 1100 con font-size en el html; recorriendo la página)', letra200.chequeos);
 imprimir('alto contraste de windows (360)', altoContraste.chequeos);
 imprimir('webkit y firefox (360 y 1280, con y sin movimiento)', otrosNavegadores.chequeos);
 imprimir('/legal (privacidad y términos, 360 y 1280, con y sin movimiento)', legal.chequeos);
-console.log(
-	`\nTiempos: axe ${axe.ms}ms, letra 200% ${letra200.ms}ms, alto contraste ${altoContraste.ms}ms, ` +
-		`webkit/firefox ${otrosNavegadores.ms}ms, legal ${legal.ms}ms, total de todo en paralelo ${Date.now() - inicioExtra}ms`,
-);
+imprimir('#trabajo (360, 768, 1024 y 1280, con movimiento, reducido y sin JS)', trabajo.chequeos);
+const tiempos = { axe, 'letra 200%': letra200, 'alto contraste': altoContraste, 'webkit/firefox': otrosNavegadores, legal, trabajo };
+console.log(`\nTiempos: ${Object.entries(tiempos).map(([n, r]) => `${n} ${r.ms}ms`).join(', ')}, total de todo en paralelo ${Date.now() - inicioExtra}ms`);
 
 // Open Graph: la imagen tiene que estar publicada y con URL completa, o WhatsApp no la muestra.
 const pagina = await navegador.newPage();

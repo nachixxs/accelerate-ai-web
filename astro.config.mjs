@@ -1,10 +1,9 @@
 // @ts-check
 import { defineConfig, fontProviders } from 'astro/config';
 
-// URL pública del sitio: con ella se arman las URL completas de las etiquetas Open Graph,
-// que WhatsApp necesita para mostrar la imagen. PROVISORIA hasta decidir el dominio
-// (ESTADO.md, pendiente 3): .example es un dominio reservado que no existe.
-const SITIO = 'https://accelerate-ai.example';
+import { DOMINIO, PROVISORIO, SITIO } from './src/dominio.mjs';
+// SITIO (la URL pública) arma las URL completas de Open Graph, que WhatsApp necesita para mostrar
+// la imagen. El dominio se cambia en un solo lugar: src/dominio.mjs.
 
 // https://astro.build/config
 export default defineConfig({
@@ -39,8 +38,8 @@ export default defineConfig({
 			name: 'aviso-dominio-provisorio',
 			hooks: {
 				'astro:build:done': ({ logger }) => {
-					if (SITIO.endsWith('.example')) {
-						logger.warn(`El dominio es provisorio (${SITIO}): la vista previa de WhatsApp no va a funcionar hasta cambiarlo en astro.config.mjs.`);
+					if (PROVISORIO) {
+						logger.warn(`El dominio es provisorio (${DOMINIO}): la vista previa de WhatsApp no va a funcionar y /legal tiene marcadores ([MAIL]) que no se pueden publicar. Se cambia en un solo lugar: DOMINIO en src/dominio.mjs.`);
 					}
 				},
 			},

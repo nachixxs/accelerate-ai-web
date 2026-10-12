@@ -30,8 +30,10 @@ const tipos = [
 ---
 
 <section id="sistemas" class="seccion seccion--oscura con-glow sistemas" aria-labelledby="sistemas-titulo">
-	<Glow tono="azul" esquina="arriba-der" />
-	<Glow tono="cian" esquina="arriba-der" />
+	<div class="sistemas__luz">
+		<Glow tono="azul" esquina="arriba-der" />
+		<Glow tono="cian" esquina="arriba-der" />
+	</div>
 
 	<div class="contenedor">
 		<div class="encabezado-seccion revelar">
@@ -55,6 +57,10 @@ const tipos = [
 				<div class="ejemplo__texto">
 					<h3 class="t-label">Cajas y cierres diarios sin cuadernos</h3>
 					<p>Cada movimiento queda registrado y el cierre del día sale en minutos.</p>
+					<a class="ejemplo__link" href="#trabajo">
+						Mirá uno funcionando
+						<Icono nombre="arrow-down-bold" size={16} />
+					</a>
 				</div>
 				<MockCaja />
 			</article>
@@ -110,6 +116,24 @@ const tipos = [
 </section>
 
 <style>
+	/* Los glows nacen pegados al borde de arriba y la sección los recorta ahí: sin esto el brillo
+	   llega entero hasta la línea y se corta recto contra la sección clara. La máscara los
+	   desvanece desde el borde (transparente) hasta --fundido (entero): 120 px en el celular, donde el
+	   glow es más chico, y 200 px desde 768. */
+	.sistemas__luz {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		--fundido: 120px;
+		-webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--fundido));
+		mask-image: linear-gradient(to bottom, transparent, #000 var(--fundido));
+	}
+
+	@media (min-width: 768px) {
+		.sistemas__luz { --fundido: 200px; }
+	}
+
 	.sistemas .encabezado-seccion .t-cuerpo {
 		color: var(--text-body-light);
 	}
@@ -149,6 +173,26 @@ const tipos = [
 
 	.ejemplo h3 {
 		font-weight: var(--fw-semibold);
+	}
+
+	/* Link chico al primer trabajo (#trabajo), con 44 px de alto para el dedo. */
+	.ejemplo__link {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		justify-self: start;
+		min-height: 44px;
+		color: var(--cyan-300);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-semibold);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.ejemplo__link:hover {
+			color: var(--cyan-200);
+		}
 	}
 
 	/* Variedad de fondos: el grande lleva un degradé azul profundo desde abajo. */

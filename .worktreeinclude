@@ -1,6 +1,4 @@
-# Archivos ignorados por git que Orca copia a cada worktree nuevo (solo rutas literales).
-# Son los documentos internos del proyecto: desde af025f6 no van a GitHub.
+# Archivos ignorados por git que se copian a cada worktree nuevo: los copia Claude Desktop al crearlo
+# y, si faltan, scripts/setup-worktree.ps1. Solo rutas literales.
+# Solo CLAUDE.md: SPECS, ESTADO, HISTORIAL y REVISION-TEXTOS viven una sola vez en notas\accelerate-ai-web\.
 CLAUDE.md
-ESTADO.md
-REVISION-TEXTOS.md
-SPECS.md

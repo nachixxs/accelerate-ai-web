@@ -234,6 +234,15 @@ const auditoria = [
 </script>
 
 <style>
+	/* .linea__punto es una caja del alto del riel trasladada 100% hacia abajo: sobresale por debajo
+	   tanto como mide el riel y, en ventanas altas o con zoom < 100 %, pasaba el final del pie y
+	   agrandaba el documento (hueco en blanco). Se recorta acá y no en el riel, porque el punto
+	   termina centrado en el borde inferior del riel y se cortaría a la mitad. clip, a diferencia
+	   de hidden, no crea contenedor de scroll: los sticky de abajo siguen andando. */
+	.proceso {
+		overflow-y: clip;
+	}
+
 	.proceso__pie {
 		display: flex;
 		justify-content: center;

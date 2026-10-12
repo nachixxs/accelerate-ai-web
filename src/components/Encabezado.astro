@@ -3,9 +3,11 @@
 // que flota sobre la página desde arriba de todo (borde fino y sombra teñida de navy, sin vidrio
 // ni blur) y baja 4 px al empezar el scroll. La sección en la que estás queda marcada.
 // El botón de WhatsApp está siempre (pedido del usuario, 2026-09-25): de contorno mientras se ve
-// un botón principal (el de la portada o el del cierre) y lleno de #1f57c2 (con texto blanco,
-// AA) cuando no se ve ninguno, así nunca hay dos azules llenos a la vista. Lo decide el script
-// de abajo; sin JavaScript queda de contorno.
+// un botón de relleno (el principal de la portada y el cierre, o un secundario; decisión del
+// usuario, 2026-10-10) y lleno de #1f57c2 (con texto blanco, AA) cuando no se ve ninguno, así
+// nunca hay dos botones de relleno a la vista. Lo decide el script
+// de abajo. Sin JavaScript queda de contorno, salvo en las páginas sin botón principal propio
+// (/legal: `raiz` sin `ctaPropio`), donde arranca lleno desde el HTML.
 // En el celular y la tablet, un "Menú" abre un popover con las 5 secciones numeradas y el botón.
 import Logo from './Logo.astro';
 import Icono from './Icono.astro';
@@ -13,8 +15,14 @@ import { WHATSAPP_URL } from '../config';
 
 // `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada
 // (/#tiempo) y no se marca ninguna como activa. Ahí tampoco hay un botón principal de la página: el
-// de la cápsula queda lleno desde el arranque, sin esperar al script.
-const { raiz = '' } = Astro.props;
+// de la cápsula queda lleno desde el arranque, sin esperar al script. `ctaPropio` es para la página
+// que trae su propio botón principal con data-cta-principal (la 404): ahí arranca de contorno.
+interface Props {
+	raiz?: string;
+	ctaPropio?: boolean;
+}
+
+const { raiz = '', ctaPropio = false } = Astro.props;
 
 // --s-* son los timelines de las secciones (global.css): marcan cuál está en pantalla.
 const links = [
@@ -53,7 +61,7 @@ const links = [
 			</nav>
 
 			<div class="capsula__acciones">
-				<a class:list={['capsula__cta', { 'capsula__cta--lleno': raiz }]} href={WHATSAPP_URL} target="_blank" rel="noopener">
+				<a class:list={['capsula__cta', { 'capsula__cta--lleno': raiz && !ctaPropio }]} href={WHATSAPP_URL} target="_blank" rel="noopener">
 					<span class="capsula__cta-cara">
 						<Icono nombre="si:whatsapp" size={20} />
 						<span class="capsula__cta-texto solo-lector">Escribinos por WhatsApp</span>
@@ -125,6 +133,13 @@ const links = [
 		}
 	});
 
+	// Si la ventana se agranda (una tablet que se gira) y el botón "Menú" se va, el menú abierto se
+	// cierra con él: ya no se puede abrir y con los links a la vista sobra.
+	const botonMenu = document.querySelector<HTMLElement>('.capsula__menu')!;
+	new ResizeObserver(() => {
+		if (!botonMenu.offsetWidth && menu.matches(':popover-open')) menu.hidePopover();
+	}).observe(document.querySelector('.encabezado')!);
+
 	// El botón se llena de azul cuando no hay ningún botón principal a la vista.
 	const cta = document.querySelector('.capsula__cta')!;
 	const aLaVista = new Set<Element>();
@@ -135,7 +150,9 @@ const links = [
 		}
 		cta.classList.toggle('capsula__cta--lleno', aLaVista.size === 0);
 	});
-	document.querySelectorAll('main .boton--principal').forEach((boton) => observador.observe(boton));
+	// Principal es el botón de WhatsApp azul o cualquiera que se marque con data-cta-principal (el "Ir a la portada" de la 404).
+	// Los secundarios (relleno azul, o cian sobre oscuro) cuentan igual: el relleno del encabezado no convive con otro relleno.
+	document.querySelectorAll('main .boton--principal, main .boton--secundario, main [data-cta-principal]').forEach((boton) => observador.observe(boton));
 </script>
 
 <style>
@@ -158,6 +175,7 @@ const links = [
 		z-index: 10;
 		padding-block: 8px;
 		pointer-events: none;
+		container-type: inline-size;
 	}
 
 	.capsula {
@@ -339,6 +357,11 @@ const links = [
 		transition: background-color 0.15s var(--curva-salida);
 	}
 
+	/* Con la letra al 200 % la pastilla no tiene lugar para el texto y el ícono: sin esto, el ícono cede y queda de 5 px. */
+	.capsula__menu :global(svg) {
+		flex-shrink: 0;
+	}
+
 	.capsula__menu--cerrar {
 		border-color: var(--navy-950);
 		background: var(--navy-950);
@@ -424,6 +447,7 @@ const links = [
 		gap: 8px;
 		min-height: 56px;
 		margin: 8px 8px 0;
+		padding-inline: 24px;
 		border-radius: var(--radius-pill);
 		background: var(--brand-primary-deep);
 		color: var(--white);
@@ -466,18 +490,17 @@ const links = [
 		}
 	}
 
-	/* Escritorio: los links en la cápsula y sin menú. En em (67.5em = 1080px con la letra al 100 %):
-	   si la letra crece (150 %), el corte sube con ella y la cápsula pasa al modo menú antes de
-	   que los links no entren, en vez de quedar recortados a 1080px físicos fijos. */
-	@media (min-width: 67.5em) {
+	/* Escritorio: los links en la cápsula y sin menú. Container query y no media query: el em de una
+	   media query es siempre el de fábrica del navegador (16px), así que si la letra se agranda con un
+	   `font-size` (extensión, hoja de usuario, 200 % en el html) el corte no sube y los links se salen
+	   de la cápsula. El rem de un container query es el del html: 67.5rem = 1080px con la letra al
+	   100 %, y crece con ella (el em no: el body es fluido, 20px a 1280). */
+	@container (min-width: 67.5rem) {
 		.capsula__nav {
 			display: block;
 		}
 
-		/* El menú también: si quedó abierto y la ventana se agranda (una tablet que se gira), se
-		   iría con él su botón de cerrar. */
-		.capsula__menu,
-		.menu {
+		.capsula__menu {
 			display: none;
 		}
 	}

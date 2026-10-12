@@ -13,10 +13,23 @@ import { WHATSAPP_NUMERO_VISIBLE, WHATSAPP_URL } from '../config';
 
 // `raiz` es '/' en las páginas que no son la portada (/legal): los links de sección van a la portada.
 // "Volver arriba" queda en la misma página (#inicio existe en las dos).
-const { raiz = '' } = Astro.props;
+// `quieto` apaga el fundido atado al scroll: en la 404 el pie entra entero en la primera pantalla y
+// el fundido quedaba a mitad.
+interface Props {
+	raiz?: string;
+	quieto?: boolean;
+}
+
+const { raiz = '', quieto = false } = Astro.props;
 
 const contactos = [
 	{ icono: 'si:whatsapp', canal: 'WhatsApp', dato: WHATSAPP_NUMERO_VISIBLE, href: WHATSAPP_URL, externo: true },
+];
+
+// Solo las redes de la agencia, sin cuentas personales. Cada una es un botón de ícono (44 px).
+const redes = [
+	{ icono: 'instagram-logo-duotone', nombre: 'Instagram', href: 'https://www.instagram.com/accelerate.ai.arg/' },
+	{ icono: 'linkedin-logo-duotone', nombre: 'LinkedIn', href: 'https://www.linkedin.com/company/accelerateai-ar/' },
 ];
 
 const anio = new Date().getFullYear();
@@ -30,7 +43,7 @@ const links = [
 ];
 ---
 
-<footer class="seccion--oscura pie">
+<footer class:list={['seccion--oscura pie', { 'pie--quieto': quieto }]}>
 	<div class="pie__estela" aria-hidden="true"><span></span><span></span><span></span></div>
 
 	<div class="contenedor">
@@ -67,7 +80,19 @@ const links = [
 						))
 					}
 				</ul>
-				{/* TODO: links a las redes. Faltan las URL (REVISION-TEXTOS.md). */}
+				<ul class="pie__redes">
+					{
+						redes.map(({ icono, nombre, href }) => (
+							<li>
+								<a class="pie__red" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${nombre} de Accelerate.ai (se abre en otra pestaña)`}>
+									<span class="pie__contacto-icono">
+										<Icono nombre={icono} size={20} />
+									</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
 			</div>
 		</div>
 
@@ -192,7 +217,7 @@ const links = [
 
 	/* Feedback al apretar, igual que el hover pero más rápido: al soltar vuelve con la transición
 	   de reposo de cada elemento (0.2s), más lenta que la de presionar (0.12s). */
-	.pie__contacto:active .pie__contacto-icono {
+	:is(.pie__contacto, .pie__red):active .pie__contacto-icono {
 		border-color: var(--cyan-300);
 		transition: border-color 0.12s var(--curva-salida);
 	}
@@ -200,6 +225,22 @@ const links = [
 	.pie__contacto:active .pie__contacto-dato {
 		color: var(--text-heading-light);
 		transition: color 0.12s var(--curva-salida);
+	}
+
+	/* Las redes: dos botones de ícono en fila, con el mismo recuadro que el de WhatsApp y a su borde
+	   izquierdo. El link mide 44 px y el recuadro 40, pegado a la izquierda: con 4 px de gap quedan
+	   8 entre recuadros, y el margen de 4 deja 24 entre el de WhatsApp y las redes. */
+	.pie__redes {
+		display: flex;
+		gap: 4px;
+		margin-top: 4px;
+	}
+
+	.pie__red {
+		display: grid;
+		place-items: center start;
+		width: 44px;
+		height: 44px;
 	}
 
 	.pie__contacto-texto {
@@ -297,7 +338,7 @@ const links = [
 			color: var(--text-heading-light);
 		}
 
-		.pie__contacto:hover .pie__contacto-icono {
+		:is(.pie__contacto, .pie__red):hover .pie__contacto-icono {
 			border-color: var(--cyan-300);
 		}
 
@@ -323,6 +364,10 @@ const links = [
 	/* El anillo (cian) sale de .seccion--oscura; acá solo se redondea. */
 	.pie :is(.pie__link, .pie__contacto):focus-visible {
 		border-radius: 4px;
+	}
+
+	.pie .pie__red:focus-visible {
+		border-radius: 12px;
 	}
 
 	/* Entre 768 y 1023, 2 columnas: la marca a lo ancho arriba y secciones + contacto abajo. Las 3
@@ -400,7 +445,9 @@ const links = [
 
 			/* Tab puede llevar el foco a un link antes de que su bloque termine de entrar (el
 			   navegador sólo scrollea lo mínimo): con el foco adentro, se ve entero. */
-			.pie__bloque:focus-within {
+			.pie__bloque:focus-within,
+			.pie--quieto .pie__bloque,
+			.pie--quieto .pie__estela span {
 				animation: none;
 			}
 		}

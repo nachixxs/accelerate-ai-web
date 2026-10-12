@@ -1,0 +1,205 @@
+---
+// El escenario de #trabajo: los tres celulares sobre la card invertida (la única de la sección), la
+// conversación de ejemplo que cruza su borde de abajo y el sello de demo, montado sobre su borde de
+// arriba. Ocupa el área 'escena' de la grilla de PrimerTrabajo (el selector, el área 'selector'). Cada
+// celular es un Celular.astro. El HTML ya trae el estado final y quieto; scripts/trabajo-escenario.ts arma
+// la llegada, la conversación, la inclinación y el cambio de celular.
+import Glow from '../Glow.astro';
+import Icono from '../Icono.astro';
+import Celular from './Celular.astro';
+import Conversacion from './Conversacion.astro';
+import { pantallas } from './pantallas';
+
+interface Props {
+	pregunta: string;
+	respuesta: string;
+}
+const { pregunta, respuesta } = Astro.props;
+---
+
+<div class="escena" data-escena>
+	<div class="escenario" data-escenario data-frente="asistente">
+		<p class="sello"><Icono nombre="flask-duotone" size={24} />Demo con datos simulados</p>
+		<div class="fondo" aria-hidden="true">
+			<div class="glows">
+				<Glow tono="azul" fondo="oscuro" esquina="arriba-der" />
+				<Glow tono="cian" fondo="oscuro" esquina="arriba-der" />
+			</div>
+		</div>
+		{pantallas.map((p) => <Celular p={p} />)}
+		<Conversacion pregunta={pregunta} respuesta={respuesta} />
+	</div>
+</div>
+
+<style>
+	/* --- El escenario --- */
+	/* Sangra a los costados de la ventana en el celular y la tablet; desde 1024, solo a la derecha.
+	   El contenedor da las medidas (cqw) de los celulares. */
+	.escena {
+		grid-area: escena;
+		container-type: inline-size;
+		margin: 0 calc(var(--space-2) * -1) var(--space-5);
+		touch-action: pan-y pinch-zoom;
+	}
+
+	.escenario {
+		--f: 50cqw; /* ancho de cada celular; los de atrás se achican con scale */
+		--lado: 25cqw;
+		--zc: 0px;
+		position: relative;
+		display: grid;
+		justify-items: center;
+		padding-top: var(--space-5);
+	}
+
+	/* La card invertida, con su sombra. Se extiende más allá de la ventana para que la inclinación
+	   nunca deje ver el borde. La llegada la revela con clip-path (el final deja ver la sombra). */
+	.fondo {
+		position: absolute;
+		inset: 0 calc(var(--space-4) * -1);
+		background: var(--surface-card-dark);
+		box-shadow: var(--shadow-card);
+	}
+
+	/* El sello de demo, montado sobre el borde de arriba de la card. Con la inclinación acompaña a la card. */
+	.sello {
+		position: absolute;
+		top: 0;
+		left: var(--space-2);
+		z-index: 4;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		max-width: calc(100% - var(--space-4));
+		min-height: 40px;
+		padding: 4px var(--space-2);
+		border-radius: var(--radius-pill);
+		background: var(--blue-50);
+		color: var(--blue-900);
+		font-size: var(--type-meta-size);
+		font-weight: var(--fw-bold);
+		box-shadow: var(--shadow-elevada);
+		translate: 0 -50%;
+		transform: translateZ(var(--zt, 0px)); /* en el plano de la card: sin la separación de las capas, que lo correría del borde */
+	}
+
+	.sello :global(svg) {
+		flex: none;
+	}
+
+	/* Colores forzados: sin fondos, el sello y las burbujas necesitan su contorno. */
+	@media (forced-colors: active) {
+		.sello {
+			border: 1px solid CanvasText;
+		}
+	}
+
+	.glows {
+		position: absolute;
+		inset: 0;
+		overflow: clip;
+		isolation: isolate;
+	}
+
+	@media (min-width: 600px) {
+		.escenario {
+			--f: 40cqw;
+			--lado: 28cqw;
+		}
+	}
+
+	@media (min-width: 768px) {
+		.escena {
+			margin-inline: calc(var(--space-4) * -1);
+		}
+
+		.escenario {
+			padding-top: var(--space-6);
+		}
+
+		/* Que el sello no se salga de la columna del texto (la card sangra 32 px). */
+		.sello {
+			left: var(--space-4);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		/* La escena se estira a la altura de la columna de texto; el contenido queda centrado en la card. */
+		.escena {
+			display: grid;
+			margin: 0;
+		}
+
+		.escenario {
+			--f: min(42cqw, calc((100svh - 200px) / 2.5)); /* en pantallas anchas y bajas, que el celular entre en alto */
+			align-content: center;
+		}
+
+		.sello {
+			left: var(--space-5);
+		}
+
+		.fondo {
+			inset: 0;
+			border-radius: var(--radius-card-lg);
+		}
+	}
+
+	/* Apaisado y bajo: los celulares se achican para que entren dos en alto. */
+	@media (orientation: landscape) and (max-height: 540px) {
+		.escenario {
+			--f: min(40cqw, calc((100svh - 96px) / 2.2));
+		}
+	}
+
+	/* Ratón: el escenario se inclina y las capas se separan en profundidad (tablet y celular, sin
+	   esto: todo plano). La pose del que está al frente sube 40 px; la conversación, 70. */
+	@media (hover: hover) and (pointer: fine) {
+		.escena {
+			perspective: 1200px;
+		}
+
+		.escenario {
+			--zf: 40px;
+			--zt: 2px;
+			--zc: 70px;
+			transform-style: preserve-3d;
+			transform: rotateX(0deg) rotateY(0deg);
+		}
+
+		/* Luz de escena: el script corre cada glow (translate) al revés de la inclinación. */
+		.glows :global(.glow--azul-oscuro),
+		.glows :global(.glow--cian-oscuro) {
+			will-change: translate;
+		}
+	}
+
+	/* --- Llegada (solo con JS y sin movimiento reducido: data-entra lo pone el script; la de los celulares, en Celular.astro) --- */
+	.escenario[data-entra] .fondo {
+		clip-path: inset(10% 6% 0 6% round var(--radius-card-lg));
+	}
+
+	.escenario[data-entra] .glows,
+	.escenario[data-entra] .sello {
+		opacity: 0;
+	}
+
+	.escenario[data-entra][data-visto] .fondo {
+		clip-path: inset(-96px round var(--radius-card-lg));
+		transition: clip-path 800ms var(--curva-salida);
+	}
+
+	.escenario[data-entra][data-visto] .glows,
+	.escenario[data-entra][data-visto] .sello {
+		opacity: 1;
+		transition: opacity 900ms var(--curva-salida) 760ms;
+	}
+</style>
+
+<script>
+	import { escenario } from '../../scripts/trabajo-escenario';
+
+	const escena = document.querySelector<HTMLElement>('[data-escena]');
+	const selector = document.querySelector<HTMLElement>('[data-selector]');
+	if (escena && selector) escenario(escena, selector);
+</script>

@@ -1,0 +1,89 @@
+---
+// Página de "no encontrada". Cloudflare Pages sirve este 404.html en cualquier ruta que no existe;
+// sin él trataría el sitio como una SPA y mostraría la portada. Mismo encabezado y pie que /legal
+// (raiz="/"), sin animación propia. noindex: no tiene que aparecer en buscadores ni en el sitemap.
+import Base from '../layouts/Base.astro';
+import Encabezado from '../components/Encabezado.astro';
+import Pie from '../components/Pie.astro';
+import Glow from '../components/Glow.astro';
+import BotonWhatsApp from '../components/BotonWhatsApp.astro';
+---
+
+<Base title="Página no encontrada | Accelerate.ai" description="Esta página no existe." noindex>
+	<Encabezado raiz="/" ctaPropio />
+	<main id="contenido">
+		<div id="inicio" class="franja con-glow">
+			<Glow tono="cian" fondo="claro" esquina="arriba-izq" />
+			<div class="contenedor">
+				<p class="t-eyebrow">Error 404</p>
+				<h1 class="t-titular">Esta página no existe</h1>
+				<p class="t-cuerpo">El link está roto o la página se mudó. Volvé a la portada y seguimos desde ahí.</p>
+				<div class="acciones">
+					<a class="volver" href="/" data-cta-principal>Ir a la portada</a>
+					<BotonWhatsApp
+						variante="contorno"
+						texto="Hablemos por WhatsApp"
+						mensaje="Hola, entré a la web y no encontré lo que buscaba."
+					/>
+				</div>
+			</div>
+		</div>
+	</main>
+	<Pie raiz="/" quieto />
+</Base>
+
+<style>
+	/* La cápsula del encabezado es sticky y ocupa 80 px en el flujo: con el margen negativo la franja
+	   arranca en y=0 y el glow pasa por detrás de la cápsula, como en /legal y la portada. */
+	.franja {
+		display: grid;
+		align-content: center;
+		min-height: max(480px, 70dvh);
+		margin-top: -80px;
+		padding-block: calc(80px + var(--space-5)) var(--espacio-seccion);
+	}
+
+	.contenedor {
+		display: grid;
+		justify-items: start;
+		gap: var(--space-3);
+	}
+
+	.acciones {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin-top: var(--space-2);
+	}
+
+	/* Copia el relleno del botón secundario de BotonWhatsApp, sin el brillo ni el despegue: es un
+	   link interno y no suma animación. */
+	.volver {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 48px;
+		padding: 12px 24px;
+		border-radius: var(--radius-pill);
+		background: var(--brand-primary-deep);
+		color: var(--white);
+		font-size: 1.0625rem;
+		font-weight: var(--fw-semibold);
+		line-height: 1.2;
+		box-shadow: var(--shadow-elevada);
+		transition: background-color 0.2s;
+	}
+
+	.volver:active {
+		background: var(--blue-800);
+		color: var(--white);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.volver:hover {
+			background: var(--blue-800);
+			color: var(--white);
+		}
+	}
+</style>
